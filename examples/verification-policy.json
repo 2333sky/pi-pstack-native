@@ -1,0 +1,8 @@
+{
+  "commands": [["npm", "test"], ["npm", "run", "check:types"]],
+  "allowLocal": true,
+  "allowRemote": false,
+  "maxTimeoutSeconds": 300,
+  "maxOutputBytes": 65536,
+  "environment": { "CI": "1" }
+}

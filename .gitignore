@@ -1,0 +1,24 @@
+# Local installs / credentials / generated reports
+node_modules/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.pi/
+.pstack-native/
+.pstack/
+benchmark-output/
+benchmark-results/
+coverage/
+*.log
+npm-debug.log*
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+
+# dist/ is intentionally tracked because the current package publishes
+# a compiled public JS API / CLI as part of the npm tarball.

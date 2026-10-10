@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.19.0', '24.x']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Package source checks and tests
+        run: npm run check
+      - name: Typecheck
+        run: npm run check:types
+      - name: Build
+        run: npm run build
+      - name: Pi SDK smoke (no live LLM)
+        run: npm run check:host
+      - name: Offline benchmark integrity smoke
+        run: npm run benchmark:smoke
+      - name: Dry-run published package
+        run: npm pack --dry-run --ignore-scripts

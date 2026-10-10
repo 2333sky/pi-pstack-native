@@ -1,0 +1,11 @@
+export declare function pstackHome(): string;
+export declare const homePath: (...parts: string[]) => string;
+export declare const workflowPath: (id: string) => string;
+export declare const agentPath: (id: string) => string;
+export declare const journalPath: (id: string) => string;
+export declare const lockPath: (name: string) => string;
+export declare const worktreeRoot: () => string;
+export declare const childSessionRoot: () => string;
+export declare const configPath: () => string;
+export declare const modelConfigPath: () => string;
+export declare const loopsPath: () => string;

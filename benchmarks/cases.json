@@ -1,0 +1,354 @@
+[
+  {
+    "id": "bug-01-add",
+    "category": "bug-fix",
+    "params": "a,b",
+    "seed": "a-b",
+    "goal": "Return a plus b",
+    "assertions": [
+      {
+        "args": "2,3",
+        "expected": "5"
+      },
+      {
+        "args": "-2,3",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": "bug-02-multiply",
+    "category": "bug-fix",
+    "params": "a,b",
+    "seed": "a+b",
+    "goal": "Return a multiplied by b",
+    "assertions": [
+      {
+        "args": "2,3",
+        "expected": "6"
+      },
+      {
+        "args": "-2,3",
+        "expected": "-6"
+      }
+    ]
+  },
+  {
+    "id": "bug-03-abs",
+    "category": "bug-fix",
+    "params": "x",
+    "seed": "x",
+    "goal": "Return absolute value",
+    "assertions": [
+      {
+        "args": "-3",
+        "expected": "3"
+      },
+      {
+        "args": "3",
+        "expected": "3"
+      },
+      {
+        "args": "0",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": "bug-04-max",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "xs[0]",
+    "goal": "Return maximum of a nonempty numeric array",
+    "assertions": [
+      {
+        "args": "[1,5,2]",
+        "expected": "5"
+      },
+      {
+        "args": "[-4,-2]",
+        "expected": "-2"
+      }
+    ]
+  },
+  {
+    "id": "bug-05-sum",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "xs.length",
+    "goal": "Sum a numeric array; empty returns zero",
+    "assertions": [
+      {
+        "args": "[1,2,3]",
+        "expected": "6"
+      },
+      {
+        "args": "[]",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": "bug-06-mean",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "0",
+    "goal": "Mean of nonempty numeric array",
+    "assertions": [
+      {
+        "args": "[2,4]",
+        "expected": "3"
+      },
+      {
+        "args": "[-2,2]",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": "bug-07-unique",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "xs",
+    "goal": "Deduplicate array while preserving order",
+    "assertions": [
+      {
+        "args": "[1,1,2]",
+        "expected": "[1,2]"
+      },
+      {
+        "args": "[]",
+        "expected": "[]"
+      }
+    ]
+  },
+  {
+    "id": "bug-08-reverse",
+    "category": "bug-fix",
+    "params": "s",
+    "seed": "s",
+    "goal": "Reverse an ASCII string",
+    "assertions": [
+      {
+        "args": "\"abc\"",
+        "expected": "\"cba\""
+      },
+      {
+        "args": "\"\"",
+        "expected": "\"\""
+      }
+    ]
+  },
+  {
+    "id": "bug-09-clamp",
+    "category": "bug-fix",
+    "params": "x,lo,hi",
+    "seed": "x",
+    "goal": "Clamp x into inclusive lo to hi range",
+    "assertions": [
+      {
+        "args": "-3,0,5",
+        "expected": "0"
+      },
+      {
+        "args": "9,0,5",
+        "expected": "5"
+      },
+      {
+        "args": "2,0,5",
+        "expected": "2"
+      }
+    ]
+  },
+  {
+    "id": "bug-10-factorial",
+    "category": "bug-fix",
+    "params": "n",
+    "seed": "n",
+    "goal": "Factorial of a nonnegative integer",
+    "assertions": [
+      {
+        "args": "0",
+        "expected": "1"
+      },
+      {
+        "args": "5",
+        "expected": "120"
+      }
+    ]
+  },
+  {
+    "id": "bug-11-even",
+    "category": "bug-fix",
+    "params": "n",
+    "seed": "n%2!==0",
+    "goal": "Whether integer n is even",
+    "assertions": [
+      {
+        "args": "2",
+        "expected": "true"
+      },
+      {
+        "args": "3",
+        "expected": "false"
+      },
+      {
+        "args": "-2",
+        "expected": "true"
+      }
+    ]
+  },
+  {
+    "id": "bug-12-capitalize",
+    "category": "bug-fix",
+    "params": "s",
+    "seed": "s",
+    "goal": "Uppercase first character of ASCII string",
+    "assertions": [
+      {
+        "args": "\"hello\"",
+        "expected": "\"Hello\""
+      },
+      {
+        "args": "\"\"",
+        "expected": "\"\""
+      }
+    ]
+  },
+  {
+    "id": "bug-13-count",
+    "category": "bug-fix",
+    "params": "xs,x",
+    "seed": "0",
+    "goal": "Count strict matches of x in array",
+    "assertions": [
+      {
+        "args": "[1,2,1],1",
+        "expected": "2"
+      },
+      {
+        "args": "[],1",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": "bug-14-median",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "xs[0]",
+    "goal": "Numeric median of a nonempty numeric array without mutating input",
+    "assertions": [
+      {
+        "args": "[9,1,3]",
+        "expected": "3"
+      },
+      {
+        "args": "[2,4]",
+        "expected": "3"
+      }
+    ]
+  },
+  {
+    "id": "bug-15-range",
+    "category": "bug-fix",
+    "params": "n",
+    "seed": "[]",
+    "goal": "Produce integers from zero through n minus one",
+    "assertions": [
+      {
+        "args": "3",
+        "expected": "[0,1,2]"
+      },
+      {
+        "args": "0",
+        "expected": "[]"
+      }
+    ]
+  },
+  {
+    "id": "bug-16-flatten",
+    "category": "bug-fix",
+    "params": "xs",
+    "seed": "xs",
+    "goal": "Flatten an array by one level",
+    "assertions": [
+      {
+        "args": "[[1,2],[3]]",
+        "expected": "[1,2,3]"
+      },
+      {
+        "args": "[]",
+        "expected": "[]"
+      }
+    ]
+  },
+  {
+    "id": "bug-17-starts",
+    "category": "bug-fix",
+    "params": "s,p",
+    "seed": "false",
+    "goal": "Whether string s starts with prefix p",
+    "assertions": [
+      {
+        "args": "\"hello\",\"he\"",
+        "expected": "true"
+      },
+      {
+        "args": "\"hello\",\"x\"",
+        "expected": "false"
+      }
+    ]
+  },
+  {
+    "id": "bug-18-gcd",
+    "category": "bug-fix",
+    "params": "a,b",
+    "seed": "a+b",
+    "goal": "Greatest common divisor of two positive integers",
+    "assertions": [
+      {
+        "args": "12,18",
+        "expected": "6"
+      },
+      {
+        "args": "7,3",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": "bug-19-palindrome",
+    "category": "bug-fix",
+    "params": "s",
+    "seed": "true",
+    "goal": "Whether ASCII string equals its reverse",
+    "assertions": [
+      {
+        "args": "\"abba\"",
+        "expected": "true"
+      },
+      {
+        "args": "\"abc\"",
+        "expected": "false"
+      }
+    ]
+  },
+  {
+    "id": "bug-20-zip",
+    "category": "bug-fix",
+    "params": "a,b",
+    "seed": "[]",
+    "goal": "Pair array elements up to the shorter length",
+    "assertions": [
+      {
+        "args": "[1,2],[3]",
+        "expected": "[[1,3]]"
+      },
+      {
+        "args": "[],[1]",
+        "expected": "[]"
+      }
+    ]
+  }
+]
