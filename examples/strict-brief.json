@@ -1,0 +1,14 @@
+{
+  "id": "feature-contract",
+  "revision": 1,
+  "contractLevel": "strict",
+  "goal": "Implement the requested behavior and pass independent regression tests",
+  "scope": { "repoId": "REPLACE_WITH_PSTACK_FINGERPRINT_REPO_ID", "include": ["src/**", "test/**"], "exclude": ["infra/**"] },
+  "contextRefs": ["README.md"],
+  "acceptance": [{ "id": "regression", "description": "Required regression suite passes", "required": true, "gateIds": ["tests"] }],
+  "verification": [{ "id": "tests", "kind": "command", "command": ["npm", "test"], "timeoutSeconds": 120, "sideEffect": "local", "category": "behavior" }],
+  "timeboxSeconds": 600,
+  "forbidden": ["force-push", "remote-merge", "change infra"],
+  "standingOrders": ["Preserve unrelated user changes", "Return a task-report-v1 JSON block"],
+  "reportFormat": "task-report-v1"
+}

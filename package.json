@@ -1,0 +1,84 @@
+{
+  "name": "2333",
+  "version": "0.6.0-preview.1",
+  "description": "pi-pstack-native: pstack semantics rebuilt on Pi's official AgentSession APIs with native durable workflows, worktree isolation, model routing, and scheduling.",
+  "type": "module",
+  "license": "MIT",
+  "author": "2333",
+  "private": false,
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pstack",
+    "poteto-mode",
+    "agents",
+    "workflow",
+    "durable",
+    "worktree"
+  ],
+  "files": [
+    "src/",
+    "skills/",
+    "agents/",
+    "scripts/",
+    "test/",
+    "tsconfig.json",
+    "CHANGELOG.md",
+    "UPSTREAM.json",
+    "PARITY.json",
+    "PARITY.md",
+    "PRD.md",
+    "README.md",
+    "REVIEW.md",
+    "NOTICE.md",
+    "LICENSE",
+    "examples/",
+    "benchmarks/",
+    "IMPLEMENTATION.md",
+    "ACCEPTANCE.md",
+    "dist/",
+    "tsconfig.build.json",
+    "INSTALLATION-CHECK.md"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.1.0"
+  },
+  "pi": {
+    "extensions": [
+      "./src/extension.ts"
+    ]
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "check:syntax": "node scripts/check-syntax.mjs",
+    "check:package": "node scripts/check-package.mjs",
+    "check:parity": "node scripts/check-parity.mjs",
+    "review": "node scripts/review.mjs",
+    "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm test && npm run review",
+    "prepack": "npm run build && npm run check",
+    "sync:upstream": "node scripts/sync-upstream.mjs",
+    "check:types": "tsc --noEmit -p tsconfig.json",
+    "check:host": "node scripts/smoke-host.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
+    "build": "node scripts/build.mjs",
+    "benchmark:smoke": "node scripts/check-benchmark.mjs"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "@earendil-works/pi-coding-agent": "^1.1.0"
+  },
+  "bin": {
+    "pstack-runner": "./dist/runner/cli.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./package.json": "./package.json"
+  }
+}
