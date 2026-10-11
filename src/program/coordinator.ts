@@ -2,7 +2,7 @@ import type { ExtensionContext } from '@earendil-works/pi-coding-agent';
 import type { WorkflowRunSpec } from '../runtime/types.ts';
 import type { WorkflowEngine } from '../workflow/engine.ts';
 import { protocol, transact, uid, hash } from '../runtime/protocol.ts';
-export interface Unit {key:string;spec:WorkflowRunSpec;workflowId?:string;state:'pending'|'running'|'needs-verify'|'blocked'|'failed'|'ready-to-integrate'|'reconciled';ledgerRefs:string[]}
+export interface Unit {key:string;spec:WorkflowRunSpec;workflowId?:string;ordersRevision?:number;state:'pending'|'running'|'needs-verify'|'blocked'|'failed'|'ready-to-integrate'|'reconciled';ledgerRefs:string[]}
 export interface Program {id:string;owner:string;revision:number;state:'pilot'|'scaling'|'paused'|'blocked'|'completed';maxConcurrency:number;units:Unit[];inbox:{id:string;key:string;state:Unit['state'];processed:boolean}[];orders?:{revision:number;instructions:string[];digest:string};completionPredicate:'all-units-verified';createdAt:string}
 export class ProgramCoordinator {
   private workflows: WorkflowEngine;
@@ -20,9 +20,10 @@ export class ProgramCoordinator {
     const runUnit=async(key:string)=>{
       let unit=this.get(id,owner).units.find(u=>u.key===key)!;
       if(!unit.workflowId) {
-        const currentProgram=this.get(id,owner);
-        const wf=this.workflows.create({...unit.spec,nodes:unit.spec.nodes.map(n=>({...n,brief:n.brief && currentProgram.orders?{...n.brief,id:`${n.brief.id}.${currentProgram.id}.${unit.key}`,revision:1,standingOrders:currentProgram.orders.instructions}:n.brief})),parentSessionId:owner,contractLevel:'strict'});
-        transact('unit-dispatched',id,owner,s=>{const u=s.programs[id].units.find((x:Unit)=>x.key===key);u.workflowId=wf.id;u.state='running';return {key,workflowId:wf.id};});
+        const currentProgram=this.get(id,owner);const orders=currentProgram.orders;
+        if(orders && orders.digest!==hash(orders.instructions))throw new Error('ORDERS_INTEGRITY_MISMATCH: stored standing orders do not match their digest');
+        const wf=this.workflows.create({...unit.spec,nodes:unit.spec.nodes.map(n=>({...n,brief:n.brief && orders?{...n.brief,id:`${n.brief.id}.${currentProgram.id}.${unit.key}`,revision:1,standingOrders:orders.instructions}:n.brief})),parentSessionId:owner,contractLevel:'strict'});
+        transact('unit-dispatched',id,owner,s=>{const u=s.programs[id].units.find((x:Unit)=>x.key===key);u.workflowId=wf.id;u.state='running';if(orders)u.ordersRevision=orders.revision;return {key,workflowId:wf.id};});
         unit=this.get(id,owner).units.find(u=>u.key===key)!;
       }
       const wf=await this.workflows.run(unit.workflowId!,ctx);

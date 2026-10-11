@@ -21,8 +21,12 @@ export class ProgramCoordinator {
             let unit = this.get(id, owner).units.find(u => u.key === key);
             if (!unit.workflowId) {
                 const currentProgram = this.get(id, owner);
-                const wf = this.workflows.create({ ...unit.spec, nodes: unit.spec.nodes.map(n => ({ ...n, brief: n.brief && currentProgram.orders ? { ...n.brief, id: `${n.brief.id}.${currentProgram.id}.${unit.key}`, revision: 1, standingOrders: currentProgram.orders.instructions } : n.brief })), parentSessionId: owner, contractLevel: 'strict' });
-                transact('unit-dispatched', id, owner, s => { const u = s.programs[id].units.find((x) => x.key === key); u.workflowId = wf.id; u.state = 'running'; return { key, workflowId: wf.id }; });
+                const orders = currentProgram.orders;
+                if (orders && orders.digest !== hash(orders.instructions))
+                    throw new Error('ORDERS_INTEGRITY_MISMATCH: stored standing orders do not match their digest');
+                const wf = this.workflows.create({ ...unit.spec, nodes: unit.spec.nodes.map(n => ({ ...n, brief: n.brief && orders ? { ...n.brief, id: `${n.brief.id}.${currentProgram.id}.${unit.key}`, revision: 1, standingOrders: orders.instructions } : n.brief })), parentSessionId: owner, contractLevel: 'strict' });
+                transact('unit-dispatched', id, owner, s => { const u = s.programs[id].units.find((x) => x.key === key); u.workflowId = wf.id; u.state = 'running'; if (orders)
+                    u.ordersRevision = orders.revision; return { key, workflowId: wf.id }; });
                 unit = this.get(id, owner).units.find(u => u.key === key);
             }
             const wf = await this.workflows.run(unit.workflowId, ctx);
