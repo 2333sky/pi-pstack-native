@@ -107,3 +107,34 @@ test('strict budgets reject invalid values and stop future dispatch',async()=>{c
 }finally{f.cleanup();}});
 test('structured evaluator reports cannot omit scores, evidence or selection',async()=>{const f=fixture();try{const {reportSatisfies}=await import('../src/contracts/brief.ts');const b={...brief(f.repo),reportRequirements:{kind:'evaluation' as const,criteria:['correct']}};const r=report(fingerprint(f.repo));assert(!reportSatisfies(b,r));assert(reportSatisfies(b,{...r,evaluation:[{criterion:'correct',score:8,evidence:['source.txt:1'],weaknesses:[],selectedParts:[]}]}));assert(!reportSatisfies(b,{...r,evaluation:[{criterion:'correct',score:8,evidence:[],weaknesses:[],selectedParts:[]}]}));}finally{f.cleanup();}});
 test('program pause/resume and versioned orders persist for subsequent dispatch',()=>{const f=fixture();try{const e=new WorkflowEngine({} as any);const c=new ProgramCoordinator(e);const p=c.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'a',task:'x',brief:brief(f.repo)}]}}]);c.updateOrders(p.id,'session',['new rule'],'user update');assert.equal(c.get(p.id,'session').orders?.revision,1);c.pause(p.id,'session');assert.equal(c.resume(p.id,'session').state,'pilot');assert.equal(new ProgramCoordinator(e).get(p.id,'session').orders?.instructions[0],'new rule');}finally{f.cleanup();}});
+test('tampered standing orders digest blocks dispatch and creates no workflow',async()=>{const f=fixture();try{
+  const agents=new Map<string,any>();
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=fingerprint(spec.cwd);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
+  const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:brief(f.repo)}]}}]);
+  coordinator.updateOrders(p.id,'session',['ordered rule'],'operator update');
+  transact('orders-tampered','program','test',s=>{s.programs[p.id].orders.instructions=['TAMPERED RULE'];});
+  await assert.rejects(()=>coordinator.run(p.id,ctx),/ORDERS_INTEGRITY_MISMATCH/);
+  assert.equal(coordinator.get(p.id,'session').units[0].workflowId,undefined);
+  assert.equal(engine.list().length,0);
+  assert(!protocol().events.some(e=>e.type==='unit-dispatched'));
+}finally{f.cleanup();}});
+test('restored coordinator stamps each unit with the orders revision in force at dispatch',async()=>{const f=fixture();try{
+  const agents=new Map<string,any>();let paused=false;
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=fingerprint(spec.cwd);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(spec.brief?.id.endsWith('.unit1') && !paused){paused=true;coordinator.pause(p.id,'session');coordinator.updateOrders(p.id,'session',['new rule'],'operator update');}return a;}};
+  const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
+  const p=coordinator.create('session',['unit0','unit1','unit2'].map(key=>({key,spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:key}}]}})),1);
+  coordinator.updateOrders(p.id,'session',['old rule'],'operator update');
+  await coordinator.run(p.id,ctx);
+  assert.equal(coordinator.get(p.id,'session').state,'paused');
+  assert.deepEqual(coordinator.get(p.id,'session').units.map(u=>u.ordersRevision),[1,1,undefined]);
+  const restored=new ProgramCoordinator(engine);
+  assert.deepEqual(restored.get(p.id,'session').orders?.instructions,['new rule']);
+  assert.equal(restored.resume(p.id,'session').state,'scaling');
+  await restored.run(p.id,ctx);
+  const after=restored.get(p.id,'session');
+  assert.deepEqual(after.units.map(u=>u.ordersRevision),[1,1,2]);
+  const ordersFor=(key:string)=>Object.entries(protocol().briefs).filter(([id])=>id.endsWith(`.${after.id}.${key}`)).flatMap(([,v])=>v).at(-1)?.standingOrders;
+  assert.deepEqual(ordersFor('unit0'),['old rule']);
+  assert.deepEqual(ordersFor('unit2'),['new rule']);
+}finally{f.cleanup();}});
