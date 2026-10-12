@@ -7,10 +7,12 @@ import { WorkflowEngine } from '../dist/workflow/engine.js';
 import { AgentHost } from '../dist/agent/host.js';
 import { fingerprint } from '../dist/artifacts/fingerprint.js';
 import { runnerOnce } from '../dist/runner/service.js';
+import { runTaskSets } from '../benchmarks/lib/run.mjs';
 const usage='benchmark requires explicit --agent-dir PATH --model provider/model';
 export function parseArgs(argv){const value=key=>{const at=argv.indexOf(key);return at===-1?undefined:argv[at+1];};if(!argv.includes('--agent-dir')||!argv.includes('--model'))throw new Error(usage);const agentDir=value('--agent-dir');const model=value('--model');if(!agentDir||!model)throw new Error(usage);return{agentDir,model,output:value('--output')??'benchmark-output'};}
 export function runnerBlocked(runnerResults=[]){return runnerResults.some(r=>r?.reason==='AUTHENTICATION_UNAVAILABLE');}
 export function exitCode(rows,runnerResults=[]){if(runnerBlocked(runnerResults))return 1;return rows.length>0&&rows.every(r=>r.verified)?0:1;}
+export function parsePlan(argv){const value=key=>{const at=argv.indexOf(key);return at===-1?undefined:argv[at+1];};const set=value('--set')??'smoke';if(!['smoke','tasks'].includes(set))throw new Error(`benchmark --set must be smoke or tasks, received ${set}`);const provider=value('--provider')??'configured';if(!['fake','configured'].includes(provider))throw new Error(`benchmark --provider must be fake or configured, received ${provider}`);const only=argv.filter((a,i)=>argv[i-1]==='--only');const interventions=value('--interventions')===undefined?0:Number(value('--interventions'));if(!Number.isSafeInteger(interventions)||interventions<0)throw new Error('benchmark --interventions must be a non-negative integer');const named=value('--plan');const plan={set,provider,only:only.length?only:undefined,interventions,effort:value('--effort'),planName:named??'reference',mutant:named&&named!=='reference'?named:undefined,allowModelOverride:argv.includes('--allow-model-override'),output:value('--output')??(set==='tasks'?'benchmark-tasks':'benchmark-output')};if(set==='smoke'||provider==='configured'){const smoke=parseArgs(argv);plan.agentDir=smoke.agentDir;plan.model=smoke.model;}return plan;}
 export async function runBenchmark({agentDir,model,output}) {
 const root=resolve(output);mkdirSync(root,{recursive:true});
 process.env.PSTACK_NATIVE_HOME=join(root,'state');mkdirSync(process.env.PSTACK_NATIVE_HOME,{recursive:true});
@@ -33,4 +35,13 @@ console.log(JSON.stringify({cases:rows.length,verified:rows.filter(r=>r.verified
 return {rows,runnerResults};
 }
 export function isEntry(argv1=process.argv[1]){if(!argv1)return false;const self=fileURLToPath(import.meta.url);if(argv1===self)return true;try{return realpathSync(argv1)===realpathSync(self);}catch{return false;}}
-if(isEntry()){const {rows,runnerResults}=await runBenchmark(parseArgs(process.argv.slice(2)));const code=exitCode(rows,runnerResults);if(runnerBlocked(runnerResults))console.error('benchmark blocked: AUTHENTICATION_UNAVAILABLE');process.exit(code);}
+if(isEntry()){
+  const plan=parsePlan(process.argv.slice(2));
+  if(plan.set==='tasks'){
+    const {report,exitCode:code,blocked}=await runTaskSets(plan);
+    console.log(JSON.stringify({set:'tasks',provider:plan.provider,mode:report.measurement.mode,tasks:report.tasks.length,verified:report.aggregate.verified,plan:plan.planName,report:join(resolve(plan.output),'report.json')},null,2));
+    if(blocked)console.error(`benchmark blocked: ${blocked}`);
+    process.exit(code);
+  }
+  const {rows,runnerResults}=await runBenchmark(parseArgs(process.argv.slice(2)));const code=exitCode(rows,runnerResults);if(runnerBlocked(runnerResults))console.error('benchmark blocked: AUTHENTICATION_UNAVAILABLE');process.exit(code);
+}

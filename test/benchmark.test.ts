@@ -86,7 +86,7 @@ test("task sets declare fixed fixtures, independent artifact tests and budgets",
     assert.ok(task.budget.timeSeconds > 0 && task.budget.costUsd > 0 && task.budget.tokens > 0, `${task.id} has no time, cost and token budget`);
     assert.ok(task.expects.provider && task.expects.model && task.expects.effort, `${task.id} declares no provider, model and effort`);
     assert.ok(task.fixture.snapshot ?? task.fixture.generate, `${task.id} has no snapshot and no generator`);
-    assert.ok(task.gates.length && task.gates.every((g: any) => g.command?.length && g.category), `${task.id} has no independent artifact test`);
+    assert.ok(task.gates.length && task.gates.every((g: any) => g.category && (g.command?.length || (g.kind === "diff" && Number.isInteger(g.maxFiles)))), `${task.id} has no independent artifact test`);
     assert.ok(task.nodes.every((n: any) => n.goal && n.plannedChanges && n.gateIds.length), `${task.id} has an unplanned node`);
     assert.ok(task.failureModes.length, `${task.id} declares no failure modes`);
   }
@@ -125,7 +125,7 @@ test("baselines are marked not run and Cursor cloud capability is separated", as
   const baselines = loadBaselines() as any;
   assert.equal(baselines.measured, false);
   assert.equal(baselines.overallSuperiority, null);
-  assert.deepEqual(baselines.items.map((b: any) => b.id).sort(), ["cursor-pstack-cloud", "pi-single-agent", "pi-pstack-native"]);
+  assert.deepEqual(baselines.items.map((b: any) => b.id).sort(), ["cursor-pstack-cloud", "pi-pstack-native", "pi-single-agent"]);
   for (const item of baselines.items) {
     assert.equal(item.status, "not-run");
     assert.ok(item.reason?.length, `${item.id} states no reason`);
@@ -180,7 +180,7 @@ test("a mutant plan is reported unverified under its declared failure category",
 test("a configured provider without credentials blocks the task-set runner", async () => {
   const { runTaskSets } = await runLib();
   await withFixture(async (base) => {
-    const result = await runTaskSets({ provider: "configured", agentDir: join(base, "agent"), model: "test/model", output: join(base, "out"), only: ["cross-module-feature"] }) as any;
+    const result = await runTaskSets({ provider: "configured", agentDir: join(base, "agent"), model: "test/model", allowModelOverride: true, output: join(base, "out"), only: ["cross-module-feature"] }) as any;
     assert.equal(result.exitCode, 1);
     assert.equal(result.blocked, "AUTHENTICATION_UNAVAILABLE");
     assert.equal(result.report.tasks.every((t: any) => !t.verified), true);
@@ -188,4 +188,24 @@ test("a configured provider without credentials blocks the task-set runner", asy
     assert.match(result.report.aggregate.verifiedTaskSuccess.reason, /AUTHENTICATION_UNAVAILABLE/);
     assert.equal(result.report.measurement.credentialedCalls, 0);
   });
+});
+
+test("the packaged task-set entry runs offline and fails closed without credentials", () => {
+  const base = mkdtempSync(join(tmpdir(), "pstack-benchmark-tasks-"));
+  try {
+    const pkg = copyPackage(join(base, "pkg"));
+    const out = join(base, "out");
+    const ran = spawnSync(process.execPath, ["scripts/benchmark.mjs", "--set", "tasks", "--provider", "fake", "--only", "cross-module-feature", "--output", out], { cwd: pkg, encoding: "utf8" });
+    assert.equal(ran.status, 0, `offline task-set run failed\n${ran.stdout}${ran.stderr}`);
+    const report = JSON.parse(readFileSync(join(out, "report.json"), "utf8"));
+    assert.equal(report.tasks.length, 1);
+    assert.equal(report.tasks[0].verified, true);
+    assert.equal(report.aggregate.tokens.value, null);
+    const blocked = spawnSync(process.execPath, ["scripts/benchmark.mjs", "--set", "tasks", "--provider", "configured", "--agent-dir", join(base, "agent"), "--model", "test/model", "--allow-model-override", "--only", "cross-module-feature", "--output", join(base, "blocked")], { cwd: pkg, encoding: "utf8" });
+    assert.equal(blocked.status, 1, `blocked task-set run reported success\n${blocked.stdout}${blocked.stderr}`);
+    assert.match(blocked.stderr, /benchmark blocked: AUTHENTICATION_UNAVAILABLE/);
+    const blockedReport = JSON.parse(readFileSync(join(base, "blocked", "report.json"), "utf8"));
+    assert.equal(blockedReport.tasks[0].failureCategory, "provider-blocked");
+    assert.equal(blockedReport.aggregate.verifiedTaskSuccess.value, null);
+  } finally { rmSync(base, { recursive: true, force: true }); }
 });
