@@ -51,6 +51,7 @@ export function validateReport(report) {
   const measurement = report.measurement;
   if (!measurement || !measurement.mode || !measurement.provider || !Number.isInteger(measurement.credentialedCalls)) throw new Error("REPORT_MEASUREMENT");
   if (!Number.isInteger(measurement.repetitions) || measurement.repetitions < 1) throw new Error("REPORT_REPETITIONS");
+  if (measurement.repetitions !== 1) throw new Error("REPORT_REPETITIONS_UNSUPPORTED");
   if (!Array.isArray(measurement.proves) || !measurement.proves.length) throw new Error("REPORT_MEASUREMENT_PROVES");
   if (!Number.isInteger(report.taxonomyVersion)) throw new Error("REPORT_TAXONOMY");
   if (report.baselines?.measured !== false) throw new Error("REPORT_BASELINES");
@@ -67,26 +68,22 @@ export function validateReport(report) {
     if (!Array.isArray(task.nodes) || !task.nodes.length) throw new Error(`REPORT_TASK_NODES: ${task.id}`);
     if (typeof task.contextBytes !== "number" || task.contextBytes <= 0) throw new Error(`REPORT_TASK_CONTEXT: ${task.id}`);
     for (const key of METRICS) checkMetric(task.metrics?.[key], `${task.id}.${key}`);
+    if (!task.metrics.verifiedTaskSuccess.measured || task.metrics.verifiedTaskSuccess.value !== (task.verified ? 1 : 0)) throw new Error(`REPORT_TASK_SUCCESS: ${task.id}`);
   }
   const aggregate = report.aggregate;
   for (const key of METRICS) checkMetric(aggregate?.[key], `aggregate.${key}`);
   if (!Number.isInteger(aggregate.sampleSize) || aggregate.sampleSize < 1) throw new Error("REPORT_SAMPLE_SIZE");
-  if (aggregate.sampleSize < 5 || measurement.repetitions < 5) {
-    if (aggregate.interval95?.value !== null || !aggregate.interval95?.reason) throw new Error("REPORT_INTERVAL_UNSUPPORTED");
-  } else if (!Array.isArray(aggregate.interval95?.value) || aggregate.interval95.value.length !== 2 || !aggregate.interval95.method) {
-    throw new Error("REPORT_INTERVAL");
+  const sampleSize = report.tasks.length;
+  const verified = report.tasks.filter((task) => task.verified).length;
+  if (aggregate.sampleSize !== sampleSize) throw new Error("REPORT_AGGREGATE_SAMPLE_SIZE");
+  if (aggregate.verified !== verified) throw new Error("REPORT_AGGREGATE_VERIFIED");
+  if (measurement.mode === "provider-blocked") {
+    if (aggregate.verifiedTaskSuccess.measured) throw new Error("REPORT_BLOCKED_SUCCESS_METRIC");
+  } else if (!aggregate.verifiedTaskSuccess.measured || aggregate.verifiedTaskSuccess.value !== verified / sampleSize) {
+    throw new Error("REPORT_AGGREGATE_TASK_SUCCESS");
   }
+  if (aggregate.interval95?.value !== null || aggregate.interval95?.method !== null || !aggregate.interval95?.reason) throw new Error("REPORT_INTERVAL_UNSUPPORTED");
   if (measurement.credentialedCalls === 0 && (aggregate.tokens.measured || aggregate.costUsd.measured)) throw new Error("REPORT_UNMEASURED_USAGE");
   if (report.claims?.overallSuperiority !== null || !report.claims?.reason) throw new Error("REPORT_CLAIM");
   return report;
-}
-
-export function wilson(successes, sampleSize) {
-  if (sampleSize < 5) return null;
-  const z = 1.959963984540054;
-  const p = successes / sampleSize;
-  const denom = 1 + (z * z) / sampleSize;
-  const centre = (p + (z * z) / (2 * sampleSize)) / denom;
-  const half = (z * Math.sqrt((p * (1 - p)) / sampleSize + (z * z) / (4 * sampleSize * sampleSize))) / denom;
-  return [Math.max(0, Number((centre - half).toFixed(4))), Math.min(1, Number((centre + half).toFixed(4)))];
 }

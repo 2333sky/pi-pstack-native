@@ -227,7 +227,7 @@ test("the task-set runner refuses unsupported repetitions before writing output"
     assert.deepEqual(result.report.aggregate.interval95, {
       value: null,
       method: null,
-      reason: "repeated runs are not supported; this report has one observation per task, not repeated observations of the same task",
+      reason: "repetitions are not supported; this report has one observation per task, not repeated observations of the same task",
     });
   });
 });

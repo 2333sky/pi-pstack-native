@@ -8,7 +8,7 @@ This file states what a credentialed run needs and what it would cost. Nothing i
 2. Network access from the machine that runs the harness.
 3. Enough disk for one workspace per task set per run under `--output`, plus the protocol store, evidence logs and agent records. A measured offline pass over all seven task sets writes about 3 MB, of which the generated 120 module fixture is about 1.3 MB. A real run adds the provider's session transcripts.
 4. Enough wall clock for the declared caps. The declared caps are the sum of every `budget.timeSeconds`: 7800 seconds, or 130 minutes, for one pass over all seven task sets at one repetition. Each repetition is a separate run with its own output directory.
-5. Five or more repetitions before any rate or interval is published. One pass over the task sets is one repetition. The report refuses an interval unless `measurement.repetitions` is five or more and reports `null` with a reason instead.
+5. Separate output directories for repeated runs. The runner supports only one pass per invocation and records `measurement.repetitions: 1`. `runTaskSets` refuses any explicit `repetitions` value other than `1` with `UNSUPPORTED_REPETITIONS`. The validator also refuses repeated-run reports. The report publishes no interval.
 6. An operator to record interventions. The harness records only what `--interventions` states, and the report labels it as an operator input.
 
 ## Command shape
@@ -20,7 +20,7 @@ node scripts/benchmark.mjs --set tasks --provider configured \
   --output /absolute/results/run-1
 ```
 
-Run it once per model and per repetition. A run for one model must cover every task set, because the report is per run and the comparison is between runs.
+Run it once per model and per repetition, with a separate output directory each time. A run for one model must cover every task set, because the report is per run and the comparison is between runs. The runner does not combine separate reports or derive an interval from them.
 
 ## What it would cost
 
@@ -56,9 +56,11 @@ Those are caps. They are not a spend estimate and not a measurement. The workflo
 
 ## What to publish, and what not to
 
-Publish the verified task success count with the sample size, the retries, the interventions, the latency, the tokens, the cost, the integration failures and the recovery side effects, all from `report.json`. Publish the taxonomy category for every failure.
+Publish the verified task success count with the sample size, the retries, the interventions, the latency, the tokens, the cost, the integration failures and the recovery side effects, all from `report.json`. Publish the taxonomy category for every failure. The report's success fraction describes only the observed rows in one pass. It is not a repeated-trial success rate.
 
-Do not publish a rate or an interval below five repetitions. Do not publish tokens or cost from a run whose report marks them unmeasured. Do not compare against Cursor cloud for anything other than the capabilities listed in `baselines.json`, which run on a different substrate. Do not claim overall superiority.
+Do not publish a repeated-trial success rate or an interval from a single-pass report. Any separate analysis needs at least five recorded runs of the same task and must state its sample size and method. Do not pool different task sets as repetitions. This runner does not perform that analysis.
+
+Do not publish tokens or cost from a run whose report marks them unmeasured. Do not compare against Cursor cloud for anything other than the capabilities listed in `baselines.json`, which run on a different substrate. Do not claim overall superiority.
 
 ## What has been run here
 

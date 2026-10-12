@@ -45,7 +45,11 @@ Two provider paths exist:
 
 `report.json` is written to the output directory and validated before it is written. `benchmarks/lib/report.mjs` owns the schema.
 
-Every metric is an object with `value`, `measured`, `reason` and `scope`. A measured metric must be a finite number. An unmeasured metric must be `null` with a reason, so an unknown token count can never be reported as zero. A run with `credentialedCalls: 0` cannot report tokens or cost, and a run whose runner was blocked cannot report a success rate. An interval is published only for a report that declares five or more repetitions, and is `null` with a reason otherwise. One pass over the task sets is one repetition, so a single pass publishes no interval.
+Every metric is an object with `value`, `measured`, `reason` and `scope`. A measured metric must be a finite number. An unmeasured metric must be `null` with a reason, so an unknown token count can never be reported as zero. A run with `credentialedCalls: 0` cannot report tokens or cost, and a run whose runner was blocked cannot report a success rate.
+
+The runner supports one pass with one observation per task. `runTaskSets` refuses any explicit `repetitions` value other than `1` with `UNSUPPORTED_REPETITIONS`, before creating output or executing tasks. The report validator refuses a repetition count other than `1`. `aggregate.sampleSize` counts task rows, not repeated trials. `aggregate.verified` counts verified rows, and `aggregate.verifiedTaskSuccess.value` is their observed fraction for this pass. The validator rejects a count or fraction that disagrees with the rows. This fraction is not a repeated-trial success rate.
+
+`aggregate.interval95` is always `null` with a reason and no method. An interval needs repeated observations of the same task. Different task sets are not repetitions of one task.
 
 Recorded per task: verified success, retries, human interventions, latency, tokens, cost, integration failures and recovery side effects. Recorded once for the run: measurement mode, provider, model, effort, repetition count, credentialed call count, the declared budget total, the baselines, and `claims.overallSuperiority`, which is always `null`.
 
@@ -81,5 +85,5 @@ npm run benchmark -- --agent-dir /absolute/path/to/pi-agent --model provider/mod
 - Shared isolation. Every node in a task set runs in one checkout. Worktree isolation and concurrent writers are not exercised by these fixtures.
 - The artifact tests are visible to the model under test, since they live in the checks directory of the workspace. The brief scope excludes them, so changing one is a scope violation or a coverage failure, and the scope rule is enforced by the ledger. The hidden ground truth check for the review task set is the one check the model cannot read.
 - `latencyMs`, `tokens` and `costUsd` in an offline run measure nothing about a model.
-- Sample size is one pass over the task sets, and one pass is one repetition. The report declares `measurement.repetitions: 1` and publishes no interval.
+- Sample size counts task rows in one pass. The report declares `measurement.repetitions: 1` and publishes no interval. The runner refuses repeated runs in one invocation. Separate output directories do not create a combined report or interval.
 - No credentialed run has happened here, so no success rate, cost or speed comparison exists.

@@ -9,7 +9,7 @@ import { writeJsonAtomic } from "../../dist/runtime/store.js";
 import { runnerOnce } from "../../dist/runner/service.js";
 import { buildBrief, buildWorkspace, git, loadTasks, verificationPolicy } from "./tasks.mjs";
 import { FakeProvider, seedAgent } from "./fake-agent.mjs";
-import { loadBaselines, loadTaxonomy, metric, unmeasured, validateReport, wilson } from "./report.mjs";
+import { loadBaselines, loadTaxonomy, metric, unmeasured, validateReport } from "./report.mjs";
 
 const KIND_CATEGORY = {
   "integration-conflict": "integration-intent-lost",
@@ -24,6 +24,7 @@ const now = () => new Date().toISOString();
 const noGroundTruth = async () => ({ ok: true, detail: "the artifact gates are the ground truth for this task set" });
 
 export async function runTaskSets(options = {}) {
+  if (options.repetitions !== undefined && options.repetitions !== 1) throw new Error("UNSUPPORTED_REPETITIONS: only one pass with one observation per task is supported");
   const output = resolve(options.output ?? "benchmark-tasks");
   const provider = options.provider ?? "fake";
   if (!["fake", "configured"].includes(provider)) throw new Error(`UNKNOWN_PROVIDER: ${provider}`);
@@ -276,10 +277,8 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
   const baselines = loadBaselines();
   const verified = rows.filter((row) => row.verified).length;
   const sampleSize = rows.length;
-  const repetitions = options.repetitions ?? 1;
   const offline = provider === "fake";
   const scope = offline ? "offline fake provider; measures the harness path, not a model" : "configured provider";
-  const interval = repetitions >= 5 ? wilson(verified, sampleSize) : null;
   const model = options.model ?? selected[0].expects.model;
   return {
     schemaVersion: 1,
@@ -289,7 +288,7 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
       provider: blocked ? (options.model ?? "").split("/")[0] || "unknown" : offline ? "fake" : (options.model ?? "").split("/")[0] || "unknown",
       model: offline ? null : model,
       effort: options.effort ?? selected[0].expects.effort,
-      repetitions,
+      repetitions: 1,
       credentialedCalls: offline || blocked ? 0 : rows.reduce((total, row) => total + row.nodes.length, 0),
       host: { node: process.version, platform: process.platform },
       proves: offline
@@ -306,7 +305,7 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
       verified,
       verifiedTaskSuccess: blocked
         ? unmeasured(`runner blocked: ${blocked}`, "configured provider")
-        : metric(verified / sampleSize, true, null, scope),
+        : metric(verified / sampleSize, true, null, `${scope}; single-pass observed fraction, not a repeated-trial success rate`),
       retries: metric(rows.reduce((total, row) => total + row.metrics.retries.value, 0), true, null, scope),
       humanInterventions: metric(options.interventions ?? 0, true, null, "operator actions recorded in the run manifest"),
       latencyMs: metric(Date.now() - startedAt, true, null, offline ? "harness wall clock; no provider call" : "provider round trip plus gates"),
@@ -314,7 +313,7 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
       costUsd: offline || blocked ? unmeasured(blocked ? "runner blocked before any call" : "no provider call in this run", blocked ? "configured provider" : "offline fake provider") : rows.every((row) => row.metrics.costUsd.measured) ? metric(rows.reduce((total, row) => total + row.metrics.costUsd.value, 0), true, null, "provider reported cost") : unmeasured("some calls reported no cost", "configured provider"),
       integrationFailures: metric(rows.reduce((total, row) => total + row.metrics.integrationFailures.value, 0), true, null, "integration steps that did not verify"),
       recoverySideEffects: metric(rows.reduce((total, row) => total + row.metrics.recoverySideEffects.value, 0), true, null, "duplicate durable effects after recovery"),
-      interval95: interval ? { value: interval, method: "wilson-95", reason: null } : { value: null, method: null, reason: `an interval needs five or more repetitions of five or more task sets; this report covers ${repetitions} repetition(s) of ${sampleSize} task set(s)` },
+      interval95: { value: null, method: null, reason: "repetitions are not supported; this report has one observation per task, not repeated observations of the same task" },
     },
     claims: {
       overallSuperiority: null,
