@@ -8,7 +8,7 @@ This file states what a credentialed run needs and what it would cost. Nothing i
 2. Network access from the machine that runs the harness.
 3. Enough disk for one workspace per task set per run under `--output`, plus the protocol store, evidence logs and agent records. A measured offline pass over all seven task sets writes about 3 MB, of which the generated 120 module fixture is about 1.3 MB. A real run adds the provider's session transcripts.
 4. Enough wall clock for the declared caps. The declared caps are the sum of every `budget.timeSeconds`: 7800 seconds, or 130 minutes, for one pass over all seven task sets at one repetition. Each repetition is a separate run with its own output directory.
-5. Five or more repetitions before any rate or interval is published. The report refuses an interval below five samples and reports `null` with a reason instead.
+5. Five or more repetitions before any rate or interval is published. One pass over the task sets is one repetition. The report refuses an interval unless `measurement.repetitions` is five or more and reports `null` with a reason instead.
 6. An operator to record interventions. The harness records only what `--interventions` states, and the report labels it as an operator input.
 
 ## Command shape

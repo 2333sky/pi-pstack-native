@@ -50,6 +50,7 @@ export function validateReport(report) {
   if (!report.generatedAt || Number.isNaN(Date.parse(report.generatedAt))) throw new Error("REPORT_TIMESTAMP");
   const measurement = report.measurement;
   if (!measurement || !measurement.mode || !measurement.provider || !Number.isInteger(measurement.credentialedCalls)) throw new Error("REPORT_MEASUREMENT");
+  if (!Number.isInteger(measurement.repetitions) || measurement.repetitions < 1) throw new Error("REPORT_REPETITIONS");
   if (!Array.isArray(measurement.proves) || !measurement.proves.length) throw new Error("REPORT_MEASUREMENT_PROVES");
   if (!Number.isInteger(report.taxonomyVersion)) throw new Error("REPORT_TAXONOMY");
   if (report.baselines?.measured !== false) throw new Error("REPORT_BASELINES");
@@ -60,7 +61,7 @@ export function validateReport(report) {
     ids.add(task.id);
     if (typeof task.verified !== "boolean") throw new Error(`REPORT_TASK_VERIFIED: ${task.id}`);
     if (!task.verified && !task.failureCategory) throw new Error(`REPORT_TASK_FAILURE_CATEGORY: ${task.id}`);
-    if (!task.verified && task.mutantCategory && task.failureCategory !== task.mutantCategory) throw new Error(`REPORT_MUTANT_CATEGORY: ${task.id} ${task.failureCategory} != ${task.mutantCategory}`);
+    if (task.mutantCategory && (task.verified || task.failureCategory !== task.mutantCategory)) throw new Error(`REPORT_MUTANT_CATEGORY: ${task.id} verified=${task.verified} ${task.failureCategory} != ${task.mutantCategory}`);
     if (!(task.budgets?.timeSeconds > 0) || !(task.budgets?.costUsd > 0) || !(task.budgets?.tokens > 0)) throw new Error(`REPORT_TASK_BUDGET: ${task.id}`);
     if (!Array.isArray(task.successCriteria) || task.successCriteria.length < 2) throw new Error(`REPORT_TASK_CRITERIA: ${task.id}`);
     if (!Array.isArray(task.nodes) || !task.nodes.length) throw new Error(`REPORT_TASK_NODES: ${task.id}`);
@@ -70,7 +71,7 @@ export function validateReport(report) {
   const aggregate = report.aggregate;
   for (const key of METRICS) checkMetric(aggregate?.[key], `aggregate.${key}`);
   if (!Number.isInteger(aggregate.sampleSize) || aggregate.sampleSize < 1) throw new Error("REPORT_SAMPLE_SIZE");
-  if (aggregate.sampleSize < 5) {
+  if (aggregate.sampleSize < 5 || measurement.repetitions < 5) {
     if (aggregate.interval95?.value !== null || !aggregate.interval95?.reason) throw new Error("REPORT_INTERVAL_UNSUPPORTED");
   } else if (!Array.isArray(aggregate.interval95?.value) || aggregate.interval95.value.length !== 2 || !aggregate.interval95.method) {
     throw new Error("REPORT_INTERVAL");

@@ -276,9 +276,10 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
   const baselines = loadBaselines();
   const verified = rows.filter((row) => row.verified).length;
   const sampleSize = rows.length;
+  const repetitions = options.repetitions ?? 1;
   const offline = provider === "fake";
   const scope = offline ? "offline fake provider; measures the harness path, not a model" : "configured provider";
-  const interval = wilson(verified, sampleSize);
+  const interval = repetitions >= 5 ? wilson(verified, sampleSize) : null;
   const model = options.model ?? selected[0].expects.model;
   return {
     schemaVersion: 1,
@@ -288,7 +289,8 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
       provider: blocked ? (options.model ?? "").split("/")[0] || "unknown" : offline ? "fake" : (options.model ?? "").split("/")[0] || "unknown",
       model: offline ? null : model,
       effort: options.effort ?? selected[0].expects.effort,
-      credentialedCalls: 0,
+      repetitions,
+      credentialedCalls: offline || blocked ? 0 : rows.reduce((total, row) => total + row.nodes.length, 0),
       host: { node: process.version, platform: process.platform },
       proves: offline
         ? ["fixture generation is repeatable", "the workflow, verification and recovery paths run end to end", "the artifact tests reject a mutant plan", "the report schema refuses unmeasured numbers"]
@@ -312,7 +314,7 @@ function buildReport({ rows, selected, options, provider, blocked, startedAt }) 
       costUsd: offline || blocked ? unmeasured(blocked ? "runner blocked before any call" : "no provider call in this run", blocked ? "configured provider" : "offline fake provider") : rows.every((row) => row.metrics.costUsd.measured) ? metric(rows.reduce((total, row) => total + row.metrics.costUsd.value, 0), true, null, "provider reported cost") : unmeasured("some calls reported no cost", "configured provider"),
       integrationFailures: metric(rows.reduce((total, row) => total + row.metrics.integrationFailures.value, 0), true, null, "integration steps that did not verify"),
       recoverySideEffects: metric(rows.reduce((total, row) => total + row.metrics.recoverySideEffects.value, 0), true, null, "duplicate durable effects after recovery"),
-      interval95: interval ? { value: interval, method: "wilson-95", reason: null } : { value: null, method: null, reason: `sample size ${sampleSize} is below the 5 runs needed for an interval` },
+      interval95: interval ? { value: interval, method: "wilson-95", reason: null } : { value: null, method: null, reason: `an interval needs five or more repetitions of five or more task sets; this report covers ${repetitions} repetition(s) of ${sampleSize} task set(s)` },
     },
     claims: {
       overallSuperiority: null,
