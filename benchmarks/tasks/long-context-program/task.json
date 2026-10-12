@@ -1,0 +1,239 @@
+{
+  "id": "long-context-program",
+  "kind": "long-context-program",
+  "title": "Normalize one anomalous module in a 120 module program",
+  "goal": "Audit a generated 120 module program and repair the single module that breaks the shared scale invariant, without touching the modules that already comply.",
+  "successCriteria": [
+    "the audit covers every module in the generated program",
+    "every module scales linearly by the shared factor, including the anomalous one",
+    "modules that already complied are unchanged"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 1800,
+    "costUsd": 8,
+    "tokens": 900000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "generate": {
+      "modules": 120,
+      "linesPerModule": 60,
+      "factor": 7,
+      "anomalyIndex": 17
+    },
+    "contextBytesMin": 200000,
+    "mutants": {
+      "wrong-module-fix": {
+        "category": "context-miss",
+        "plan": {
+          "fix": "mutant/wrong-module-fix.mjs"
+        }
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "audit-readonly",
+      "kind": "diff",
+      "category": "review",
+      "maxFiles": 0
+    },
+    {
+      "id": "invariant-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/invariant.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "anomaly-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/anomaly.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "audit",
+      "profile": "scout",
+      "goal": "Audit every module in the generated program and report coverage of all of them.",
+      "plannedChanges": "no file changes; coverage report only",
+      "plan": "plan/audit.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "audit-readonly"
+      ],
+      "reportRequirements": {
+        "kind": "coverage",
+        "slices": [
+          "mod-000",
+          "mod-001",
+          "mod-002",
+          "mod-003",
+          "mod-004",
+          "mod-005",
+          "mod-006",
+          "mod-007",
+          "mod-008",
+          "mod-009",
+          "mod-010",
+          "mod-011",
+          "mod-012",
+          "mod-013",
+          "mod-014",
+          "mod-015",
+          "mod-016",
+          "mod-017",
+          "mod-018",
+          "mod-019",
+          "mod-020",
+          "mod-021",
+          "mod-022",
+          "mod-023",
+          "mod-024",
+          "mod-025",
+          "mod-026",
+          "mod-027",
+          "mod-028",
+          "mod-029",
+          "mod-030",
+          "mod-031",
+          "mod-032",
+          "mod-033",
+          "mod-034",
+          "mod-035",
+          "mod-036",
+          "mod-037",
+          "mod-038",
+          "mod-039",
+          "mod-040",
+          "mod-041",
+          "mod-042",
+          "mod-043",
+          "mod-044",
+          "mod-045",
+          "mod-046",
+          "mod-047",
+          "mod-048",
+          "mod-049",
+          "mod-050",
+          "mod-051",
+          "mod-052",
+          "mod-053",
+          "mod-054",
+          "mod-055",
+          "mod-056",
+          "mod-057",
+          "mod-058",
+          "mod-059",
+          "mod-060",
+          "mod-061",
+          "mod-062",
+          "mod-063",
+          "mod-064",
+          "mod-065",
+          "mod-066",
+          "mod-067",
+          "mod-068",
+          "mod-069",
+          "mod-070",
+          "mod-071",
+          "mod-072",
+          "mod-073",
+          "mod-074",
+          "mod-075",
+          "mod-076",
+          "mod-077",
+          "mod-078",
+          "mod-079",
+          "mod-080",
+          "mod-081",
+          "mod-082",
+          "mod-083",
+          "mod-084",
+          "mod-085",
+          "mod-086",
+          "mod-087",
+          "mod-088",
+          "mod-089",
+          "mod-090",
+          "mod-091",
+          "mod-092",
+          "mod-093",
+          "mod-094",
+          "mod-095",
+          "mod-096",
+          "mod-097",
+          "mod-098",
+          "mod-099",
+          "mod-100",
+          "mod-101",
+          "mod-102",
+          "mod-103",
+          "mod-104",
+          "mod-105",
+          "mod-106",
+          "mod-107",
+          "mod-108",
+          "mod-109",
+          "mod-110",
+          "mod-111",
+          "mod-112",
+          "mod-113",
+          "mod-114",
+          "mod-115",
+          "mod-116",
+          "mod-117",
+          "mod-118",
+          "mod-119"
+        ]
+      }
+    },
+    {
+      "key": "fix",
+      "profile": "worker",
+      "dependsOn": [
+        "audit"
+      ],
+      "goal": "Repair the one module that breaks the shared scale invariant.",
+      "plannedChanges": "normalize src/modules/mod-017.mjs",
+      "plan": "plan/fix.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "invariant-behavior",
+        "anomaly-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "context-miss",
+    "behavior-defect-landed",
+    "scope-violation",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

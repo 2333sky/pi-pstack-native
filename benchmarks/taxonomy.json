@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "reviewedBy": "benchmark lane (issue #7), human review of the category list and its detection rule",
+  "reviewedAt": "2026-10-12",
+  "note": "Each category records what the harness must observe before it reports the category. A category is only reported from evidence, never from the operator's summary of the run.",
+  "categories": [
+    {
+      "id": "behavior-defect-landed",
+      "label": "A required artifact test failed after the work landed",
+      "reviewed": true,
+      "evidence": "the gate ledger for the task records a failed command gate",
+      "detection": "any required command gate with status failed and no earlier category"
+    },
+    {
+      "id": "integration-intent-lost",
+      "label": "An integration merged but dropped one side's intent",
+      "reviewed": true,
+      "evidence": "the merge commit exists, the task's behavior gate fails",
+      "detection": "integration-conflict task with a failed behavior gate"
+    },
+    {
+      "id": "stack-layer-regression",
+      "label": "A later stack layer broke an earlier layer",
+      "reviewed": true,
+      "evidence": "the failing gate belongs to a layer whose earlier layer had passed",
+      "detection": "stacked-pull-request task with a failed layer gate"
+    },
+    {
+      "id": "recovery-duplicate-side-effect",
+      "label": "Recovery repeated a durable side effect",
+      "reviewed": true,
+      "evidence": "the durable effect log holds a repeated effect id after recovery",
+      "detection": "crash-recovery duplicate count greater than zero"
+    },
+    {
+      "id": "review-finding-missed",
+      "label": "Review missed the planted defect or invented one",
+      "reviewed": true,
+      "evidence": "the recorded findings do not name the planted location, or they name the clean control",
+      "detection": "review ground truth check failed"
+    },
+    {
+      "id": "context-miss",
+      "label": "Long context work acted on the wrong slice",
+      "reviewed": true,
+      "evidence": "the failing invariant names a module outside the repaired set",
+      "detection": "long-context-program task with a failed invariant gate"
+    },
+    {
+      "id": "interface-regression",
+      "label": "A public interface changed while fixing internals",
+      "reviewed": true,
+      "evidence": "the recorded surface file and the module exports differ",
+      "detection": "interface-api-regression task with a failed surface gate"
+    },
+    {
+      "id": "scope-violation",
+      "label": "The work touched a path outside the brief scope",
+      "reviewed": true,
+      "evidence": "the gate ledger records SCOPE_VIOLATION with the changed paths",
+      "detection": "any required gate blocked with reason SCOPE_VIOLATION"
+    },
+    {
+      "id": "test-gaming",
+      "label": "The work changed the checks instead of the code",
+      "reviewed": true,
+      "evidence": "a changed path matches checks/** or the gate coverage check fails",
+      "detection": "INSUFFICIENT_COVERAGE or a scope violation naming checks/**"
+    },
+    {
+      "id": "agent-failure",
+      "label": "A worker or its task report failed before verification",
+      "reviewed": true,
+      "evidence": "the call error or the ledger reason records a failed call or an incomplete task report",
+      "detection": "call state failed, or TASK_REPORT_INCOMPLETE_OR_MISMATCH"
+    },
+    {
+      "id": "budget-exceeded",
+      "label": "The run stopped at a declared budget",
+      "reviewed": true,
+      "evidence": "the workflow blocked with BUDGET_EXCEEDED",
+      "detection": "workflow error code BUDGET_EXCEEDED"
+    },
+    {
+      "id": "provider-blocked",
+      "label": "No credentialed provider was available",
+      "reviewed": true,
+      "evidence": "the runner returned AUTHENTICATION_UNAVAILABLE",
+      "detection": "runner result reason AUTHENTICATION_UNAVAILABLE"
+    },
+    {
+      "id": "harness-gate-unavailable",
+      "label": "An artifact test could not run in this environment",
+      "reviewed": true,
+      "evidence": "the gate ledger records COMMAND_NOT_ALLOWED, ENVIRONMENT_UNAVAILABLE or CHECK_UNAVAILABLE",
+      "detection": "gate blocked with an environment reason"
+    },
+    {
+      "id": "human-intervention-required",
+      "label": "A gate demanded human approval that was not recorded",
+      "reviewed": true,
+      "evidence": "the gate ledger records HUMAN_APPROVAL_REQUIRED",
+      "detection": "gate blocked with reason HUMAN_APPROVAL_REQUIRED"
+    },
+    {
+      "id": "unclassified",
+      "label": "The harness could not map the observation to a category",
+      "reviewed": true,
+      "evidence": "the row records no matching rule, the raw state stays in the row",
+      "detection": "no other rule matched; treated as a harness defect and reported as unverified"
+    }
+  ]
+}

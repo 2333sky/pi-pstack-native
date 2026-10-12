@@ -1,0 +1,87 @@
+{
+  "id": "interface-api-regression",
+  "kind": "interface-api-regression",
+  "title": "Fix the paging defect without changing the public API surface",
+  "goal": "Make items() honour its limit option. The public API surface recorded in api-surface.json and the existing consumer must keep working unchanged.",
+  "successCriteria": [
+    "items(records, { limit }) returns at most limit active records",
+    "the recorded public surface of src/api.mjs is unchanged",
+    "the existing consumer keeps its previous behaviour for unlimited calls"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 900,
+    "costUsd": 3,
+    "tokens": 300000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "mutants": {
+      "renamed-export": {
+        "category": "interface-regression",
+        "plan": {
+          "fix": "mutant/renamed-export.mjs"
+        }
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "surface-behavior",
+      "category": "typecheck",
+      "command": [
+        "node",
+        "--test",
+        "checks/surface.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "consumer-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/consumer.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "fix",
+      "profile": "worker",
+      "goal": "Honour the limit option inside items() without changing the exported surface.",
+      "plannedChanges": "slice the filtered records in src/api.mjs",
+      "plan": "plan/fix.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "surface-behavior",
+        "consumer-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "interface-regression",
+    "behavior-defect-landed",
+    "scope-violation",
+    "test-gaming",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "id": "crash-recovery",
+  "kind": "crash-recovery",
+  "title": "Recover an interrupted effect writer without duplicating a side effect",
+  "goal": "A worker died after recording its side effect but before committing. Make the effect recorder idempotent, then resume the interrupted work so every effect is recorded exactly once.",
+  "successCriteria": [
+    "resuming a partially completed effect appends the effect only once",
+    "the committed queue keeps the effect order harden, resume, finish",
+    "no duplicate effect id appears in the durable log after recovery"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 900,
+    "costUsd": 3,
+    "tokens": 350000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "crash": {
+      "completed": [
+        "harden"
+      ],
+      "running": "resume",
+      "effectId": "resume",
+      "log": "var/effects.ndjson"
+    },
+    "mutants": {
+      "duplicate-effect": {
+        "category": "recovery-duplicate-side-effect",
+        "plan": {
+          "harden": "mutant/duplicate-effect.mjs"
+        }
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "recorder-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/recorder.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "resume-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/effects.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "order-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/order.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "harden",
+      "profile": "worker",
+      "goal": "Make the effect recorder skip an effect id it has already recorded.",
+      "plannedChanges": "make record idempotent in src/effects.mjs and add src/queue.mjs",
+      "plan": "plan/harden.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "recorder-behavior"
+      ]
+    },
+    {
+      "key": "resume",
+      "profile": "worker",
+      "dependsOn": [
+        "harden"
+      ],
+      "goal": "Resume the interrupted work and record its effect through the recorder.",
+      "plannedChanges": "add resume to src/queue.mjs and record the resume effect",
+      "plan": "plan/resume.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "resume-behavior"
+      ]
+    },
+    {
+      "key": "finish",
+      "profile": "worker",
+      "dependsOn": [
+        "resume"
+      ],
+      "goal": "Finish the remaining queued effect and record it.",
+      "plannedChanges": "record the finish effect",
+      "plan": "plan/finish.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "order-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "recovery-duplicate-side-effect",
+    "behavior-defect-landed",
+    "scope-violation",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "severity": "high",
+    "location": "src/ledger.mjs:4 settle comparator",
+    "description": "The sort comparator returns only 1 or 0, never a negative value, so it is not a valid ordering function and the settlement order is left to the engine's sort stability. Totals computed over that order are unreliable.",
+    "evidence": "src/ledger.mjs:4 `.sort((left, right) => (left.amount < right.amount ? 1 : 0))`"
+  },
+  {
+    "severity": "medium",
+    "location": "src/ledger.mjs:2 settle rounding",
+    "description": "Amounts are rounded per entry and then summed as floats, so the total can drift from the cent-exact sum of the raw amounts.",
+    "evidence": "src/ledger.mjs:2 `Math.round(entry.amount * 100) / 100`"
+  }
+]

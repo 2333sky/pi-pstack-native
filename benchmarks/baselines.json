@@ -1,0 +1,53 @@
+{
+  "measured": false,
+  "reason": "No credentialed provider call is allowed in this work lane, so no baseline run happened. Every number in this file is declared, not measured.",
+  "items": [
+    {
+      "id": "pi-single-agent",
+      "substrate": "Pi AgentSession with one agent and no orchestration",
+      "expects": {
+        "provider": "anthropic",
+        "model": "anthropic/claude-sonnet-4-5",
+        "effort": "high"
+      },
+      "status": "not-run",
+      "reason": "Requires provider credentials and one interactive AgentSession per task set; not run in this lane.",
+      "comparable": true
+    },
+    {
+      "id": "pi-pstack-native",
+      "substrate": "this project: WorkflowEngine, verification runner and the task sets in benchmarks/tasks",
+      "expects": {
+        "provider": "anthropic",
+        "model": "anthropic/claude-sonnet-4-5",
+        "effort": "high"
+      },
+      "status": "not-run",
+      "reason": "Only the offline fake provider path and the blocked runner path have been exercised (see benchmarks/RUNBOOK.md).",
+      "comparable": true
+    },
+    {
+      "id": "cursor-pstack-cloud",
+      "substrate": "Cursor cloud agent running pstack skills",
+      "expects": {
+        "provider": "cursor",
+        "model": "not declared by the operator",
+        "effort": "not declared"
+      },
+      "status": "not-run",
+      "reason": "Runs on a hosted substrate with different tooling, retention and billing; the local task sets cannot be controlled on it.",
+      "comparable": false
+    }
+  ],
+  "cursorCloudOnly": {
+    "comparability": "not-comparable",
+    "capabilities": [
+      "cloud agents that keep working after the local session ends",
+      "a hosted review bot that comments on every pull request",
+      "remote execution against a checkout the operator never holds locally",
+      "organisation level usage and seat reporting"
+    ],
+    "claim": "Cursor cloud only capabilities run on a different substrate with different tooling and billing. No overall superiority claim follows from them, and this repository makes no such claim."
+  },
+  "overallSuperiority": null
+}

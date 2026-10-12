@@ -1,0 +1,83 @@
+{
+  "id": "integration-conflict",
+  "kind": "integration-conflict",
+  "title": "Resolve a conflicting pricing merge without losing either intent",
+  "goal": "Two landed branches changed the same pricing tier table. Integrate both branches into the target checkout and keep the bulk tier and the loyalty tier working together.",
+  "successCriteria": [
+    "the merge produces a real conflict that the integration step resolves",
+    "the bulk tier and the loyalty tier both survive integration, with loyalty taking precedence",
+    "the promo and standard tiers keep their previous behaviour"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 1200,
+    "costUsd": 4,
+    "tokens": 450000
+  },
+  "workflow": {
+    "type": "graph",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "branches": [
+      {
+        "name": "feature/bulk",
+        "plan": "plan/branch-bulk"
+      },
+      {
+        "name": "feature/loyalty",
+        "plan": "plan/branch-loyalty"
+      }
+    ],
+    "mutants": {
+      "one-sided-resolution": {
+        "category": "integration-intent-lost",
+        "plan": {
+          "integrate": "mutant/one-sided-resolution.mjs"
+        },
+        "resolve": "mutant/one-sided-resolution"
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "pricing-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/pricing.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "integrate",
+      "profile": "integrator",
+      "goal": "Merge both feature branches into the target checkout and resolve the conflict so both intents survive.",
+      "plannedChanges": "merge feature/bulk and feature/loyalty, resolve src/pricing.mjs",
+      "plan": "plan/integrate.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "pricing-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "integration-intent-lost",
+    "scope-violation",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

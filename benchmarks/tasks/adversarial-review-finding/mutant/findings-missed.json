@@ -1,0 +1,8 @@
+[
+  {
+    "severity": "low",
+    "location": "src/id.mjs:1 nextId",
+    "description": "nextId pads the sequence but does not validate it, so a large or negative sequence produces a misleading identifier.",
+    "evidence": "src/id.mjs:1 `String(sequence).padStart(4, \"0\")`"
+  }
+]

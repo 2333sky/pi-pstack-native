@@ -1,0 +1,102 @@
+{
+  "id": "adversarial-review-finding",
+  "kind": "adversarial-review-finding",
+  "title": "Find the planted defect in the settlement code without inventing findings",
+  "goal": "Review src/ledger.mjs adversarially and record the concrete defect in a findings artifact. The review node must report findings and must not change the checkout.",
+  "successCriteria": [
+    "the recorded findings name the planted defect in src/ledger.mjs with quoted evidence",
+    "no finding claims a defect in the clean control module src/id.mjs",
+    "the review step leaves the source checkout unchanged"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 900,
+    "costUsd": 3.5,
+    "tokens": 300000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "findings": "plan/findings.json",
+    "groundTruth": {
+      "kind": "review-finding",
+      "file": "src/ledger.mjs",
+      "symbol": "settle",
+      "cleanControl": "src/id.mjs"
+    },
+    "mutants": {
+      "finding-missed": {
+        "category": "review-finding-missed",
+        "findings": "mutant/findings-missed.json"
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "review-readonly",
+      "kind": "diff",
+      "category": "review",
+      "maxFiles": 0
+    },
+    {
+      "id": "findings-shape",
+      "category": "review",
+      "command": [
+        "node",
+        "--test",
+        "checks/findings.test.mjs"
+      ],
+      "coverage": [
+        "review/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "review",
+      "profile": "reviewer",
+      "goal": "Adversarially review the settlement code and report every concrete defect with quoted evidence.",
+      "plannedChanges": "no file changes; findings only",
+      "plan": "plan/review.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "review-readonly"
+      ],
+      "reportRequirements": {
+        "kind": "review"
+      }
+    },
+    {
+      "key": "record",
+      "profile": "worker",
+      "dependsOn": [
+        "review"
+      ],
+      "goal": "Record the confirmed review findings as review/findings.json.",
+      "plannedChanges": "write review/findings.json",
+      "plan": "plan/record.mjs",
+      "include": [
+        "review/**"
+      ],
+      "gateIds": [
+        "findings-shape"
+      ]
+    }
+  ],
+  "failureModes": [
+    "review-finding-missed",
+    "scope-violation",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

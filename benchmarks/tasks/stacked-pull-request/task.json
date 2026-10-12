@@ -1,0 +1,134 @@
+{
+  "id": "stacked-pull-request",
+  "kind": "stacked-pull-request",
+  "title": "Land a three layer reporting stack",
+  "goal": "Build the reporting stack in three ordered layers: totals, per customer grouping, then CSV export. Each layer must build on the previous commit and keep the earlier behaviour.",
+  "successCriteria": [
+    "each layer commit builds on the previous layer commit as its first parent",
+    "the totals layer keeps its behaviour after the grouping layer lands",
+    "the CSV layer exports per customer totals and the overall total"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 1200,
+    "costUsd": 5,
+    "tokens": 500000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "stack": [
+      "layer-1",
+      "layer-2",
+      "layer-3"
+    ],
+    "mutants": {
+      "layer-2-regression": {
+        "category": "stack-layer-regression",
+        "plan": {
+          "layer-2": "mutant/layer-2-regression.mjs"
+        }
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "layer-1-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/layer-1.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "layer-2-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/layer-2.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "layer-3-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/layer-3.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "layer-1",
+      "profile": "worker",
+      "goal": "Add the totals layer to the reporting module.",
+      "plannedChanges": "add total to summarize in src/report.mjs",
+      "plan": "plan/layer-1.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "layer-1-behavior"
+      ]
+    },
+    {
+      "key": "layer-2",
+      "profile": "worker",
+      "dependsOn": [
+        "layer-1"
+      ],
+      "goal": "Add the per customer grouping layer on top of the totals layer.",
+      "plannedChanges": "add byCustomer to src/report.mjs and keep total",
+      "plan": "plan/layer-2.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "layer-2-behavior"
+      ]
+    },
+    {
+      "key": "layer-3",
+      "profile": "worker",
+      "dependsOn": [
+        "layer-2"
+      ],
+      "goal": "Add the CSV export layer on top of the grouping layer.",
+      "plannedChanges": "add src/csv.mjs exporting toCsv",
+      "plan": "plan/layer-3.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "layer-3-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "stack-layer-regression",
+    "behavior-defect-landed",
+    "scope-violation",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}

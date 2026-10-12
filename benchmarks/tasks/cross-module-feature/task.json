@@ -1,0 +1,101 @@
+{
+  "id": "cross-module-feature",
+  "kind": "cross-module-feature",
+  "title": "Add nautical miles across the unit registry and the CLI surface",
+  "goal": "Add nautical mile (nmi, 1852 m) support to the units module and expose it through the command line, without changing the existing factors.",
+  "successCriteria": [
+    "nmi converts with the exact factor 1852 and renders through the shared formatter",
+    "the command line accepts --unit nmi and prints every unit with --list",
+    "km and mi keep their current factors and unknown units still fail"
+  ],
+  "expects": {
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-5",
+    "effort": "high"
+  },
+  "budget": {
+    "timeSeconds": 900,
+    "costUsd": 2.5,
+    "tokens": 300000
+  },
+  "workflow": {
+    "type": "chain",
+    "maxConcurrency": 1
+  },
+  "fixture": {
+    "snapshot": "repo",
+    "mutants": {
+      "wrong-nmi-factor": {
+        "category": "behavior-defect-landed",
+        "plan": {
+          "core": "mutant/wrong-nmi-factor.mjs"
+        }
+      }
+    }
+  },
+  "gates": [
+    {
+      "id": "core-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/core.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    },
+    {
+      "id": "surface-behavior",
+      "category": "behavior",
+      "command": [
+        "node",
+        "--test",
+        "checks/surface.test.mjs"
+      ],
+      "coverage": [
+        "src/**"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "key": "core",
+      "profile": "worker",
+      "goal": "Teach the units module the nautical mile factor and keep the formatter working for it.",
+      "plannedChanges": "add nmi 1852 to the factor table in src/units.mjs",
+      "plan": "plan/core.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "core-behavior"
+      ]
+    },
+    {
+      "key": "surface",
+      "profile": "worker",
+      "dependsOn": [
+        "core"
+      ],
+      "goal": "Expose the new unit through the command line surface.",
+      "plannedChanges": "add --list to src/cli.mjs and keep --unit validation",
+      "plan": "plan/surface.mjs",
+      "include": [
+        "src/**"
+      ],
+      "gateIds": [
+        "surface-behavior"
+      ]
+    }
+  ],
+  "failureModes": [
+    "behavior-defect-landed",
+    "scope-violation",
+    "test-gaming",
+    "agent-failure",
+    "budget-exceeded",
+    "provider-blocked"
+  ]
+}
