@@ -52,11 +52,11 @@ function brief(f: Fixture) {
 }
 
 function report(f: Fixture): TaskReport {
-  return { status: "completed", artifactRefs: [], base: f.headSha, head: f.headSha, commandsRun: [GATE], evidenceRefs: [], deviations: [], unresolved: [], nextActions: [] };
+  return { status: "completed", artifactRefs: [], base: f.baseSha, head: f.headSha, commandsRun: [GATE], evidenceRefs: [], deviations: [], unresolved: [], nextActions: [] };
 }
 
 async function verifiedLedger(f: Fixture, number: number) {
-  return await verify(f.checkout, brief(f), { pr: { repoId: f.repoId, number, headSha: f.headSha }, report: report(f) });
+  return await verify(f.checkout, brief(f), { pr: { repoId: f.repoId, number, headSha: f.headSha, baseSha: f.baseSha }, report: report(f) });
 }
 
 function spec(f: Fixture, number = 1) {
