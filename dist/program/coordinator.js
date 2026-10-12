@@ -1,4 +1,12 @@
 import { protocol, transact, uid, hash } from "../runtime/protocol.js";
+export function ordersDrift(program, unit) {
+    if (!program.orders || !unit.workflowId)
+        return undefined;
+    if (unit.ordersRevision === program.orders.revision || unit.ordersAcknowledgement?.revision === program.orders.revision)
+        return undefined;
+    const dispatchedRevision = unit.ordersRevision ?? null;
+    return { key: unit.key, dispatchedRevision, currentRevision: program.orders.revision, message: `STALE_ORDERS: unit ${unit.key} was dispatched under orders revision ${dispatchedRevision ?? 'none'}, current revision ${program.orders.revision}` };
+}
 export class ProgramCoordinator {
     workflows;
     constructor(workflows) { this.workflows = workflows; }
@@ -12,18 +20,27 @@ export class ProgramCoordinator {
     }
     get(id, owner) { const p = protocol().programs[id]; if (!p || p.owner !== owner)
         throw new Error('PROGRAM_NOT_FOUND'); return p; }
+    drift(program) { return program.units.flatMap(unit => { const found = ordersDrift(program, unit); return found ? [found] : []; }); }
+    assertOrdersDigest(program) { if (program.orders && program.orders.digest !== hash(program.orders.instructions))
+        throw new Error('ORDERS_INTEGRITY_MISMATCH: stored standing orders do not match their digest'); }
+    blockOrders(id, owner, drift) {
+        return transact('program-orders-stale', id, owner, s => { const p = s.programs[id]; p.state = 'blocked'; p.blockedReason = { code: 'ORDERS_STALE', units: drift.map(d => ({ key: d.key, dispatchedRevision: d.dispatchedRevision })), currentRevision: drift[0].currentRevision, message: drift.map(d => d.message).join('; ') }; p.revision++; return p; });
+    }
     async run(id, ctx) {
         const owner = ctx.sessionManager.getSessionId();
         const p = this.get(id, owner);
         if (p.state === 'paused' || p.state === 'completed')
             return p;
+        this.assertOrdersDigest(p);
+        const stale = this.drift(p);
+        if (stale.length)
+            return this.blockOrders(id, owner, stale);
         const runUnit = async (key) => {
             let unit = this.get(id, owner).units.find(u => u.key === key);
             if (!unit.workflowId) {
                 const currentProgram = this.get(id, owner);
                 const orders = currentProgram.orders;
-                if (orders && orders.digest !== hash(orders.instructions))
-                    throw new Error('ORDERS_INTEGRITY_MISMATCH: stored standing orders do not match their digest');
+                this.assertOrdersDigest(currentProgram);
                 const wf = this.workflows.create({ ...unit.spec, nodes: unit.spec.nodes.map(n => ({ ...n, brief: n.brief && orders ? { ...n.brief, id: `${n.brief.id}.${currentProgram.id}.${unit.key}`, revision: 1, standingOrders: orders.instructions } : n.brief })), parentSessionId: owner, contractLevel: 'strict' });
                 transact('unit-dispatched', id, owner, s => { const u = s.programs[id].units.find((x) => x.key === key); u.workflowId = wf.id; u.state = 'running'; if (orders)
                     u.ordersRevision = orders.revision; return { key, workflowId: wf.id }; });
@@ -44,6 +61,9 @@ export class ProgramCoordinator {
             await runUnit(p.units[0].key);
             const pilot = this.get(id, owner).units[0];
             transact('pilot-settled', id, owner, s => { s.programs[id].state = pilot.state === 'ready-to-integrate' ? 'scaling' : 'blocked'; return { state: s.programs[id].state }; });
+            const stalled = this.drift(this.get(id, owner));
+            if (stalled.length)
+                return this.blockOrders(id, owner, stalled);
             if (pilot.state !== 'ready-to-integrate')
                 return this.get(id, owner);
         }
@@ -53,6 +73,11 @@ export class ProgramCoordinator {
             if (current.state === 'paused') {
                 await Promise.all(active.values());
                 return this.get(id, owner);
+            }
+            const drift = this.drift(current);
+            if (drift.length) {
+                await Promise.all(active.values());
+                return this.blockOrders(id, owner, drift);
             }
             for (const unit of current.units) {
                 if (active.size >= current.maxConcurrency)
@@ -70,7 +95,8 @@ export class ProgramCoordinator {
                 break;
             }
         }
-        return this.drain(id, owner);
+        const late = this.drift(this.get(id, owner));
+        return late.length ? this.blockOrders(id, owner, late) : this.drain(id, owner);
     }
     drain(id, owner) {
         this.get(id, owner);
@@ -96,11 +122,36 @@ export class ProgramCoordinator {
             throw new Error('INVALID_STANDING_ORDERS');
         return transact('program-orders-revised', id, owner, s => { const p = s.programs[id]; p.orders = { revision: (p.orders?.revision ?? 0) + 1, instructions, digest: hash(instructions) }; p.revision++; return { ...p, reason }; });
     }
+    acknowledgeOrders(id, owner, key, revision, reason) {
+        const p = this.get(id, owner);
+        if (!reason.trim())
+            throw new Error('INVALID_STANDING_ORDERS_ACKNOWLEDGEMENT');
+        this.assertOrdersDigest(p);
+        if (!p.orders)
+            throw new Error('NO_STANDING_ORDERS');
+        if (p.orders.revision !== revision)
+            throw new Error(`ORDERS_REVISION_MISMATCH: acknowledgement names revision ${revision}, current revision ${p.orders.revision}`);
+        const unit = p.units.find(u => u.key === key);
+        if (!unit)
+            throw new Error('UNKNOWN_UNIT');
+        if (!unit.workflowId)
+            throw new Error('UNIT_NOT_DISPATCHED');
+        return transact('unit-orders-acknowledged', id, owner, s => {
+            const current = s.programs[id];
+            if (current.orders?.revision !== revision)
+                throw new Error(`ORDERS_REVISION_MISMATCH: acknowledgement names revision ${revision}, current revision ${current.orders?.revision ?? 'none'}`);
+            this.assertOrdersDigest(current);
+            current.units.find(u => u.key === key).ordersAcknowledgement = { revision, actor: owner, reason, at: new Date().toISOString() };
+            current.revision++;
+            return current;
+        });
+    }
     resume(id, owner) {
         const p = this.get(id, owner);
         if (!['paused', 'blocked'].includes(p.state))
             throw new Error('PROGRAM_NOT_RESUMABLE');
-        return transact('program-resumed', id, owner, s => { const p = s.programs[id]; p.state = ['ready-to-integrate', 'reconciled'].includes(p.units[0].state) ? 'scaling' : 'pilot'; return p; });
+        const resumed = transact('program-resumed', id, owner, s => { const p = s.programs[id]; p.state = ['ready-to-integrate', 'reconciled'].includes(p.units[0].state) ? 'scaling' : 'pilot'; return p; });
+        return { ...resumed, staleUnits: this.drift(resumed) };
     }
     pause(id, owner) { this.get(id, owner); return transact('program-paused', id, owner, s => { s.programs[id].state = 'paused'; return s.programs[id]; }); }
 }

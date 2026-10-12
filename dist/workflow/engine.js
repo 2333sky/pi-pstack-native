@@ -14,6 +14,18 @@ import { appendJournal, listJson, readJson, writeJsonAtomic } from "../runtime/s
 import { updateRecord } from "../runtime/transaction.js";
 import { dependencyEdges, downstreamKeys, validateGraph } from "./graph.js";
 import { planArtifacts, PARENT_ARTIFACT } from "./artifacts.js";
+import { ordersDrift } from "../program/coordinator.js";
+function ordersVeto(id) {
+    for (const program of Object.values(protocol().programs)) {
+        const unit = program?.units?.find((candidate) => candidate.workflowId === id);
+        if (!unit)
+            continue;
+        const drift = ordersDrift(program, unit);
+        if (drift)
+            return durableError("ORDERS_STALE", drift.message, true);
+    }
+    return undefined;
+}
 function now() { return new Date().toISOString(); }
 function workflowId() { return `wf_${randomUUID().replaceAll("-", "").slice(0, 12)}`; }
 function agentId(wf, key, attempt) {
@@ -235,6 +247,9 @@ export class WorkflowEngine {
                 throw new Error(`Unknown workflow: ${id}`);
             if (["completed", "failed", "cancelled", "cancelling", "paused"].includes(record.state))
                 return record;
+            const veto = ordersVeto(id);
+            if (veto)
+                return this.change(id, "workflow-orders-stale", (latest) => { latest.state = "blocked"; latest.error = veto; });
             this.change(id, "workflow-running", (latest) => {
                 if (!["created", "running", "blocked"].includes(latest.state))
                     return;
@@ -252,6 +267,12 @@ export class WorkflowEngine {
                 const latest = this.change(id, recovering ? "call-resuming" : "call-started", (current) => {
                     if (current.state !== "running")
                         return;
+                    const veto = ordersVeto(id);
+                    if (veto) {
+                        current.state = "blocked";
+                        current.error = veto;
+                        return;
+                    }
                     const call = current.calls[key];
                     if (!recovering)
                         call.attempt += 1;
@@ -267,13 +288,19 @@ export class WorkflowEngine {
                 const idForAgent = call.agentId;
                 const prior = recovering ? this.agents.get(idForAgent) : undefined;
                 const target = this.executionTarget(latest, call);
+                const spec = {
+                    id: idForAgent, workflowId: latest.id, callKey: key, profile: call.profile,
+                    task: this.taskWithDependencies(latest, call), cwd: target.cwd,
+                    isolation: target.isolation, model: call.model, attempt: call.attempt, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
+                };
+                const veto = ordersVeto(id);
+                if (veto) {
+                    this.change(id, "workflow-orders-stale", (current) => { current.state = "blocked"; current.error = veto; });
+                    return;
+                }
                 const promise = (prior
                     ? this.agents.recover(prior, ctx)
-                    : this.agents.run({
-                        id: idForAgent, workflowId: latest.id, callKey: key, profile: call.profile,
-                        task: this.taskWithDependencies(latest, call), cwd: target.cwd,
-                        isolation: target.isolation, model: call.model, attempt: call.attempt, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
-                    }, ctx)).then(async (agent) => {
+                    : this.agents.run(spec, ctx)).then(async (agent) => {
                     this.change(id, "call-settled", (current) => {
                         const node = current.calls[key];
                         if (!node || node.agentId !== agent.id || node.state !== "running")
@@ -348,6 +375,13 @@ export class WorkflowEngine {
                 if (record.state === "paused") {
                     if (active.size === 0)
                         return record;
+                    await Promise.race(active.values());
+                    continue;
+                }
+                const drift = ordersVeto(id);
+                if (drift && Object.values(record.calls).some((call) => ["pending", "ready", "running"].includes(call.state))) {
+                    if (active.size === 0)
+                        return this.change(id, "workflow-orders-stale", (latest) => { latest.state = "blocked"; latest.error = drift; });
                     await Promise.race(active.values());
                     continue;
                 }
