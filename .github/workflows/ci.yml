@@ -36,5 +36,5 @@ jobs:
         run: npm run check:host
       - name: Offline benchmark integrity smoke
         run: npm run benchmark:smoke
-      - name: Dry-run published package
-        run: npm pack --dry-run --ignore-scripts
+      - name: Installed package smoke
+        run: npm run smoke:installed

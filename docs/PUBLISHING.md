@@ -6,9 +6,10 @@
 
 1. Verify you have rights to publish the **new** Pi-native source code and any third-party material. The bundled `LICENSE` is the upstream Lauren Tan MIT license; maintain its notices. `NOTICE.md` describes provenance. Confirm any additional author/copyright notices needed for your original code.
 2. Run a secrets scan and manually audit configuration, scripts, git history, generated assets and examples. None of the checks provided here replaces a professional review.
-3. On a supported Node version with network access: `npm install && npm run check && npm run check:types && npm run build && npm run check:host && npm run benchmark:smoke`.
-4. Treat `ACCEPTANCE.md` as historical, environment-scoped evidence—not a promise that this remote CI run has succeeded.
-5. Do **not** publish the release as stable before running real inference and GitHub PR E2E in a disposable test repository.
+3. On a supported Node version with network access run the release chain: `npm install && npm run check:release`. It runs the source checks, the strict typecheck, the build, the Pi SDK session smoke, the offline benchmark import check, and then packs the real tarball, installs it into a clean consumer directory, and loads the installed extension, public JavaScript API and CLI.
+4. `npm pack` in this repository runs the same chain through `prepack`, so the tarball is gated when it is created. npm runs no lifecycle at all for `npm publish ./file.tgz`, so a tarball that was packed somewhere else carries no gate. Pack here, then publish the file, or publish from the repository directory. GitHub Actions runs the same steps on Node 22.19.0 and 24.x.
+5. Treat `ACCEPTANCE.md` as historical, environment-scoped evidence—not a promise that this remote CI run has succeeded.
+5. Do **not** publish the release as stable before running real inference and GitHub PR E2E in a disposable test repository. The release chain proves packaging and loading; it does not prove model or remote-provider behavior.
 
 ## Create the remote repository
 
