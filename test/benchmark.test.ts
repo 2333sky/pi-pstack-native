@@ -143,8 +143,14 @@ test("report schema fails closed on an unmeasured metric reported as zero", asyn
   assert.throws(() => metric(null, true), /MEASURED_METRIC_REQUIRES_VALUE/);
   assert.throws(() => metric(0, false), /UNMEASURED_METRIC_REQUIRES_NULL/);
   assert.throws(() => metric(null, false), /UNMEASURED_METRIC_REQUIRES_REASON/);
-  const rows = [{ verified: true, verifiedTaskSuccess: metric(1, true) }];
-  assert.throws(() => validateReport({ schemaVersion: 1, tasks: rows, aggregate: { verifiedTaskSuccess: metric(0, false, "reported as zero", "harness") } }), /UNMEASURED_METRIC_REQUIRES_NULL/);
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", output: join(base, "out"), only: ["cross-module-feature"] }) as any;
+    assert.equal(validateReport(structuredClone(result.report)).aggregate.sampleSize, 1);
+    const zeroed = structuredClone(result.report);
+    zeroed.aggregate.verifiedTaskSuccess = { value: 0, measured: false, reason: "reported as zero", scope: "harness" };
+    assert.throws(() => validateReport(zeroed), /UNMEASURED_METRIC_REQUIRES_NULL/);
+  });
 });
 
 test("the offline provider runs the task sets and records only measured metrics", async () => {
@@ -174,6 +180,34 @@ test("a mutant plan is reported unverified under its declared failure category",
     assert.equal(result.report.tasks[0].verified, false);
     assert.equal(result.report.tasks[0].failureCategory, "integration-intent-lost");
     assert.equal(result.report.aggregate.verifiedTaskSuccess.value, 0);
+  });
+});
+
+test("the report schema refuses a mutant task that claims verification or a mismatched category", async () => {
+  const { runTaskSets } = await runLib();
+  const { validateReport } = await reportLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", mutant: "integration-intent-lost", output: join(base, "out"), only: ["integration-conflict"] }) as any;
+    assert.equal(result.report.tasks[0].mutantCategory, "integration-intent-lost");
+    assert.equal(validateReport(structuredClone(result.report)).tasks[0].mutantCategory, "integration-intent-lost");
+    const claimed = structuredClone(result.report);
+    claimed.tasks[0].verified = true;
+    claimed.tasks[0].failureCategory = "provider-blocked";
+    assert.throws(() => validateReport(claimed), /REPORT_MUTANT_CATEGORY/);
+    const mismatched = structuredClone(result.report);
+    mismatched.tasks[0].failureCategory = "scope-violation";
+    assert.throws(() => validateReport(mismatched), /REPORT_MUTANT_CATEGORY/);
+  });
+});
+
+test("one offline pass over the whole task set publishes no interval", async () => {
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", output: join(base, "out") }) as any;
+    assert.equal(result.report.tasks.length, 7);
+    assert.equal(result.report.aggregate.interval95.value, null);
+    assert.match(result.report.aggregate.interval95.reason, /repetition/);
+    assert.equal(result.report.measurement.repetitions, 1);
   });
 });
 
