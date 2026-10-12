@@ -34,10 +34,10 @@ test(`${OFFLINE} the credentialed live tier never runs without an explicit opera
 test(`${OFFLINE} the live tier is skipped by default when its own file runs`, { timeout: 120_000 }, () => {
   const file = join("test", "live", "github-live.test.ts");
   const env = cleanEnv({ PSTACK_E2E_LIVE: "", PSTACK_E2E_LIVE_REPO: "", PSTACK_E2E_LIVE_CONFIRM: "", PSTACK_E2E_LIVE_WRITE: "" });
-  const run = spawnSync(process.execPath, ["--experimental-strip-types", "--test", file], { cwd: process.cwd(), encoding: "utf8", env });
+  const run = spawnSync(process.execPath, ["--experimental-strip-types", "--test", "--test-reporter=tap", file], { cwd: process.cwd(), encoding: "utf8", env });
   assert.equal(run.status, 0, run.stdout + run.stderr);
-  assert.match(run.stdout, /ℹ skipped 2/);
-  assert.match(run.stdout, /ℹ fail 0/);
+  assert.match(run.stdout, /^# skipped 2$/m);
+  assert.match(run.stdout, /^# fail 0$/m);
 });
 
 const CHECKOUT_PROBE = "git -C <current checkout> remote get-url origin";
@@ -83,12 +83,12 @@ test(`${OFFLINE} every refused live-tier environment runs no external command an
         const checkout = join(root, `checkout-${index}`);
         if (row.origin) initFixtureRepo(checkout, `https://github.com/${row.origin}.git`);
         rmSync(probe, { force: true });
-        const run = spawnSync(process.execPath, ["--experimental-strip-types", "--test", liveFile], {
+        const run = spawnSync(process.execPath, ["--experimental-strip-types", "--test", "--test-reporter=tap", liveFile], {
           cwd: row.origin ? checkout : process.cwd(), encoding: "utf8", env: matrixEnv(row.env, preload, probe),
         });
         assert.equal(run.status, 0, `${row.label}\n${run.stdout}${run.stderr}`);
-        assert.match(run.stdout, /ℹ skipped 2/, row.label);
-        assert.match(run.stdout, /ℹ fail 0/, row.label);
+        assert.match(run.stdout, /^# skipped 2$/m, row.label);
+        assert.match(run.stdout, /^# fail 0$/m, row.label);
         assert.deepEqual(observedCommands(probe), row.expected, `${row.label} ran an unexpected external command`);
       });
     }

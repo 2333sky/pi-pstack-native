@@ -28,7 +28,7 @@ test("state lock prevents lost read-modify-write between independent OS processe
   } finally {
     if (before === undefined) delete process.env.PSTACK_NATIVE_HOME;
     else process.env.PSTACK_NATIVE_HOME = before;
-    rmSync(root, {recursive: true, force: true});
+    rmSync(root, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
   }
 });
 
@@ -53,6 +53,6 @@ test("independent processes update one durable workflow record without stale sta
   } finally {
     if (before === undefined) delete process.env.PSTACK_NATIVE_HOME;
     else process.env.PSTACK_NATIVE_HOME = before;
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

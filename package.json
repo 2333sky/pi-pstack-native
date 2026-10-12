@@ -36,6 +36,14 @@
     "benchmarks/",
     "IMPLEMENTATION.md",
     "ACCEPTANCE.md",
+    "docs/DEPENDENCIES.md",
+    "docs/PR-PROTOCOL.md",
+    "docs/UPSTREAM-0.15.17.md",
+    "docs/parity.test.mjs",
+    "docs/stacked-pr-body.md",
+    "docs/upstream-provenance-0.15.17.json",
+    "docs/upstream-sync-0.15.17.json",
+    "docs/validate-pr.mjs",
     "dist/",
     "tsconfig.build.json",
     "INSTALLATION-CHECK.md"
@@ -54,7 +62,9 @@
     "check:package": "node scripts/check-package.mjs",
     "check:parity": "node scripts/check-parity.mjs",
     "review": "node scripts/review.mjs",
-    "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm test && npm run review",
+    "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm run check:playbooks && npm test && npm run review",
+    "check:playbooks": "node scripts/check-e2e.mjs playbooks",
+    "check:pr-body": "node docs/validate-pr.mjs",
     "prepack": "npm run check:release",
     "sync:upstream": "node scripts/sync-upstream.mjs",
     "check:types": "tsc --noEmit -p tsconfig.json",
@@ -62,8 +72,12 @@
     "benchmark": "node scripts/benchmark.mjs",
     "build": "node scripts/build.mjs",
     "benchmark:smoke": "node scripts/check-benchmark.mjs",
+    "test:e2e:offline": "node scripts/check-e2e.mjs offline",
+    "test:e2e:fake": "node scripts/check-e2e.mjs fake",
+    "check:e2e": "npm run test:e2e:offline && npm run test:e2e:fake",
+    "test:live": "node --experimental-strip-types scripts/e2e-live.mjs",
     "smoke:installed": "node scripts/smoke-install.mjs",
-    "check:release": "npm run check && npm run check:types && npm run build && npm run check:host && npm run benchmark:smoke && npm run smoke:installed"
+    "check:release": "npm run check && npm run check:types && npm run check:e2e && npm run build && npm run check:host && npm run benchmark:smoke && npm run smoke:installed"
   },
   "engines": {
     "node": ">=22.19.0"
