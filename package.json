@@ -55,13 +55,15 @@
     "check:parity": "node scripts/check-parity.mjs",
     "review": "node scripts/review.mjs",
     "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm test && npm run review",
-    "prepack": "npm run build && npm run check",
+    "prepack": "npm run check:release",
     "sync:upstream": "node scripts/sync-upstream.mjs",
     "check:types": "tsc --noEmit -p tsconfig.json",
     "check:host": "node scripts/smoke-host.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "build": "node scripts/build.mjs",
-    "benchmark:smoke": "node scripts/check-benchmark.mjs"
+    "benchmark:smoke": "node scripts/check-benchmark.mjs",
+    "smoke:installed": "node scripts/smoke-install.mjs",
+    "check:release": "npm run check && npm run check:types && npm run build && npm run check:host && npm run benchmark:smoke && npm run smoke:installed"
   },
   "engines": {
     "node": ">=22.19.0"

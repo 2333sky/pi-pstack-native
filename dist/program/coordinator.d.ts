@@ -5,6 +5,7 @@ export interface Unit {
     key: string;
     spec: WorkflowRunSpec;
     workflowId?: string;
+    ordersRevision?: number;
     state: 'pending' | 'running' | 'needs-verify' | 'blocked' | 'failed' | 'ready-to-integrate' | 'reconciled';
     ledgerRefs: string[];
 }
