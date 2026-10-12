@@ -1,26 +1,12 @@
-# Native additions 0.6.0-preview.1
+# pstack 0.15.17 semantic port
 
-New executable protocols do not claim full Cursor parity. See IMPLEMENTATION.md and ACCEPTANCE.md.
+The verified baseline is `cursor/plugins` commit `978ca6e9c0e012047cd5058b8e829240336e704e`. The official tree contains 52 top-level skills and 23 playbooks. [Provenance](docs/upstream-provenance-0.15.17.json) verifies the commit, manifest, and 165 pstack blobs. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. These counts do not prove behavioral parity.
 
-# Native additions 0.6.0-preview.1
+This package represents upstream intent with Pi-native instructions. It does not claim byte-for-byte, auxiliary-file, or Cursor platform parity. `make-bot-ui` remains Cursor-only. Private Cursor PR-tool provenance, upstream watcher verdicts, and Cursor-only cleanup plugins remain unsupported. [The wording review](docs/UPSTREAM-0.15.17.md) records retained differences.
 
-Brief/Gate/Ledger/Frontier/Program are native implementations; no full Cursor parity or benchmark efficacy claim. See IMPLEMENTATION.md and ACCEPTANCE.md.
+## Native additions 0.6.0-preview.1
 
-# Native protocol additions (0.6.0-preview.1)
-
-Native Brief/Gate/Ledger/Frontier/Program and typed templates added. No full Cursor parity or efficacy claim. Upstream remains pinned. See IMPLEMENTATION.md and ACCEPTANCE.md.
-
-# Native protocol additions (0.6.0-preview.1)
-
-Brief/Gate/Ledger/Frontier/Program and specialized templates are native implementations. No full Cursor parity or performance claim is made. UPSTREAM.json remains pinned to the uploaded commit. See IMPLEMENTATION.md and ACCEPTANCE.md.
-
-# Native protocol additions (0.6.0-preview.1)
-
-This version adds executable Brief/Gate/Ledger/Frontier/Program semantics and specialized DAG templates. These are native implementations; they do not prove full Cursor parity. UPSTREAM.json remains pinned to the supplied commit. No new claim is made about Cursor private APIs, cloud agents, or benchmark superiority. See IMPLEMENTATION.md and ACCEPTANCE.md for the actual proof boundary.
-
-# pstack 0.15.15 semantic parity
-
-This package targets **top-level semantic parity**, not byte-for-byte or file-for-file Cursor implementation parity. Cursor-only mechanics are replaced with Pi-native behavior. The only explicitly unsupported upstream top-level skill is `make-bot-ui`, whose bot/webhook semantics are Cursor-specific. Auxiliary upstream `references/`, `scripts/`, assets, docs, and automations are not claimed as individually vendored/audited files; required behavior is folded into the adapted skill/playbook where implemented.
+Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native implementations. They do not prove full Cursor parity or benchmark superiority. See [IMPLEMENTATION.md](IMPLEMENTATION.md) and [ACCEPTANCE.md](ACCEPTANCE.md) for the proof boundary.
 
 ## Runtime mapping
 
@@ -50,6 +36,7 @@ This package targets **top-level semantic parity**, not byte-for-byte or file-fo
 | `figure-it-out` | ADAPTED |
 | `how` | ADAPTED |
 | `interrogate` | ADAPTED |
+| `ketchup` | ADAPTED |
 | `maintain-verification-skill` | ADAPTED |
 | `make-bot-ui` | CURSOR_ONLY |
 | `no-comments` | ADAPTED |
@@ -121,8 +108,14 @@ This package targets **top-level semantic parity**, not byte-for-byte or file-fo
 
 ## Claim boundary
 
-- `ADAPTED` means the behavior is represented with Pi-native runtime instructions, not that the file matches upstream bytes.
+- `ADAPTED` means behavior is represented with Pi-native instructions. It is not a test result or proof of complete behavioral equivalence.
+- Ketchup has official Pi loader and structural tests. Chat behavior itself was not exercised. That harness belongs to issue #6.
+- PR-body and handoff tests use local fixture state. They do not prove live forge behavior.
 - `CURSOR_ONLY` is explicit and never silently treated as working.
 - `PENDING_PORT` must be zero before a release can claim its **listed top-level semantic coverage**.
 - This release does **not** claim byte-for-byte or auxiliary-file parity with Cursor pstack.
-- `PARITY.json.coverage.fileLevelAudit = "not-claimed"` is intentional; it prevents the 51/23 top-level count from being misread as a 128-file upstream mirror.
+- `PARITY.json.coverage.fileLevelAudit = "not-claimed"` keeps the 52/23 observed name count separate from auxiliary-file and behavioral coverage.
+
+## Attribution
+
+Upstream pstack is by Lauren Tan under MIT terms. This port is independent and is not endorsed by Cursor. Preserve upstream copyright and license obligations for derived material. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).

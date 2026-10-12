@@ -34,14 +34,14 @@ This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack)
 
 ```bash
 # From the checked-out repository (recommended for this Preview):
-npm install
+npm ci
 npm run build
 pi install .
 ```
 
 If `2333` is separately published to npm, the published package may also be installed with `pi install npm:2333`; GitHub source availability does not itself imply an npm release.
 
-Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` **1.1.x** (declared peer range `^1.1.0`).
+Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.1.0`. The lock resolves SDK `1.1.0`. It was generated with Node `24.21.0` and npm `11.12.1`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
 
 ## Start
 
@@ -122,6 +122,14 @@ The engine rejects a writable node that depends on several writable artifacts un
 
 The native `poteto-mode` skill routes work to one of 23 adapted playbooks and tells the model to use Pi-native agent/workflow tools instead of literal Cursor `Task`, cloud-agent, Custom Mode, or `/loop` mechanics.
 
+## Chat catch-up
+
+Run `/skill:ketchup` to catch up on this chat since your last user-authored message before the request. Notifications and child completion messages do not move that cutoff. The skill rechecks status without writes and lists decisions or steps that need you. Each decision includes enough context to read on its own. Structural tests cover discovery and required text. Chat behavior itself was not exercised. Its harness belongs to issue #6.
+
+## PR handoff
+
+[Opening a PR](skills/poteto-mode/playbooks/opening-a-pr.md) requires Why, What changed, Scope, Blast Radius, and Verification headings. Tradeoffs is optional. Open ready PRs. A stacked child targets its parent branch. Finish the phase or stack before a requested babysit pass, unless an explicitly assigned full-autonomy owner owns the loop. External writes and merges still need explicit authorization. See the [sample stack and local negative checks](docs/PR-PROTOCOL.md). Cursor private PR-tool provenance and watcher verdicts remain unsupported.
+
 ## Repeating checks
 
 ```text
@@ -157,7 +165,7 @@ See `PARITY.json` and `PARITY.md`.
 - `PI_ONLY`: native control/runtime capability added by this port.
 - `PENDING_PORT`: incomplete item inside the listed semantic coverage.
 
-**Claim boundary:** 0.3.0 audits semantic coverage for all 51 upstream top-level skills and all 23 Poteto playbooks. It does **not** claim byte-for-byte or file-for-file parity for every upstream `references/`, `scripts/`, asset, automation, or documentation file. Necessary behavior from those materials is folded into the adapted Pi-native skill/playbook where implemented. `make-bot-ui` remains explicitly Cursor-only.
+**Verified baseline:** Cursor pstack `0.15.17` at `978ca6e9c0e012047cd5058b8e829240336e704e`. The official pinned tree contains 52 top-level skills and 23 Poteto playbooks. These are observed name counts, not proof of exercised behavior. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. [The wording review](docs/UPSTREAM-0.15.17.md) records intentional differences. `ADAPTED` does not mean behavioral parity was tested. Auxiliary files, Cursor platform parity, and byte-for-byte parity are not claimed. `make-bot-ui` remains explicitly Cursor-only.
 
 ## Safety boundaries
 
@@ -172,6 +180,7 @@ See `PARITY.json` and `PARITY.md`.
 ```bash
 npm run check
 npm test
+node --test docs/parity.test.mjs
 npm run review
 npm pack
 ```

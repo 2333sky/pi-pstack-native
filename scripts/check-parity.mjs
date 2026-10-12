@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 const parity=JSON.parse(readFileSync("PARITY.json","utf8"));
 const upstream=JSON.parse(readFileSync("UPSTREAM.json","utf8"));
-if(parity.upstream!=="0.15.15"||upstream.version!=="0.15.15") throw new Error("upstream version drift");
+if(parity.upstream!=="0.15.17"||upstream.version!=="0.15.17") throw new Error("upstream version drift");
 const skillNames=Object.keys(parity.skills??{});
 const playbooks=Object.keys(parity.playbooks??{});
-if(skillNames.length!==51) throw new Error(`expected 51 upstream skills, found ${skillNames.length}`);
+if(skillNames.length!==52) throw new Error(`expected 52 upstream skills, found ${skillNames.length}`);
 if(playbooks.length!==23) throw new Error(`expected 23 playbooks, found ${playbooks.length}`);
 for(const name of skillNames) if(!existsSync(`skills/${name}/SKILL.md`)) throw new Error(`missing skill ${name}`);
 for(const name of playbooks) if(!existsSync(`skills/poteto-mode/playbooks/${name}.md`)) throw new Error(`missing playbook ${name}`);

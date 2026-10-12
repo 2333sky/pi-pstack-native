@@ -9,14 +9,14 @@ Use after a meaningful task when the operator asks to reflect or when the same f
 
 ## Process
 
-1. Locate the active task evidence: current Pi session, diff/commits, workflow journal, verification output, and operator corrections.
+1. Locate the active task evidence in this workspace only. Use the current Pi session, diff/commits, workflow journal, verification output, and operator corrections. Do not read other projects' chats.
 2. Spawn three read-only reviewers in parallel with different questions:
    - **judgment:** which decisions were strong or weak and why;
    - **tooling:** what repeated manual work should become a script/check/harness;
    - **divergence:** where the run drifted from its stated playbook, principle, or acceptance criteria.
-3. Synthesize only lessons supported by concrete evidence.
+3. Synthesize only lessons supported by concrete evidence. Route lessons to skills or tools this transcript used, or to a missed skill trigger. Reject already-covered rules and unstable details such as SHAs.
 4. For each lesson, choose the highest durable enforcement layer: architecture/types → lint/check → behavior test → skill/instruction.
-5. Propose or apply focused edits to existing skills/checks. Do not create a new rule for every one-off inconvenience.
+5. Present Accepted, Rejected, and Backlog items. Wait for explicit approval before applying Accepted skill edits. Make only the approved changes. Backlog writes also need authorization. Do not create a new rule for every one-off inconvenience.
 6. Verify changed skill links/frontmatter and any executable check.
 
 ## Output

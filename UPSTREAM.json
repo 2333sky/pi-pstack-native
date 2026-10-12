@@ -1,9 +1,10 @@
 {
   "source": "cursor/plugins",
   "path": "pstack",
-  "version": "0.15.15",
-  "commit": "ccb5507cec1546dc88135c1139c811e6c59115ba",
-  "syncedAt": "2026-10-10T00:00:00Z",
+  "version": "0.15.17",
+  "commit": "978ca6e9c0e012047cd5058b8e829240336e704e",
+  "syncedAt": "2026-10-12T11:34:30Z",
+  "verification": "docs/upstream-provenance-0.15.17.json",
   "strategy": "semantic-native-port",
   "runtime": "Pi official APIs only"
 }

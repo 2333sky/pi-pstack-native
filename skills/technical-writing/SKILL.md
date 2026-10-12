@@ -37,6 +37,10 @@ Use imperative steps. Put prerequisites before the first step. State expected ou
 
 Separate fact, inference, recommendation, and example. Give units and boundaries for numbers. Do not say “safe”, “fast”, “simple”, or “supported” without the condition that makes it true.
 
+## PRs and commit messages
+
+Apply every writing layer except document-mode selection. A PR body is a one-minute briefing. Keep articles and verbs. Use one word for each action and a plain verb instead of an unnecessary `-ing` form. Use real symbols and commands instead of invented labels. Do not repeat a commit subject in its body. Link long logs and SHA lists rather than pasting them. Follow [opening-a-pr](../poteto-mode/playbooks/opening-a-pr.md) for required headings.
+
 ## Final pass
 
 Run `/skill:unslop`. Read for ambiguity: pronoun referents, overloaded terms, hidden subject, unclear “this/that”, and sentences that join unrelated actions.

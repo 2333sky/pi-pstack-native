@@ -1,0 +1,521 @@
+{
+  "sourceRoot": "/tmp/parity-upstream-01517/pstack",
+  "expected": {
+    "version": "0.15.17",
+    "commit": "978ca6e9c0e012047cd5058b8e829240336e704e"
+  },
+  "discovered": {
+    "version": "0.15.17",
+    "skillCount": 52,
+    "playbookCount": 23,
+    "fileCount": 165
+  },
+  "names": {
+    "skillAdded": [],
+    "skillMissing": [],
+    "playbookAdded": [],
+    "playbookMissing": []
+  },
+  "cursorRuntimeSeams": [
+    {
+      "path": "README.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 3
+        },
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/FOR_AGENTS.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/README.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/skills/reproduce-and-fix-issues/references/control-adapter.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/skills/reproduce-and-fix-issues/references/feature-map.example.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/skills/setup-benny/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 18
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/skills/triage-issue-reports/references/routing.example.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/templates/configuration.example.yaml",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/templates/reproduce-automation-prompt.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "automations/benny/templates/triage-automation-prompt.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/01-setup.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 2
+        },
+        {
+          "name": "cursor-custom-mode",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/02-poteto-mode.md",
+      "seams": [
+        {
+          "name": "cursor-custom-mode",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/06-verify-and-ship.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/07-overnight.md",
+      "seams": [
+        {
+          "name": "cursor-loop",
+          "count": 1
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/09-make-it-yours.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "docs/guide/10-recipes-and-pitfalls.md",
+      "seams": [
+        {
+          "name": "cursor-loop",
+          "count": 1
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/arena/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        },
+        {
+          "name": "cursor-path",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/automate-me/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 7
+        },
+        {
+          "name": "cursor-ask-question",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/create-verification-skill/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "skills/how/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "skills/interrogate/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 3
+        },
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/maintain-verification-skill/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/no-comments/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-help/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        },
+        {
+          "name": "cursor-path",
+          "count": 1
+        },
+        {
+          "name": "cursor-custom-mode",
+          "count": 5
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-help/references/recipes.md",
+      "seams": [
+        {
+          "name": "cursor-loop",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 4
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        },
+        {
+          "name": "cursor-ask-question",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autonomous-run.md",
+      "seams": [
+        {
+          "name": "cursor-ask-question",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-full.md",
+      "seams": [
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-stack.md",
+      "seams": [
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/eval.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/orchestrate.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 2
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/session-pickup.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        },
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/shipping.md",
+      "seams": [
+        {
+          "name": "cursor-cloud-agent",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/poteto-mode/scripts/worktree-audit.sh",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/recall/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/reflect/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 6
+        },
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/reflect/references/divergent-reviewer.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        },
+        {
+          "name": "cursor-path",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "skills/reflect/references/judgment-reviewer.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        },
+        {
+          "name": "cursor-path",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "skills/reflect/references/tooling-reviewer.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        },
+        {
+          "name": "cursor-path",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "skills/setup-pstack/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 2
+        },
+        {
+          "name": "cursor-path",
+          "count": 3
+        },
+        {
+          "name": "cursor-ask-question",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "skills/show-me-your-work/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/swarm/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 2
+        },
+        {
+          "name": "cursor-path",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "skills/why/SKILL.md",
+      "seams": [
+        {
+          "name": "cursor-task",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "claimBoundary": "This audit aligns top-level skill/playbook names and surfaces Cursor runtime seams. It does not mechanically approve semantic changes; changed upstream content still requires review and parity tests.",
+  "status": "review-seams-and-content"
+}
