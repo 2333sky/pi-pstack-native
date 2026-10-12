@@ -67,3 +67,125 @@ test("a symlinked entry runs the benchmark instead of exiting green", () => {
     assert.equal(results.rows.filter((row: { verified: boolean }) => row.verified).length, 0);
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
+
+const KINDS = ["adversarial-review-finding", "crash-recovery", "cross-module-feature", "integration-conflict", "interface-api-regression", "long-context-program", "stacked-pull-request"];
+const tasksLib = () => import("../benchmarks/lib/tasks.mjs");
+const reportLib = () => import("../benchmarks/lib/report.mjs");
+const runLib = () => import("../benchmarks/lib/run.mjs");
+const withFixture = async <T>(fn: (dir: string) => Promise<T>): Promise<T> => {
+  const dir = mkdtempSync(join(tmpdir(), "pstack-bench-"));
+  try { return await fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
+};
+
+test("task sets declare fixed fixtures, independent artifact tests and budgets", async () => {
+  const { loadTasks } = await tasksLib();
+  const tasks = loadTasks() as any[];
+  assert.deepEqual(tasks.map((t) => t.kind).sort(), KINDS);
+  for (const task of tasks) {
+    assert.ok(task.successCriteria.length >= 2, `${task.id} has no success criteria`);
+    assert.ok(task.budget.timeSeconds > 0 && task.budget.costUsd > 0 && task.budget.tokens > 0, `${task.id} has no time, cost and token budget`);
+    assert.ok(task.expects.provider && task.expects.model && task.expects.effort, `${task.id} declares no provider, model and effort`);
+    assert.ok(task.fixture.snapshot ?? task.fixture.generate, `${task.id} has no snapshot and no generator`);
+    assert.ok(task.gates.length && task.gates.every((g: any) => g.command?.length && g.category), `${task.id} has no independent artifact test`);
+    assert.ok(task.nodes.every((n: any) => n.goal && n.plannedChanges && n.gateIds.length), `${task.id} has an unplanned node`);
+    assert.ok(task.failureModes.length, `${task.id} declares no failure modes`);
+  }
+});
+
+test("task fixtures are byte deterministic and the long context fixture carries the declared volume", async () => {
+  const { loadTasks, buildWorkspace } = await tasksLib();
+  await withFixture(async (base) => {
+    for (const task of loadTasks() as any[]) {
+      const first = buildWorkspace(task, join(base, task.id, "one"));
+      const second = buildWorkspace(task, join(base, task.id, "two"));
+      assert.equal(second.workspaceDigest, first.workspaceDigest, `${task.id} is not deterministic`);
+      assert.equal(second.treeSha, first.treeSha, `${task.id} commit tree is not deterministic`);
+      assert.equal(first.repoId.length, 64);
+      if (task.fixture.contextBytesMin) assert.ok(first.contextBytes >= task.fixture.contextBytesMin, `${task.id} context is ${first.contextBytes} bytes`);
+    }
+  });
+});
+
+test("failure taxonomy is human reviewed and covers every declared mode", async () => {
+  const { loadTasks } = await tasksLib();
+  const { loadTaxonomy } = await reportLib();
+  const taxonomy = loadTaxonomy() as any;
+  assert.ok(taxonomy.version >= 1 && taxonomy.reviewedAt && taxonomy.reviewedBy);
+  assert.ok(taxonomy.categories.length >= 8);
+  for (const category of taxonomy.categories) {
+    assert.equal(category.reviewed, true, `${category.id} is not human reviewed`);
+    assert.ok(category.evidence?.length && category.detection?.length, `${category.id} has no evidence or detection rule`);
+  }
+  const ids = new Set(taxonomy.categories.map((c: any) => c.id));
+  for (const task of loadTasks() as any[]) for (const mode of [...task.failureModes, ...Object.values(task.fixture.mutants ?? {}).map((m: any) => m.category)]) assert.ok(ids.has(mode), `${task.id} declares unknown failure mode ${mode}`);
+});
+
+test("baselines are marked not run and Cursor cloud capability is separated", async () => {
+  const { loadBaselines } = await reportLib();
+  const baselines = loadBaselines() as any;
+  assert.equal(baselines.measured, false);
+  assert.equal(baselines.overallSuperiority, null);
+  assert.deepEqual(baselines.items.map((b: any) => b.id).sort(), ["cursor-pstack-cloud", "pi-single-agent", "pi-pstack-native"]);
+  for (const item of baselines.items) {
+    assert.equal(item.status, "not-run");
+    assert.ok(item.reason?.length, `${item.id} states no reason`);
+  }
+  assert.equal(baselines.items.find((b: any) => b.id === "cursor-pstack-cloud").comparable, false);
+  assert.equal(baselines.cursorCloudOnly.comparability, "not-comparable");
+  assert.ok(baselines.cursorCloudOnly.capabilities.length >= 3);
+  assert.match(baselines.cursorCloudOnly.claim, /no overall superiority/i);
+});
+
+test("report schema fails closed on an unmeasured metric reported as zero", async () => {
+  const { validateReport, metric, unmeasured } = await reportLib();
+  assert.deepEqual(unmeasured("no provider call").value, null);
+  assert.equal(metric(3, true).value, 3);
+  assert.throws(() => metric(null, true), /MEASURED_METRIC_REQUIRES_VALUE/);
+  assert.throws(() => metric(0, false), /UNMEASURED_METRIC_REQUIRES_NULL/);
+  assert.throws(() => metric(null, false), /UNMEASURED_METRIC_REQUIRES_REASON/);
+  const rows = [{ verified: true, verifiedTaskSuccess: metric(1, true) }];
+  assert.throws(() => validateReport({ schemaVersion: 1, tasks: rows, aggregate: { verifiedTaskSuccess: metric(0, false, "reported as zero", "harness") } }), /UNMEASURED_METRIC_REQUIRES_NULL/);
+});
+
+test("the offline provider runs the task sets and records only measured metrics", async () => {
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", output: join(base, "out"), only: ["cross-module-feature", "crash-recovery"] }) as any;
+    assert.equal(result.exitCode, 0, JSON.stringify(result.report.tasks.map((t: any) => [t.id, t.failureCategory])));
+    assert.equal(result.blocked, undefined);
+    assert.equal(result.report.measurement.credentialedCalls, 0);
+    assert.equal(result.report.tasks.length, 2);
+    assert.ok(result.report.tasks.every((t: any) => t.verified), "an offline reference run left a task unverified");
+    assert.equal(result.report.aggregate.tokens.value, null);
+    assert.equal(result.report.aggregate.costUsd.value, null);
+    assert.equal(result.report.aggregate.latencyMs.measured, true);
+    assert.equal(result.report.aggregate.verifiedTaskSuccess.value, 1);
+    const written = JSON.parse(readFileSync(join(base, "out", "report.json"), "utf8"));
+    assert.deepEqual(written.measurement, result.report.measurement);
+  });
+});
+
+test("a mutant plan is reported unverified under its declared failure category", async () => {
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", mutant: "integration-intent-lost", output: join(base, "out"), only: ["integration-conflict"] }) as any;
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.report.tasks.length, 1);
+    assert.equal(result.report.tasks[0].verified, false);
+    assert.equal(result.report.tasks[0].failureCategory, "integration-intent-lost");
+    assert.equal(result.report.aggregate.verifiedTaskSuccess.value, 0);
+  });
+});
+
+test("a configured provider without credentials blocks the task-set runner", async () => {
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "configured", agentDir: join(base, "agent"), model: "test/model", output: join(base, "out"), only: ["cross-module-feature"] }) as any;
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.blocked, "AUTHENTICATION_UNAVAILABLE");
+    assert.equal(result.report.tasks.every((t: any) => !t.verified), true);
+    assert.equal(result.report.aggregate.verifiedTaskSuccess.value, null);
+    assert.match(result.report.aggregate.verifiedTaskSuccess.reason, /AUTHENTICATION_UNAVAILABLE/);
+    assert.equal(result.report.measurement.credentialedCalls, 0);
+  });
+});
