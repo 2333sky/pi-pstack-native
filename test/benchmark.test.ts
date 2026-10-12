@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -208,6 +208,80 @@ test("one offline pass over the whole task set publishes no interval", async () 
     assert.equal(result.report.aggregate.interval95.value, null);
     assert.match(result.report.aggregate.interval95.reason, /repetition/);
     assert.equal(result.report.measurement.repetitions, 1);
+  });
+});
+
+test("the task-set runner refuses unsupported repetitions before writing output", async () => {
+  const { runTaskSets } = await runLib();
+  await withFixture(async (base) => {
+    const output = join(base, "out");
+    await assert.rejects(() => runTaskSets({ provider: "fake", output, repetitions: 5 }), /UNSUPPORTED_REPETITIONS/);
+    assert.equal(existsSync(output), false);
+    for (const repetitions of [0, -1, 1.5, "5", null]) {
+      await assert.rejects(() => runTaskSets({ provider: "fake", output, repetitions }), /UNSUPPORTED_REPETITIONS/);
+      assert.equal(existsSync(output), false);
+    }
+    const result = await runTaskSets({ provider: "fake", output, repetitions: 1, only: ["cross-module-feature"] }) as any;
+    assert.equal(result.report.measurement.repetitions, 1);
+    assert.equal(result.report.aggregate.sampleSize, 1);
+    assert.deepEqual(result.report.aggregate.interval95, {
+      value: null,
+      method: null,
+      reason: "repeated runs are not supported; this report has one observation per task, not repeated observations of the same task",
+    });
+  });
+});
+
+test("the report schema refuses unsupported repetitions and single-pass intervals", async () => {
+  const { runTaskSets } = await runLib();
+  const { validateReport } = await reportLib();
+  await withFixture(async (base) => {
+    const result = await runTaskSets({ provider: "fake", output: join(base, "out") }) as any;
+    const repeated = structuredClone(result.report);
+    repeated.measurement.repetitions = 5;
+    repeated.aggregate.interval95 = { value: [0.6457, 1], method: "wilson-95", reason: null };
+    assert.throws(() => validateReport(repeated), /REPORT_REPETITIONS_UNSUPPORTED/);
+    const interval = structuredClone(result.report);
+    interval.aggregate.interval95 = { value: [0.6457, 1], method: "wilson-95", reason: null };
+    assert.throws(() => validateReport(interval), /REPORT_INTERVAL_UNSUPPORTED/);
+  });
+});
+
+test("the report schema reconciles aggregate success with six reference rows and one real mutant", async () => {
+  const { runTaskSets } = await runLib();
+  const { validateReport } = await reportLib();
+  await withFixture(async (base) => {
+    const reference = await runTaskSets({ provider: "fake", output: join(base, "reference") }) as any;
+    const mutant = await runTaskSets({ provider: "fake", mutant: "integration-intent-lost", output: join(base, "mutant"), only: ["integration-conflict"] }) as any;
+    assert.equal(reference.report.aggregate.verified, 7);
+    assert.equal(mutant.report.aggregate.verified, 0);
+    const mixed = structuredClone(reference.report);
+    mixed.tasks[mixed.tasks.findIndex((task: any) => task.id === "integration-conflict")] = structuredClone(mutant.report.tasks[0]);
+    assert.equal(mixed.tasks.filter((task: any) => task.verified).length, 6);
+    assert.equal(mixed.tasks.filter((task: any) => task.mutantCategory === "integration-intent-lost" && !task.verified).length, 1);
+    assert.throws(() => validateReport(mixed), /REPORT_AGGREGATE_VERIFIED/);
+    mixed.aggregate.verified = 6;
+    mixed.aggregate.verifiedTaskSuccess.value = 6 / 7;
+    mixed.aggregate.retries.value = mixed.tasks.reduce((total: number, task: any) => total + task.metrics.retries.value, 0);
+    mixed.aggregate.integrationFailures.value = 1;
+    assert.equal(validateReport(structuredClone(mixed)).aggregate.verified, 6);
+    assert.equal(validateReport(structuredClone(mixed)).aggregate.verifiedTaskSuccess.value, 6 / 7);
+    for (const [field, value, error] of [
+      ["sampleSize", 8, /REPORT_AGGREGATE_SAMPLE_SIZE/],
+      ["verified", 7, /REPORT_AGGREGATE_VERIFIED/],
+      ["verified", -1, /REPORT_AGGREGATE_VERIFIED/],
+      ["verified", 6.5, /REPORT_AGGREGATE_VERIFIED/],
+    ] as const) {
+      const changed = structuredClone(mixed);
+      changed.aggregate[field] = value;
+      assert.throws(() => validateReport(changed), error);
+    }
+    const rate = structuredClone(mixed);
+    rate.aggregate.verifiedTaskSuccess.value = 1;
+    assert.throws(() => validateReport(rate), /REPORT_AGGREGATE_TASK_SUCCESS/);
+    const row = structuredClone(mixed);
+    row.tasks.find((task: any) => task.id === "integration-conflict").metrics.verifiedTaskSuccess.value = 1;
+    assert.throws(() => validateReport(row), /REPORT_TASK_SUCCESS/);
   });
 });
 
