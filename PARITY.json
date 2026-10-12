@@ -1,6 +1,6 @@
 {
-  "upstream": "0.15.15",
-  "upstreamCommit": "ccb5507cec1546dc88135c1139c811e6c59115ba",
+  "upstream": "0.15.17",
+  "upstreamCommit": "978ca6e9c0e012047cd5058b8e829240336e704e",
   "claim": "semantic-native-port",
   "skills": {
     "architect": "ADAPTED",
@@ -14,6 +14,7 @@
     "figure-it-out": "ADAPTED",
     "how": "ADAPTED",
     "interrogate": "ADAPTED",
+    "ketchup": "ADAPTED",
     "maintain-verification-skill": "ADAPTED",
     "make-bot-ui": "CURSOR_ONLY",
     "no-comments": "ADAPTED",
@@ -89,10 +90,19 @@
   "cursorOnly": [
     "make-bot-ui"
   ],
+  "unsupportedPlatformBehavior": [
+    "Cursor private built-in PR-tool provenance",
+    "upstream watcher merge-queue verdict protocol",
+    "Cursor-only cleanup plugins"
+  ],
   "pending": [],
   "coverage": {
-    "topLevelSkills": 51,
+    "topLevelSkills": 52,
     "potetoPlaybooks": 23,
+    "countEvidence": "docs/upstream-sync-0.15.17.json",
+    "countsMean": "observed upstream names, not exercised behavior",
+    "behavioralAudit": "not-claimed",
+    "ketchupEvidence": "Pi skill loader and structural sections only; chat behavior not exercised (issue #6)",
     "fileLevelAudit": "not-claimed",
     "auxiliaryFiles": "references/scripts/assets are not vendored or claimed byte-for-byte; required behavior is incorporated into adapted semantic ports where applicable"
   }

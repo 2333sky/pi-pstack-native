@@ -50,7 +50,8 @@ The runtime state lives under `~/.pi/agent/pstack-native/`.
 | create/maintain real-surface verification | `/skill:create-verification-skill`, `/skill:maintain-verification-skill` |
 | remove unnecessary comments | `/skill:no-comments` |
 | clean prose | `/skill:unslop`, `/skill:technical-writing` |
-| catch up on existing work | `/skill:recall` |
+| catch up on this chat since your last message | `/skill:ketchup` |
+| recall existing work from session history | `/skill:recall` |
 | learn from a completed run | `/skill:reflect` |
 | large ambiguous run | `/skill:figure-it-out` |
 
@@ -59,6 +60,12 @@ Principles are small decision rules usually invoked by Poteto Mode rather than d
 ## Native runtime model
 
 `pstack_agents` creates persistent Pi child `AgentSession`s. `pstack_workflow` stores graph state and resumes unfinished children. Concurrent writers normally work in separate Git worktrees. Reviewers are read-only. This is why Cursor `Task` examples should not be copied literally.
+
+## Chat catch-up
+
+`/skill:ketchup` reports changes since your last user-authored message before the request. Notifications and child completions do not move that cutoff. It rechecks status without edits or remote writes. It lists only decisions or steps that need you, including older unanswered items. Chat behavior has not been exercised by the structural tests.
+
+The verified upstream baseline is pstack `0.15.17` at `978ca6e9c0e012047cd5058b8e829240336e704e`. See `PARITY.md` for intentional Pi differences.
 
 ## Scheduling caveat
 

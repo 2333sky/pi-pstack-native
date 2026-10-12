@@ -16,11 +16,13 @@ Poteto Mode is the operating style for non-trivial work. Work backward from a ve
 5. **Separate writers.** Concurrent write-capable agents use independent worktrees. Shared mutable state is a design smell before it is a locking problem.
 6. **Verify the actual artifact.** A child report, typecheck, or green unit suite is not enough when the user depends on a UI/CLI/API/runtime flow.
 7. **Review before declaring done.** Inspect the diff/state and run adversarial review when the change is important or contested.
-8. **Keep replies clean.** Lead with the result, not a diary of tool calls. Use `/skill:unslop` and `/skill:technical-writing` when prose is an artifact.
+8. **Keep replies clean.** Lead with the result, not a diary of tool calls. Apply `/skill:unslop` to every prose reply and `/skill:technical-writing` to docs, PR bodies, and commit messages.
+9. **Route status requests deliberately.** Read `playbooks/babysit.md` for PR status or review work. Declare the mode before polling. Opening a PR never starts a babysit. Use `/skill:ketchup` for a read-only chat catch-up.
+10. **Resolve observable questions with evidence.** Use a prototype for facts a run can settle. Keep read-only investigations read-only. Ask only for product choices or authorization that evidence cannot supply.
 
 ## Principles
 
-Apply a principle when it changes a decision, and cite it in the handoff. Important defaults:
+Read a principle's leaf skill in full before applying it. Cite it only when it changes a decision. Important defaults:
 
 - `principle-laziness-protocol`: delete and flatten before adding machinery.
 - `principle-foundational-thinking`: choose data shape, ownership, and invariants first.

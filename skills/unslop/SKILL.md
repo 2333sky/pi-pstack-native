@@ -31,6 +31,8 @@ Cut or rewrite:
 - headings that merely repeat the first sentence;
 - decorative jargon that hides a simple action.
 
+Also remove abstract metaphors, decorative emoji, synonym cycling, and forced groups of three. Use periods instead of long dashes. Use a colon only before a list or example, not between two thoughts. Keep complete sentences with articles and verbs. Replace a feeling with the concrete mechanism or measured result.
+
 Do not make precise technical prose shorter at the cost of losing conditions, units, failure modes, or attribution.
 
 ## Output
