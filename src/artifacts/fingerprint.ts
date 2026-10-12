@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
-import { hash, uid, transact } from '../runtime/protocol.ts';
+import { hash, uid, transact, protocol } from '../runtime/protocol.ts';
 import type { Fingerprint, Artifact } from '../contracts/types.ts';
 export function git(cwd: string, args: string[]): string { return execFileSync('git', ['-C', cwd, ...args], {encoding:'utf8', maxBuffer:64*1024*1024, timeout:30000}).trimEnd(); }
 export function fingerprint(cwd: string, kind: 'working' | 'committed' = 'working'): Fingerprint {
@@ -11,6 +11,7 @@ export function fingerprint(cwd: string, kind: 'working' | 'committed' = 'workin
   const repoId = hash({common, remote});
   const commitSha = git(root,['rev-parse','HEAD']); const treeSha = git(root,['rev-parse','HEAD^{tree}']);
   if (git(root,['ls-files','--stage']).split('\n').some(x=>x.startsWith('160000 '))) throw new Error('FINGERPRINT_UNSUPPORTED: submodules require separate artifacts');
+  if (git(root,['ls-files','-v','-z']).split('\0').some(x=>x.startsWith('S ') || /^[a-z] /.test(x))) throw new Error('FINGERPRINT_INDEX_FLAGS_UNSUPPORTED');
   const files: Record<string,string> = {};
   const indexTree = git(root,['write-tree']); // Conflicted indexes fail closed.
   const paths = git(root,['ls-files','-z','--cached','--others','--exclude-standard']).split('\0').filter(Boolean).sort();
@@ -29,7 +30,17 @@ export function fingerprint(cwd: string, kind: 'working' | 'committed' = 'workin
 export function sameFingerprint(a: Fingerprint, b: Fingerprint): boolean {
   return a.repoId===b.repoId && a.kind===b.kind && a.commitSha===b.commitSha && a.treeSha===b.treeSha && a.workspaceDigest===b.workspaceDigest && a.policyVersion===b.policyVersion;
 }
-export function capture(cwd: string, producer?: string, parents: string[] = [], kind: 'working' | 'committed' = 'working'): Artifact {
-  const artifact: Artifact = {id:uid('art'),cwd:realpathSync(cwd),fingerprint:fingerprint(cwd,kind),parents,producer,createdAt:new Date().toISOString()};
+type BaselineFingerprint = Fingerprint & { baselineId?: string };
+type CapturePurpose = { kind: 'baseline' } | { kind: 'verification'; baseline?: Fingerprint };
+export function capturedBaseline(before: Fingerprint): Fingerprint | undefined {
+  const id = (before as BaselineFingerprint).baselineId;
+  const artifact = typeof id==='string' ? protocol().artifacts[id] : undefined;
+  return artifact && (artifact.fingerprint as BaselineFingerprint).baselineId===artifact.id && hash(artifact.fingerprint)===hash(before) ? artifact.fingerprint : undefined;
+}
+export function capture(cwd: string, producer?: string, parents: string[] = [], kind: 'working' | 'committed' = 'working', purpose: CapturePurpose = {kind:'baseline'}): Artifact {
+  const id = uid('art'); const fp: BaselineFingerprint = fingerprint(cwd,kind);
+  const baselineId = purpose.kind==='baseline' ? id : (purpose.baseline as BaselineFingerprint | undefined)?.baselineId;
+  if (baselineId) fp.baselineId = baselineId;
+  const artifact: Artifact = {id,cwd:realpathSync(cwd),fingerprint:fp,parents,producer,createdAt:new Date().toISOString()};
   transact('artifact-captured',artifact.id,'runtime',s=>{s.artifacts[artifact.id]=artifact; return artifact;}); return artifact;
 }

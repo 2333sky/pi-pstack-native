@@ -1,5 +1,5 @@
 import { briefPrompt, validateBrief, parseReport, scopeViolations, changedPaths } from "../contracts/brief.ts";
-import { fingerprint, sameFingerprint } from "../artifacts/fingerprint.ts";
+import { capture, fingerprint, sameFingerprint } from "../artifacts/fingerprint.ts";
 import type { TaskBrief, Budget } from "../contracts/types.ts";
 import type { ThinkingLevelName } from "../runtime/types.ts";
 import { randomUUID } from "node:crypto";
@@ -271,7 +271,7 @@ export class AgentHost {
         validateBrief(currentBrief);
         const current = fingerprint(cwd);
         if(ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint,current))throw new Error("FIXED_REVIEW_ARTIFACT_CHANGED");
-        const baseline = record.baseline ?? current;
+        const baseline = record.baseline ?? capture(cwd, record.id).fingerprint;
         if (baseline.repoId !== currentBrief.scope.repoId) throw new Error("REPOSITORY_MISMATCH");
         record = this.change(record.id, a=>{a.brief=currentBrief;a.baseline=baseline;});
       }
@@ -351,7 +351,7 @@ export class AgentHost {
       if (record.brief) {
         const after = fingerprint(cwd);
         if(!profile.writable && !sameFingerprint(record.baseline!,after))throw new Error("REVIEW_ARTIFACT_CHANGED");
-        const violations = scopeViolations(record.brief, changedPaths(record.baseline!,after));
+        const violations = scopeViolations(record.brief, changedPaths(record.baseline!,after,cwd));
         if (violations.length) throw new Error("SCOPE_VIOLATION: " + JSON.stringify(violations));
       }
       if (this.isStopping(record.id)) return this.finishCancelled(record.id);

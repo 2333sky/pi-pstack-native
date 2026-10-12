@@ -13,10 +13,22 @@ export interface GateSpec {
     coverage?: string[];
     category?: 'behavior' | 'typecheck' | 'review';
 }
-export interface TaskBrief {
+export type TaskBrief = BriefFields & ({
+    contractLevel: 'minimal';
+    acceptance?: Acceptance[];
+} | {
+    contractLevel: 'strict';
+    acceptance: Acceptance[];
+});
+export interface Acceptance {
+    id: string;
+    description: string;
+    required: boolean;
+    gateIds: string[];
+}
+interface BriefFields {
     id: string;
     revision: number;
-    contractLevel: 'minimal' | 'strict';
     goal: string;
     scope: {
         include: string[];
@@ -24,12 +36,6 @@ export interface TaskBrief {
         repoId: string;
     };
     contextRefs: string[];
-    acceptance: {
-        id: string;
-        description: string;
-        required: boolean;
-        gateIds: string[];
-    }[];
     verification: GateSpec[];
     timeboxSeconds?: number;
     forbidden: string[];
@@ -133,10 +139,17 @@ export interface Ledger {
     verifiedAt: string;
     verifiedBy: string;
     executionNonce: string;
+    diffBase?: {
+        kind: 'pr' | 'fingerprint';
+        commitSha: string;
+        fingerprintHash?: string;
+        refreshed: boolean;
+    };
     pr?: {
         repoId: string;
         number: number;
         headSha: string;
+        baseSha?: string;
     };
 }
 export interface Event {
@@ -147,3 +160,4 @@ export interface Event {
     subject: string;
     data: unknown;
 }
+export {};

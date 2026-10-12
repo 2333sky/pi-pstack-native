@@ -13,6 +13,10 @@ export async function refresh(spec:StackSpec,provider:PRProvider):Promise<Fronti
   const digest=hash(prs);return transact('frontier-refreshed',spec.id,'provider',s=>{
     const old=s.frontiers[spec.id] as Frontier|undefined;
     if(old && (old.owner!==spec.owner || old.repo!==spec.repo || old.repoId!==spec.repoId))throw new Error('STACK_IDENTITY_CONFLICT');
+    for(const e of Object.values(s.ledgers)) {
+      const p=prs.find(p=>e.pr?.repoId===spec.repoId && e.pr.number===p.number);
+      if(p && (!e.diffBase || e.diffBase.commitSha!==p.baseSha || e.pr!.headSha!==p.headSha))s.invalidations[e.id]={at:new Date().toISOString(),reason:'PR_BASE_OR_HEAD_CHANGED'};
+    }
     const f:Frontier={...spec,prs,digest,generation:(old?.generation ?? 0)+(old?.digest===digest?0:1),checkedAt:new Date().toISOString()};s.frontiers[spec.id]=f;return f;
   });
 }
@@ -28,7 +32,7 @@ export function eligibility(f:Frontier):{number:number;eligible:boolean;blockers
     if(p.review==='changes-requested' || f.requireReview!==false && p.review!=='approved')blockers.push('REVIEW_REQUIRED');
     if(p.ci!=='passed')blockers.push('CI_NOT_PASSED');
     const entries=Object.values(s.ledgers).filter(e=>e.pr?.repoId===f.repoId && e.pr.number===p.number && e.pr.headSha===p.headSha && e.fingerprint.kind==='committed' && e.fingerprint.commitSha===p.headSha);
-    if(!entries.some(e=>e.contractAccepted && ledgerCurrent(e,e.fingerprint) && (f.requireBehavior===false || e.verdict==='unit-test-verified')))blockers.push('CURRENT_VERIFICATION_REQUIRED');
+    if(!entries.some(e=>e.diffBase?.commitSha===p.baseSha && e.contractAccepted && ledgerCurrent(e,e.fingerprint) && (f.requireBehavior===false || e.verdict==='unit-test-verified')))blockers.push('CURRENT_VERIFICATION_REQUIRED');
     return {number:p.number,eligible:blockers.length===0,blockers};
   });
 }

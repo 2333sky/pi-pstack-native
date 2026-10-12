@@ -6,10 +6,15 @@ export interface GateSpec {
   format?: 'junit' | 'tap'; maxFiles?: number; coverage?: string[];
   category?: 'behavior' | 'typecheck' | 'review';
 }
-export interface TaskBrief {
-  id: string; revision: number; contractLevel: 'minimal' | 'strict'; goal: string;
+export type TaskBrief = BriefFields & (
+  { contractLevel: 'minimal'; acceptance?: Acceptance[] } |
+  { contractLevel: 'strict'; acceptance: Acceptance[] }
+);
+export interface Acceptance { id: string; description: string; required: boolean; gateIds: string[] }
+interface BriefFields {
+  id: string; revision: number; goal: string;
   scope: { include: string[]; exclude: string[]; repoId: string };
-  contextRefs: string[]; acceptance: { id: string; description: string; required: boolean; gateIds: string[] }[];
+  contextRefs: string[];
   verification: GateSpec[]; timeboxSeconds?: number; forbidden: string[];
   standingOrders: string[]; reportFormat: 'task-report-v1';
   reportRequirements?: {kind:'evaluation'|'selection'|'review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
@@ -42,6 +47,7 @@ export interface Ledger {
   gateIds: string[]; gateDefinitionHash: string; status: GateStatus;
   verdict: 'unit-test-verified' | 'type-check-only' | 'verifier-blocked' | 'verifier-failed' | 'not-verified';
   verifiedAt: string; verifiedBy: string; executionNonce: string;
-  pr?: { repoId: string; number: number; headSha: string };
+  diffBase?: { kind: 'pr' | 'fingerprint'; commitSha: string; fingerprintHash?: string; refreshed: boolean };
+  pr?: { repoId: string; number: number; headSha: string; baseSha?: string };
 }
 export interface Event { id: string; at: string; actor: string; type: string; subject: string; data: unknown }

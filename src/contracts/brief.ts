@@ -1,16 +1,25 @@
 import { hash, transact } from '../runtime/protocol.ts';
+import { git } from '../artifacts/fingerprint.ts';
 import type { TaskBrief, TaskReport, Fingerprint } from './types.ts';
 export function matchPath(path: string, glob: string): boolean {
   if (glob === '**' || glob === '**/*') return true;
   const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*\//g, '\u0001').replace(/\*\*/g, '\u0002').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]').replace(/\u0001/g, '(?:.*/)?').replace(/\u0002/g, '.*');
   return new RegExp(`^${escaped}$`).test(path);
 }
+export class BriefValidationError extends Error {
+  readonly code = 'BRIEF_INCOMPLETE';
+  constructor(detail: string) { super(`BRIEF_INCOMPLETE: ${detail}`); this.name = 'BriefValidationError'; }
+}
 export function validateBrief(brief: TaskBrief): void {
+  try { checkBrief(brief); }
+  catch(error) { if(error instanceof BriefValidationError) throw error; throw new BriefValidationError(String(error)); }
+}
+function checkBrief(brief: TaskBrief): void {
   const errors: string[] = [];
-  if (!brief || !['minimal','strict'].includes(brief.contractLevel)) throw new Error('BRIEF_INCOMPLETE: contractLevel');
+  if (!brief || !['minimal','strict'].includes(brief.contractLevel)) throw new BriefValidationError('contractLevel');
   if (!brief.id || !/^[a-zA-Z0-9._-]+$/.test(brief.id) || ['__proto__','constructor','prototype'].includes(brief.id) || !Number.isInteger(brief.revision) || brief.revision < 1) errors.push('id/revision');
-  if (!brief.goal?.trim()) errors.push('goal');
-  if (!brief.scope?.repoId || !brief.scope?.include?.length || !Array.isArray(brief.scope.exclude)) errors.push('scope');
+  if (typeof brief.goal !== 'string' || !brief.goal.trim()) errors.push('goal');
+  if (typeof brief.scope?.repoId !== 'string' || !brief.scope.repoId || !Array.isArray(brief.scope.include) || !brief.scope.include.length || !brief.scope.include.every(p=>typeof p==='string') || !Array.isArray(brief.scope.exclude) || !brief.scope.exclude.every(p=>typeof p==='string')) errors.push('scope');
   if (!Array.isArray(brief.contextRefs)) errors.push('contextRefs');
   if (!Array.isArray(brief.forbidden)) errors.push('forbidden');
   if (!Array.isArray(brief.standingOrders)) errors.push('standingOrders');
@@ -26,17 +35,20 @@ export function validateBrief(brief: TaskBrief): void {
       if (gate.coverage?.some(p=>p.startsWith('/') || p.split('/').includes('..'))) errors.push(`verification.${gate.id}.coverage`);
       if (gate.timeoutSeconds !== undefined && (!Number.isFinite(gate.timeoutSeconds) || gate.timeoutSeconds <= 0)) errors.push(`verification.${gate.id}.timeout`);
     }
-    if (brief.contractLevel === 'strict') {
-      if (!brief.acceptance?.length || !brief.acceptance.some(x=>x.required)) errors.push('acceptance');
+    if (brief.acceptance !== undefined && !Array.isArray(brief.acceptance)) errors.push('acceptance');
+    else {
+      if (brief.contractLevel === 'strict' && (!brief.acceptance?.length || !brief.acceptance.some(x=>x?.required))) errors.push('acceptance');
+      const acceptanceIds = new Set<string>();
       for (const ac of brief.acceptance ?? []) {
-        if (!ac.id || !ac.description || !ac.gateIds?.length || ac.gateIds.some(id=>!ids.has(id))) errors.push(`acceptance.${ac.id}.gateIds`);
+        if (!ac || typeof ac.id !== 'string' || !ac.id || acceptanceIds.has(ac.id) || typeof ac.description !== 'string' || !ac.description || typeof ac.required !== 'boolean' || !Array.isArray(ac.gateIds) || !ac.gateIds.length || ac.gateIds.some(id=>!ids.has(id))) { errors.push('acceptance'); continue; }
+        acceptanceIds.add(ac.id);
         if (ac.required && ac.gateIds.some(id=>brief.verification.find(g=>g.id===id)?.required===false)) errors.push(`acceptance.${ac.id}.optionalGate`);
         if (ac.required && ac.gateIds.every(id=>brief.verification.find(g=>g.id===id)?.kind==='llm-review')) errors.push(`acceptance.${ac.id}.machineGate`);
       }
     }
   }
   for (const p of [...(brief.scope?.include ?? []), ...(brief.scope?.exclude ?? [])]) if (p.startsWith('/') || p.split('/').includes('..') || p.includes('\\')) errors.push('scope.relativeGlob');
-  if (errors.length) throw new Error(`BRIEF_INCOMPLETE: ${[...new Set(errors)].join(', ')}`);
+  if (errors.length) throw new BriefValidationError([...new Set(errors)].join(', '));
 }
 export function saveBrief(brief: TaskBrief, actor: string, reason: string): TaskBrief {
   validateBrief(brief); if (!reason.trim()) throw new Error('Brief revision requires reason');
@@ -48,8 +60,10 @@ export function saveBrief(brief: TaskBrief, actor: string, reason: string): Task
     versions.push(structuredClone(brief)); s.briefs[brief.id] = versions; return brief;
   });
 }
-export function changedPaths(before: Fingerprint, after: Fingerprint): string[] {
-  return [...new Set([...Object.keys(before.files), ...Object.keys(after.files)])].filter(p=>before.files[p] !== after.files[p]).sort();
+export function changedPaths(before: Fingerprint, after: Fingerprint, cwd: string): string[] {
+  const working = [...new Set([...Object.keys(before.files), ...Object.keys(after.files)])].filter(p=>before.files[p] !== after.files[p]);
+  const staged = git(cwd,['diff','--no-renames','--name-only','-z',before.indexTree,after.indexTree]).split('\0').filter(Boolean);
+  return [...new Set([...working, ...staged])].sort();
 }
 export function scopeViolations(brief: TaskBrief, paths: string[]): string[] {
   return paths.filter(p=>!brief.scope.include.some(g=>matchPath(p,g)) || brief.scope.exclude.some(g=>matchPath(p,g)));

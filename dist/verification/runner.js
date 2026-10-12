@@ -5,7 +5,7 @@ import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { homePath, lockPath } from "../runtime/home.js";
 import { FileLock } from "../runtime/lock.js";
 import { hash, uid, transact, protocol } from "../runtime/protocol.js";
-import { fingerprint, capture, sameFingerprint, git } from "../artifacts/fingerprint.js";
+import { fingerprint, capture, capturedBaseline, sameFingerprint, git } from "../artifacts/fingerprint.js";
 import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies } from "../contracts/brief.js";
 export function loadRunnerPolicy() {
     try {
@@ -75,7 +75,7 @@ export function parseTestReport(text, format) {
 }
 export function ledgerCurrent(entry, current) {
     const state = protocol();
-    return entry.status === 'passed' && !state.invalidations[entry.id] && sameFingerprint(entry.fingerprint, current) && entry.evidenceRefs.length > 0 && entry.evidenceRefs.every(id => {
+    return entry.status === 'passed' && (!entry.pr || Boolean(entry.diffBase && (!entry.pr.baseSha || entry.diffBase.commitSha === entry.pr.baseSha))) && !state.invalidations[entry.id] && sameFingerprint(entry.fingerprint, current) && entry.evidenceRefs.length > 0 && entry.evidenceRefs.every(id => {
         const e = state.evidence[id];
         if (!e || e.status !== 'passed')
             return false;
@@ -97,8 +97,14 @@ export function invalidate(cwd, reason) {
     });
 }
 export async function verify(cwd, brief, options = {}) {
-    validateBrief(brief);
     const actor = options.actor ?? 'verification-runner';
+    try {
+        validateBrief(brief);
+    }
+    catch (error) {
+        transact('verification-rejected', brief?.id ?? 'unknown', actor, () => ({ reason: String(error) }));
+        throw error;
+    }
     const policy = options.policy ?? loadRunnerPolicy();
     const lock = new FileLock(lockPath(`verify-${hash(realpathSync(cwd))}`));
     const deadline = Date.now() + 5000;
@@ -108,14 +114,60 @@ export async function verify(cwd, brief, options = {}) {
         await new Promise(resolve => setTimeout(resolve, 25));
     }
     try {
-        const artifact = capture(cwd, undefined, options.parents, options.pr ? 'committed' : 'working');
+        const baseline = options.before ? capturedBaseline(options.before) : undefined;
+        const artifact = capture(cwd, undefined, options.parents, options.pr ? 'committed' : 'working', { kind: 'verification', baseline });
         if (brief.scope.repoId !== artifact.fingerprint.repoId)
             throw new Error('REPOSITORY_MISMATCH');
         if (options.pr && (options.pr.repoId !== artifact.fingerprint.repoId || options.pr.headSha !== artifact.fingerprint.commitSha))
             throw new Error('PR_HEAD_MISMATCH');
-        const paths = options.before ? changedPaths(options.before, artifact.fingerprint) : git(cwd, ['diff', '--name-only', 'HEAD']).split('\n').filter(Boolean).concat(git(cwd, ['ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean));
+        let paths = [];
+        let diffBase;
+        let baselineError;
+        try {
+            if (options.pr?.baseSha) {
+                const base = options.pr.baseSha;
+                if (!/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(base) || git(cwd, ['rev-parse', '--verify', `${base}^{commit}`]) !== base)
+                    throw new Error('INVALID_DIFF_BASE');
+                git(cwd, ['merge-base', '--is-ancestor', base, artifact.fingerprint.commitSha]);
+                paths = git(cwd, ['diff', '--no-renames', '--name-only', '-z', base, artifact.fingerprint.commitSha]).split('\0').filter(Boolean);
+                diffBase = { kind: 'pr', commitSha: base, refreshed: false };
+            }
+            else if (options.before) {
+                const before = baseline;
+                if (!before)
+                    throw new Error('DIFF_BASE_UNPROVEN');
+                if (before.repoId !== artifact.fingerprint.repoId || before.policyVersion !== 1 || !['working', 'committed'].includes(before.kind) || !before.files || typeof before.files !== 'object' || Array.isArray(before.files) || !Object.values(before.files).every(value => typeof value === 'string') || before.workspaceDigest !== hash({ files: before.files, indexTree: before.indexTree }) || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(before.commitSha) || git(cwd, ['rev-parse', '--verify', `${before.commitSha}^{commit}`]) !== before.commitSha)
+                    throw new Error('INVALID_DIFF_BASE');
+                if (options.pr) {
+                    if (before.dirty !== false || before.treeSha !== before.indexTree || git(cwd, ['rev-parse', `${before.commitSha}^{tree}`]) !== before.treeSha)
+                        throw new Error('INVALID_DIFF_BASE');
+                    git(cwd, ['merge-base', '--is-ancestor', before.commitSha, artifact.fingerprint.commitSha]);
+                    paths = git(cwd, ['diff', '--no-renames', '--name-only', '-z', before.commitSha, artifact.fingerprint.commitSha]).split('\0').filter(Boolean);
+                }
+                else
+                    paths = changedPaths(before, artifact.fingerprint, cwd);
+                diffBase = { kind: 'fingerprint', commitSha: before.commitSha, fingerprintHash: hash(before), refreshed: false };
+            }
+            else if (options.pr || brief.contractLevel === 'strict')
+                baselineError = 'DIFF_BASE_REQUIRED';
+            else
+                paths = [...new Set([...git(cwd, ['diff', '--no-renames', '--name-only', '-z', 'HEAD']).split('\0'), ...git(cwd, ['diff', '--cached', '--no-renames', '--name-only', '-z', 'HEAD']).split('\0'), ...git(cwd, ['ls-files', '--others', '--exclude-standard', '-z']).split('\0')].filter(Boolean))].sort();
+        }
+        catch (error) {
+            baselineError = error instanceof Error && error.message === 'DIFF_BASE_UNPROVEN' ? 'DIFF_BASE_UNPROVEN' : 'DIFF_BASE_UNAVAILABLE';
+        }
+        const baseKey = (base) => base ? hash({ kind: base.kind, commitSha: base.commitSha, fingerprintHash: base.fingerprintHash }) : undefined;
+        transact('verification-baseline', brief.id, actor, s => {
+            const old = Object.values(s.ledgers).filter(e => e.fingerprint.repoId === artifact.fingerprint.repoId && (options.pr ? e.pr?.number === options.pr.number && e.pr.repoId === options.pr.repoId : e.gateDefinitionHash === hash(brief) && !e.pr));
+            if (diffBase)
+                diffBase.refreshed = old.some(e => baseKey(e.diffBase) !== baseKey(diffBase));
+            for (const e of old)
+                if (e.fingerprint.commitSha !== artifact.fingerprint.commitSha || baseKey(e.diffBase) !== baseKey(diffBase))
+                    s.invalidations[e.id] = { at: new Date().toISOString(), reason: 'DIFF_BASE_OR_HEAD_CHANGED' };
+            return { diffBase, reason: baselineError };
+        });
         const violations = scopeViolations(brief, paths);
-        const requiredIds = new Set(brief.acceptance.filter(ac => ac.required).flatMap(ac => ac.gateIds));
+        const requiredIds = new Set((brief.acceptance ?? []).filter(ac => ac.required).flatMap(ac => ac.gateIds));
         const results = [];
         const nonce = uid('exec');
         for (const gate of brief.verification) {
@@ -128,7 +180,9 @@ export async function verify(cwd, brief, options = {}) {
             let exitCode;
             transact('gate-started', id, actor, s => { s.evidence[id] = { id, gateId: gate.id, gateDefinitionHash: hash(gate), status: 'running', cwd, startedAt, finishedAt: startedAt, artifactId: artifact.id, logPath, checksum: '', actor, environmentHash: hash({ node: process.version, platform: process.platform, policy }) }; return { id }; });
             try {
-                if (violations.length) {
+                if (baselineError)
+                    reason = baselineError;
+                else if (violations.length) {
                     reason = 'SCOPE_VIOLATION';
                     log = JSON.stringify(violations);
                 }
@@ -179,6 +233,8 @@ export async function verify(cwd, brief, options = {}) {
         }
         const required = results.filter(e => brief.verification.find(g => g.id === e.gateId)?.required !== false || requiredIds.has(e.gateId));
         let status = required.length === 0 ? 'blocked' : required.some(e => e.status === 'failed') ? 'failed' : required.some(e => e.status !== 'passed') ? 'blocked' : 'passed';
+        if (baselineError || violations.length)
+            status = 'blocked';
         try {
             if (!sameFingerprint(artifact.fingerprint, fingerprint(cwd, options.pr ? 'committed' : 'working')))
                 status = 'stale';
@@ -188,10 +244,14 @@ export async function verify(cwd, brief, options = {}) {
         }
         const categories = brief.verification.filter(g => (g.required !== false || requiredIds.has(g.id)) && ['command', 'test-report'].includes(g.kind)).map(g => g.category);
         const r = options.report;
-        const contractAccepted = brief.contractLevel === 'minimal' || Boolean(r && r.status === 'completed' && reportSatisfies(brief, r) && r.head === artifact.fingerprint.commitSha && r.base === (options.before?.commitSha ?? artifact.fingerprint.commitSha) && !r.deviations.length && !r.unresolved.length);
-        const ledger = { contractAccepted, id: uid('ver'), artifactId: artifact.id, fingerprint: artifact.fingerprint, evidenceRefs: required.map(e => e.id), gateIds: required.map(e => e.gateId), gateDefinitionHash: hash(brief), status, verdict: status === 'passed' ? (categories.includes('behavior') ? 'unit-test-verified' : 'type-check-only') : status === 'failed' ? 'verifier-failed' : status === 'blocked' ? 'verifier-blocked' : 'not-verified', verifiedAt: new Date().toISOString(), verifiedBy: actor, executionNonce: nonce, pr: options.pr };
+        const contractAccepted = !baselineError && (brief.contractLevel === 'minimal' || Boolean(r && r.status === 'completed' && reportSatisfies(brief, r) && r.head === artifact.fingerprint.commitSha && r.base === (diffBase?.commitSha ?? artifact.fingerprint.commitSha) && !r.deviations.length && !r.unresolved.length));
+        const ledger = { contractAccepted, id: uid('ver'), artifactId: artifact.id, fingerprint: artifact.fingerprint, evidenceRefs: required.map(e => e.id), gateIds: required.map(e => e.gateId), gateDefinitionHash: hash(brief), status, verdict: status === 'passed' ? (categories.includes('behavior') ? 'unit-test-verified' : 'type-check-only') : status === 'failed' ? 'verifier-failed' : status === 'blocked' ? 'verifier-blocked' : 'not-verified', verifiedAt: new Date().toISOString(), verifiedBy: actor, executionNonce: nonce, diffBase, pr: options.pr };
         transact('verification-recorded', ledger.id, actor, s => { s.ledgers[ledger.id] = ledger; return ledger; });
         return ledger;
+    }
+    catch (error) {
+        transact('verification-rejected', brief.id, actor, () => ({ reason: String(error) }));
+        throw error;
     }
     finally {
         lock.release();
