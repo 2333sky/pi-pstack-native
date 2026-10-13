@@ -22,7 +22,7 @@ Recorded on 2026-10-12 in this worktree.
 | npm | 11.12.1 |
 | git | 2.39.5 (Apple Git-154) |
 | gh | 2.87.3 |
-| @earendil-works/pi-coding-agent (real SDK under test) | 1.1.0 |
+| @earendil-works/pi-coding-agent (real SDK under test) | 1.2.0 |
 | package under test | 2333@0.6.0-preview.1 |
 | OS | macOS 15.6.1 (24G90) |
 

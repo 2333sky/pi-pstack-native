@@ -11,13 +11,15 @@ The lock resolves these direct runtime and development packages.
 
 | Package | Version | License |
 |---|---|---|
-| `@earendil-works/pi-coding-agent` | `1.1.0` | MIT |
-| `@earendil-works/pi-agent-core` | `1.1.0` | MIT |
-| `@earendil-works/pi-ai` | `1.1.0` | MIT |
+| `@earendil-works/pi-coding-agent` | `1.2.0` | MIT |
+| `@earendil-works/pi-agent-core` | `1.2.0` | MIT |
+| `@earendil-works/pi-ai` | `1.2.0` | MIT |
 | `@types/node` | `22.20.5` | MIT |
 | `typescript` | `5.9.3` | Apache-2.0 |
 
-The peer range remains `^1.1.0`. The lock fixes this checkout's SDK to `1.1.0`. A downstream consumer can resolve a different compatible SDK version.
+The peer range remains `^1.1.0`. The lock fixes this checkout's SDK to `1.2.0`. A downstream consumer can resolve a different compatible SDK version.
+
+The lock moved from `1.1.0` to `1.2.0` because `@earendil-works/pi-coding-agent@1.1.0` declares its `@earendil-works/pi-codemode` dependency with a caret range. A fresh install of the 1.1.0 line therefore resolves `pi-codemode@1.2.0`, which no longer exports `MCP_TYPESCRIPT_PREAMBLE` while the 1.1.0 SDK still imports it, so the installed package fails at import time. The 1.2.0 line installs a consistent pair.
 
 ## License inventory
 

@@ -41,7 +41,7 @@ pi install .
 
 If `2333` is separately published to npm, the published package may also be installed with `pi install npm:2333`; GitHub source availability does not itself imply an npm release.
 
-Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.1.0`. The lock resolves SDK `1.1.0`. It was generated with Node `24.21.0` and npm `11.12.1`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
+Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.1.0`. The lock resolves SDK `1.2.0`. It was generated with Node `24.21.0` and npm `11.12.1`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
 
 ## Start
 

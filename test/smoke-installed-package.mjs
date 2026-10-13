@@ -16,7 +16,7 @@ const extensionPath = resolve(installedDir, installedManifest.pi.extensions[0]);
 // This SDK exposes its root entry only for ESM imports, not CommonJS require().
 const sdkRoot = resolve(process.cwd(), "node_modules/@earendil-works/pi-coding-agent");
 const sdkManifest = JSON.parse(readFileSync(join(sdkRoot, "package.json"), "utf8"));
-assert.match(sdkManifest.version, /^1\.1\./, "the installed peer is the official Pi Coding Agent 1.1.x package");
+assert.match(sdkManifest.version, /^1\.[12]\./, "the installed peer is a supported Pi Coding Agent 1.x package");
 const sdkEntry = resolve(sdkRoot, sdkManifest.exports["."].import);
 const { createAgentSession, DefaultResourceLoader, SessionManager } = await import(pathToFileURL(sdkEntry).href);
 
