@@ -36,6 +36,7 @@ The runtime state lives under `~/.pi/agent/pstack-native/`.
 | Need | Skill |
 |---|---|
 | rigorous non-trivial task | `/skill:poteto-mode` |
+| restate the user goal before acting | `/skill:in-your-own-words` |
 | current architecture/runtime flow | `/skill:how` |
 | historical rationale/decision evidence | `/skill:why` |
 | plain teaching explanation | `/skill:teach` |
@@ -78,3 +79,7 @@ The verified upstream baseline is pstack `0.15.17` at `978ca6e9c0e012047cd5058b8
 - Model selector fails: rerun `/setup-pstack` and choose a model visible to this Pi session.
 - Parallel edits collide: use workflow workers with worktree isolation; do not switch them to `shared` merely to save setup time.
 - Success claim has weak evidence: route to `principle-prove-it-works` or the project verification skill.
+
+## Help and runtime boundaries
+
+A help question asks for an explanation and a prompt the user can send; do not start a paid Agent run. An explicit work request is different and authorizes the requested work. Read the routed Skill before advising. If no model roles are configured, explain inheritance and offer /setup-pstack once when setup/cost matters. Pi mode is sticky until turned off; Cursor Custom Mode is not required. External sources in read-only children use parent evidence packets, not implicit MCP access. See references/recipes.md for native examples.

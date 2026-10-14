@@ -281,7 +281,7 @@ for(const [name,field,value] of [['malformed-acceptance-number-id','id',7],['mal
 test('base and head changes invalidate old evidence and shipping rejects old false-green records',async()=>{
   const f=fixture();try {
     const base=git(f.repo,['rev-parse','HEAD']);commit(f.repo,'allowed.txt','one');const b=brief(f.repo);b.verification[0].maxFiles=1;const first=await verify(f.repo,b,prOptions(f.repo,base));assert.equal(first.status,'passed');
-    const pr:PullRequest={repo:'example/project',number:1,headSha:first.fingerprint.commitSha,baseSha:base,baseRef:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved'};
+    const pr:PullRequest={repo:'example/project',number:1,headSha:first.fingerprint.commitSha,baseSha:base,baseRef:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved',reviewThreads:{status:'checked',total:0,unresolved:0,bugbotUnresolved:0}};
     const provider={async read(){return structuredClone(pr);},async merge(){throw new Error('must not merge');}};
     const spec={id:'stack',repoId:first.fingerprint.repoId,repo:pr.repo,numbers:[1],owner:'test',requireBehavior:false};
     assert.equal(eligibility(await refresh(spec,provider))[0].eligible,true);

@@ -1,3 +1,5 @@
+import { upstreamVersion } from "../runtime/upstream.ts";
+import { validateEvidencePackets, type EvidencePacket } from "../agent/resources.ts";
 import { loadModels } from "../runtime/config.ts";
 import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
@@ -40,7 +42,7 @@ function agentId(wf: string, key: string, attempt: number): string {
 const TERMINAL = new Set(["completed", "failed", "cancelled", "skipped"]);
 
 export interface AgentRunner {
-  run(spec: { brief?: TaskBrief; thinkingLevel?: ThinkingLevelName; budget?: Budget; id?: string; workflowId?: string; callKey?: string; profile: string; task: string; cwd: string; isolation?: WorkflowCall["isolation"]; model?: string; attempt?: number }, ctx: ExtensionContext): Promise<AgentRecord>;
+  run(spec: { evidencePackets?: EvidencePacket[]; brief?: TaskBrief; thinkingLevel?: ThinkingLevelName; budget?: Budget; id?: string; workflowId?: string; callKey?: string; profile: string; task: string; cwd: string; isolation?: WorkflowCall["isolation"]; model?: string; attempt?: number }, ctx: ExtensionContext): Promise<AgentRecord>;
   get(id: string): AgentRecord | undefined;
   stop(id: string): Promise<AgentRecord>;
   recover(record: AgentRecord, ctx: ExtensionContext): Promise<AgentRecord>;
@@ -58,7 +60,7 @@ export class WorkflowEngine {
 
   create(spec: WorkflowRunSpec): WorkflowRecord {
     validateGraph(spec.nodes);
-    validateBudget(spec.budget); for(const node of spec.nodes)validateBudget(node.budget);
+    validateBudget(spec.budget); for(const node of spec.nodes) {validateBudget(node.budget); validateEvidencePackets(node.evidencePackets);}
     for (const node of spec.nodes) {
       if (spec.contractLevel === "strict" && !node.brief) throw new Error(`BRIEF_INCOMPLETE: ${node.key}.brief`);
       if (node.brief) {validateBrief(node.brief);if(node.brief.scope.repoId!==fingerprint(spec.cwd).repoId)throw new Error("REPOSITORY_MISMATCH");}
@@ -70,7 +72,7 @@ export class WorkflowEngine {
     const calls: Record<string, WorkflowCall> = {};
     for (const node of spec.nodes) {
       calls[node.key] = {
-        brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
+        evidencePackets: validateEvidencePackets(node.evidencePackets), brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
         key: node.key, profile: node.profile ?? "worker", task: node.task.trim(),
         state: "pending", dependsOn: [...(node.dependsOn ?? [])], attempt: 0,
         ...(node.model || loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] ? { model: node.model ?? loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] } : {}),
@@ -80,12 +82,13 @@ export class WorkflowEngine {
     const record: WorkflowRecord = {
       id, revision: 0, schemaVersion: 2, reviewFingerprint: spec.type==="review"?fingerprint(spec.cwd):undefined, budget: spec.budget, verification: "unknown",
       ...(spec.name ? { name: spec.name } : {}),
-      type: spec.type ?? "graph", state: "created", createdAt, updatedAt: createdAt,
+      type: spec.type ?? "graph",
+      deliveryContract: spec.deliveryContract, state: "created", createdAt, updatedAt: createdAt,
       ...(spec.parentSessionId ? { parentSessionId: spec.parentSessionId } : {}),
       parentCwd: spec.cwd, calls, edges: dependencyEdges(spec.nodes),
       maxConcurrency: Math.max(1, Math.min(16, spec.maxConcurrency ?? loadConfig().defaultConcurrency)),
       upstreamContext: {
-        pstackVersion: spec.pstackVersion ?? "0.15.15",
+        pstackVersion: spec.pstackVersion ?? upstreamVersion(),
         ...(spec.skill ? { skill: spec.skill } : {}),
         ...(spec.playbook ? { playbook: spec.playbook } : {}),
       },
@@ -266,7 +269,7 @@ export class WorkflowEngine {
         const spec = {
           id: idForAgent, workflowId: latest.id, callKey: key, profile: call.profile,
           task: this.taskWithDependencies(latest, call), cwd: target.cwd,
-          isolation: target.isolation, model: call.model, attempt: call.attempt, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
+          isolation: target.isolation, model: call.model, attempt: call.attempt, evidencePackets: call.evidencePackets, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
         };
         const veto = ordersVeto(id);
         if (veto) {

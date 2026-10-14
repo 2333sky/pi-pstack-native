@@ -13,3 +13,6 @@ export * from './runner/service.js';
 export * from './runtime/migrate.js';
 export * from './delivery/prepare.js';
 export * from './delivery/git.js';
+export * from './agent/resources.js';
+export * from './delivery/stack.js';
+export * from './delivery/review-threads.js';

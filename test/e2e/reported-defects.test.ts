@@ -1,19 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { AgentHost } from "../../src/agent/host.ts";
 import { fingerprint } from "../../src/artifacts/fingerprint.ts";
 import { protocol } from "../../src/runtime/protocol.ts";
 import { verify } from "../../src/verification/runner.ts";
-import { OFFLINE, initFixtureRepo, startModelServer, writeVerificationPolicy } from "./harness.ts";
+import { OFFLINE, initFixtureRepo, startModelServer, toolResultText, writeVerificationPolicy } from "./harness.ts";
 import { openParentContext, type ParentContext } from "./parent-context.ts";
 
-const READ_ONLY = ["find", "grep", "ls", "read"];
+const READ_ONLY = ["find", "grep", "ls", "pstack_evidence", "pstack_skill", "read"];
 
-test(`${OFFLINE} reported src defect: read-only child profiles receive no read-only tools`, {
-  todo: "src/agent/host.ts passes tools: [] for read-only profiles, and an empty allowlist also clears customTools, so reviewer/verifier/scout children cannot read any file. Fix: pass the read-only tool names in the allowlist.",
-}, async () => {
+test(`${OFFLINE} reported src defect: read-only child profiles receive no read-only tools`, {}, async () => {
   const root = mkdtempSync(join(process.cwd(), ".e2e-defect-tools-"));
   const home = join(root, "pstack");
   const agentDir = join(root, "pi-agent");
@@ -23,16 +21,28 @@ test(`${OFFLINE} reported src defect: read-only child profiles receive no read-o
   process.env.PSTACK_NATIVE_HOME = home;
   mkdirSync(home, { recursive: true });
   initFixtureRepo(checkout, "https://github.com/loopback-owner/lemn-disposable.git");
-  const model = await startModelServer(() => ({ text: "inspected the assigned checkout" }));
+  const model = await startModelServer(call => {
+    if(call.step===0)return {tool:{name:"pstack_skill",args:{action:"read",resource:"how/SKILL.md"}}};
+    if(call.step===1)return {tool:{name:"pstack_evidence",args:{category:"issues"}}};
+    if(call.step===2)return {tool:{name:"read",args:{path:join(root,"outside.txt")}}};
+    return {text:"Bundled skill inspected; issue snapshot supplied; outside read refused."};
+  });
   let parent: ParentContext | undefined;
   try {
     parent = await openParentContext({ agentDir, cwd: checkout, modelPort: model.port, sessionDir: join(root, "parent-sessions") });
     const host = new AgentHost();
-    const started = host.start({ profile: "reviewer", task: "TASK:readonly inspect the assigned checkout", cwd: checkout }, parent.ctx);
+    writeFileSync(join(root,"outside.txt"),"PRIVATE_OUTSIDE_DATA");
+    const evidencePackets:any[]=[{category:"issues",status:"available",reason:"authorized parent query",items:[{source:"https://github.com/test/repo/issues/1",observedAt:"2026-10-14T00:00:00Z",excerpt:"Issue snapshot supplied by parent."}]}];
+    const started = host.start({ evidencePackets, profile: "reviewer", task: "TASK:readonly inspect the assigned checkout", cwd: checkout }, parent.ctx);
     const done = await host.wait(started.id);
     assert.equal(done?.state, "completed", done?.error?.message);
     const active = [...new Set(model.calls.flatMap((call) => call.tools))].sort();
     assert.deepEqual(active, READ_ONLY, "a read-only child must be able to inspect its own checkout");
+    const observed=model.calls.map(c=>toolResultText(c.messages)).join("\n");
+    assert.ok(observed.includes("Trace the real path"));
+    assert.ok(observed.includes("Issue snapshot supplied by parent."));
+    assert.ok(observed.includes("escapes child workspace"));
+    assert.ok(!observed.includes("PRIVATE_OUTSIDE_DATA"));
     assert.equal(active.some((name) => ["bash", "edit", "write", "powershell"].includes(name)), false);
   } finally {
     parent?.dispose();
@@ -43,9 +53,7 @@ test(`${OFFLINE} reported src defect: read-only child profiles receive no read-o
   }
 });
 
-test(`${OFFLINE} reported src defect: a captured evidence log leaks a credential embedded in a URL`, {
-  todo: "src/verification/runner.ts redact() requires a colon in URL userinfo, so https://token@host and an unlabeled ghp_ token reach the on-disk evidence log. Fix: redact any userinfo and known credential prefixes.",
-}, async () => {
+test(`${OFFLINE} reported src defect: a captured evidence log leaks a credential embedded in a URL`, {}, async () => {
   const root = mkdtempSync(join(process.cwd(), ".e2e-defect-redact-"));
   const home = join(root, "pstack");
   const checkout = join(root, "checkout");

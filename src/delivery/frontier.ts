@@ -1,7 +1,7 @@
 import { hash, protocol, transact, uid } from '../runtime/protocol.ts';
 import { ledgerCurrent } from '../verification/runner.ts';
 import type { PRProvider, PullRequest } from './provider.ts';
-export interface StackSpec { id:string; repoId:string; repo:string; numbers:number[]; owner:string; requireReview?:boolean; requireBehavior?:boolean }
+export interface StackSpec { id:string; repoId:string; repo:string; numbers:number[]; owner:string; requireReview?:boolean; requireBehavior?:boolean; rootBase?:string }
 export interface Frontier extends StackSpec { generation:number; digest:string; prs:PullRequest[]; checkedAt:string }
 export async function refresh(spec:StackSpec,provider:PRProvider):Promise<Frontier> {
   if(!/^[a-zA-Z0-9._-]+$/.test(spec.id) || ['__proto__','constructor','prototype'].includes(spec.id))throw new Error('INVALID_STACK_ID');
@@ -9,15 +9,18 @@ export async function refresh(spec:StackSpec,provider:PRProvider):Promise<Fronti
   const prs:PullRequest[]=[]; for(const number of spec.numbers)prs.push(await provider.read(spec.repo,number));
   if(prs.some((p,i)=>p.repo!==spec.repo || p.number!==spec.numbers[i] || !p.headSha || !p.baseSha))throw new Error('STATE_UNCERTAIN');
   // A dependent base must equal the preceding head before that predecessor is merged.
-  for(let i=1;i<prs.length;i++)if(prs[i-1].state!=='MERGED' && prs[i].baseSha!==prs[i-1].headSha)throw new Error('STACK_TOPOLOGY_MISMATCH');
-  const digest=hash(prs);return transact('frontier-refreshed',spec.id,'provider',s=>{
+  for(let i=1;i<prs.length;i++)if(prs[i-1].state!=='MERGED' && (prs[i].baseSha!==prs[i-1].headSha || Boolean(prs[i-1].headRef && prs[i].baseRef!==prs[i-1].headRef)))throw new Error('STACK_TOPOLOGY_MISMATCH');
+  return transact('frontier-refreshed',spec.id,'provider',s=>{
     const old=s.frontiers[spec.id] as Frontier|undefined;
     if(old && (old.owner!==spec.owner || old.repo!==spec.repo || old.repoId!==spec.repoId))throw new Error('STACK_IDENTITY_CONFLICT');
     for(const e of Object.values(s.ledgers)) {
       const p=prs.find(p=>e.pr?.repoId===spec.repoId && e.pr.number===p.number);
       if(p && (!e.diffBase || e.diffBase.commitSha!==p.baseSha || e.pr!.headSha!==p.headSha))s.invalidations[e.id]={at:new Date().toISOString(),reason:'PR_BASE_OR_HEAD_CHANGED'};
     }
-    const f:Frontier={...spec,prs,digest,generation:(old?.generation ?? 0)+(old?.digest===digest?0:1),checkedAt:new Date().toISOString()};s.frontiers[spec.id]=f;return f;
+    const rootBase=spec.rootBase ?? old?.rootBase ?? prs[0].baseRef;
+    if(old?.rootBase && rootBase!==old.rootBase)throw new Error('STACK_ROOT_BASE_CHANGED');
+    const digest=hash({prs,rootBase,requireReview:spec.requireReview!==false,requireBehavior:spec.requireBehavior!==false});
+    const f:Frontier={...spec,rootBase,prs,digest,generation:(old?.generation ?? 0)+(old?.digest===digest?0:1),checkedAt:new Date().toISOString()};s.frontiers[spec.id]=f;return f;
   });
 }
 export function eligibility(f:Frontier):{number:number;eligible:boolean;blockers:string[]}[] {
@@ -26,8 +29,13 @@ export function eligibility(f:Frontier):{number:number;eligible:boolean;blockers
     if(p.state==='MERGED')return {number:p.number,eligible:false,blockers:['ALREADY_MERGED']};
     const blockers:string[]=[];
     if(lower)blockers.push('LOWER_UNMERGED');
+    else if(f.rootBase && p.baseRef!==f.rootBase)blockers.push('FRONTIER_BASE_NOT_TRUNK');
     lower=true;
     if(p.state!=='OPEN')blockers.push('PR_NOT_OPEN');
+    if(p.draft)blockers.push('PR_DRAFT');
+    if(p.reviewThreads?.status!=='checked')blockers.push('REVIEW_THREADS_NOT_CHECKED');
+    else if(p.reviewThreads.unresolved>0)blockers.push('UNRESOLVED_REVIEW_THREADS');
+    if(['DIRTY','UNSTABLE','BEHIND','UNKNOWN','BLOCKED'].includes(p.mergeState ?? ''))blockers.push(`MERGE_STATE_${p.mergeState}`);
     if(p.mergeable!=='MERGEABLE')blockers.push(p.mergeable==='CONFLICTING'?'CONFLICT':'STATE_UNCERTAIN');
     if(p.review==='changes-requested' || f.requireReview!==false && p.review!=='approved')blockers.push('REVIEW_REQUIRED');
     if(p.ci!=='passed')blockers.push('CI_NOT_PASSED');
@@ -59,4 +67,14 @@ export async function ship(spec:StackSpec,provider:PRProvider,options:{token?:st
   if(actual.state!=='MERGED')throw new Error('MERGE_UNCONFIRMED');
   transact('merge-confirmed',f.id,'provider',()=>({number:actual.number,head:actual.headSha}));
   return {merged:actual.number,frontier:await refresh(spec,provider)};
+}
+
+/** Native snapshot states, not fabricated Cursor watcher verdicts. No merging or polling. */
+export function watchFrontier(f:Frontier,previous?:{number:number;headSha:string;digest:string}) {
+ const target=f.prs.find(p=>p.state!=='MERGED');
+ if(!target)return {state:'complete',frontier:null,digest:f.digest};
+ if(target.state==='CLOSED')return {state:'closed',frontier:target.number,digest:f.digest};
+ const decision=eligibility(f).find(d=>d.number===target.number)!;
+ const advanced=previous && previous.number!==target.number;
+ return {state:advanced?'advance':decision.eligible?'reviewable':'waiting',frontier:target.number,headSha:target.headSha,digest:f.digest,blockers:decision.blockers,autoMergeRequested:target.autoMergeRequested ?? false,queueState:'not-claimed',stopBeforeMerge:true};
 }

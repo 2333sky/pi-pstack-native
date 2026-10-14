@@ -24,7 +24,7 @@ Prefer existing project machinery over inventing a new framework.
 
 The project-local skill must define:
 
-- **launch**: exact start/build command and readiness check;
+- **launch**: exact start/build command and readiness check. From an empty data directory, run required migrations and seed data and reach a usable user surface. A healthy port/database alone is not readiness;
 - **doctor**: read-only check that confirms the target instance is the expected build and safe to drive;
 - **drive**: concrete commands/actions for each important feature;
 - **observe**: what evidence proves success;
@@ -36,11 +36,11 @@ Keep commands rerunnable and bounded. Never hijack a user's unrelated running in
 
 ## 3. Seed a feature map
 
-List major user-facing features with the source owner, drive recipe, and observable result. The map is a navigation aid, not a second test suite.
+List major user-facing features with the source owner, drive recipe, and observable result. For each feature, include Sub-features, How to get to it (user POV), Driving it with the harness, and Gotchas. If seed data lacks a journey precondition, report failure and record the reason in Gotchas; never weaken the journey to obtain a pass.
 
 ## 4. Prove the skill
 
-Launch a clean instance and drive at least one representative success path plus one failure or edge path. Confirm teardown. A skill that has not driven the product is not done.
+Launch a clean instance and drive at least one representative success path plus one failure or edge path. Confirm evidence survives teardown, and clean owned processes after failed attempts too. When a container/local stack stands in for a VM/remote target, list every setup step the stand-in performed that the real target has not yet exercised. Those steps remain unverified. A skill that has not driven the product is not done.
 
 ## 5. Hand back
 

@@ -2,7 +2,9 @@ import type { TaskBrief, Budget } from "../contracts/types.js";
 import type { ThinkingLevelName } from "../runtime/types.js";
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { AgentRecord, IsolationMode } from "../runtime/types.js";
+import { type EvidencePacket } from "./resources.js";
 type RunSpec = {
+    evidencePackets?: EvidencePacket[];
     brief?: TaskBrief;
     thinkingLevel?: ThinkingLevelName;
     budget?: Budget;

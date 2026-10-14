@@ -10,7 +10,7 @@ export interface TemplateSpec {
   candidateCount?:number; swarmMode?:'race'|'partition'; slices?:{key:string;task:string;brief:TaskBrief}[];
   independencePolicy?:'different-model'|'different-family'|'explicit-waiver'; modelFamilies?:Record<string,string>; budget?:Budget;
 }
-export function buildTemplate(t:TemplateSpec):{nodes:WorkflowNodeSpec[];estimatedAgents:number;budget:Budget|undefined;notes:string[]} {
+export function buildTemplate(t:TemplateSpec):{nodes:WorkflowNodeSpec[];estimatedAgents:number;budget:Budget|undefined;notes:string[];deliveryContract:'local-dag'|'remote-stack-required'} {
   if(t.panel) t={...t,models:loadModels().panels?.[t.panel] ?? []};
   validateBrief(t.brief);if(t.brief.contractLevel!=='strict')throw new Error('TEMPLATE_REQUIRES_STRICT_BRIEF');
   if(!t.models?.length || t.models.some(m=>!m.includes('/') || ['inherit-parent','auto'].includes(m)))throw new Error('EXPLICIT_MODEL_PANEL_REQUIRED');
@@ -37,5 +37,5 @@ export function buildTemplate(t:TemplateSpec):{nodes:WorkflowNodeSpec[];estimate
     nodes=[...candidates,...judges,node('select','synthesizer','Select evidence-backed candidate/parts and explain rubric scores.',judges.map(n=>n.key),t.judgeModel,{...t.brief,id:`${t.brief.id}.selection`,reportRequirements:{kind:'selection',candidates:candidates.map(c=>c.key)}}),node('integrate','integrator','Integrate only selected parts and rerun deterministic checks.',['select'],t.models[0]),node('verify','verifier','Audit final combined artifact. Candidate passes cannot prove integrated code.',['integrate'],t.judgeModel)];
   }
   validateGraph(nodes);planArtifacts(nodes);
-  return {nodes,estimatedAgents:nodes.length,budget:t.budget,notes:['Strict deterministic gates run on each artifact. Failed panels are visible; no silent fallback.','Model cost estimate is unknown until provider usage is available.']};
+  return {deliveryContract:t.kind==='autopilot-stack'?'remote-stack-required':'local-dag',nodes,estimatedAgents:nodes.length,budget:t.budget,notes:['Strict deterministic gates run on each artifact. Failed panels are visible; no silent fallback.','Model cost estimate is unknown until provider usage is available.',...(t.kind==='autopilot-stack'?['This DAG prepares local work, not a delivered PR stack. Use pstack-runner stack-plan/stack-open with independently verified linear worktree branches.']:[])]};
 }

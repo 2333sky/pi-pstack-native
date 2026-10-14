@@ -101,3 +101,9 @@ test('M4 dirty checkout and divergence block prepare; failed gates block proposa
   assert.equal(cli(destination,'propose','--report',reportPath).status,2);
 });
 function basenameForTest(path) { return path.split('/').at(-1); }
+test('intentional local remapping creates stable content-addressed report revision without overwriting history',t=>{
+ const f=fixture(t);f.put('skills/new/SKILL.md','new');const candidate=f.commit();const before=f.run(candidate),original=saveReport(f.dir,before);
+ mkdirSync(join(f.dir,'local','skills','new'),{recursive:true});writeFileSync(join(f.dir,'local','skills','new','SKILL.md'),'native');
+ const after=scan({repo:f.dir,baselineRef:f.base,candidateRef:candidate,localRoot:join(f.dir,'local')});const revision=saveReport(f.dir,after);
+ assert.notEqual(revision,original);assert.ok(revision.includes(after.fingerprint.slice(0,16)));assert.equal(JSON.parse(readFileSync(join(f.dir,original),'utf8')).fingerprint,before.fingerprint);assert.equal(saveReport(f.dir,after),revision);
+});

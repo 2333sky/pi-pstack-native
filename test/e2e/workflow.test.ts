@@ -129,7 +129,7 @@ test(`${FAKE_PROVIDER} a strict workflow runs two worktrees, an integrator and d
 
     const verifier = model.calls.filter((call) => call.node === "check");
     assert.equal(verifier.length, 1);
-    assert.deepEqual(verifier[0]!.tools, [], "the verifier cannot run commands or write");
+    assert.deepEqual([...verifier[0]!.tools].sort(), ["find","grep","ls","pstack_evidence","pstack_skill","read"], "the verifier gets only confined read/resource tools, no commands or writes");
     assert.match(lastUserText(verifier.at(-1)!), /TASK:check/);
 
     for (const key of ["alpha", "beta", "integrate", "check"]) {

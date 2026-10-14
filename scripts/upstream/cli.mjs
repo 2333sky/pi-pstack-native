@@ -43,9 +43,11 @@ try {
   } else {
     const reportPath = safePath(options.report ?? '');
     const report = validateReport(readJSON(join(root,reportPath)));
+    const taskStem = basename(reportPath,'.json');
+    if(!new RegExp(`^${report.syncId}(?:-[a-f0-9]{16})?$`).test(taskStem))throw new Error('Invalid report revision path');
     if (command === 'plan') {
-      writeConfined(root,`docs/upstream-sync/tasks/${report.syncId}.md`,taskMarkdown(report));
-      console.log(JSON.stringify({status:report.status,taskPackage:`docs/upstream-sync/tasks/${report.syncId}.md`}));
+      writeConfined(root,`docs/upstream-sync/tasks/${taskStem}.md`,taskMarkdown(report));
+      console.log(JSON.stringify({status:report.status,taskPackage:`docs/upstream-sync/tasks/${taskStem}.md`}));
     } else if (command === 'verify') {
       const {fingerprint, sameFingerprint} = await import('../../src/artifacts/fingerprint.ts');
       const snapshot = fingerprint(root);
@@ -70,8 +72,8 @@ try {
       if(existsSync(destination)) throw new Error('Worktree destination already exists');
       const branch = `upstream/${report.syncId}`;
       git(root,['worktree','add','-b',branch,destination,'HEAD']);
-      writeConfined(destination,`docs/upstream-sync/tasks/${report.syncId}.md`,taskMarkdown(report));
-      console.log(JSON.stringify({status:'prepared',branch,worktree:destination,prompt:`docs/upstream-sync/tasks/${report.syncId}.md`,agent:'manual/exported prompt; no provider or model dependency',baselineAdvanced:false}));
+      writeConfined(destination,`docs/upstream-sync/tasks/${taskStem}.md`,taskMarkdown(report));
+      console.log(JSON.stringify({status:'prepared',branch,worktree:destination,prompt:`docs/upstream-sync/tasks/${taskStem}.md`,agent:'manual/exported prompt; no provider or model dependency',baselineAdvanced:false}));
     } else if (command === 'propose') {
       if(report.impact.history_diverged || report.status === 'no_change') throw new Error('Candidate cannot be proposed');
       const {fingerprint} = await import('../../src/artifacts/fingerprint.ts');

@@ -8,7 +8,7 @@ import { fingerprint } from '../artifacts/fingerprint.ts';
 import { protocol, hash } from '../runtime/protocol.ts';
 import { contextSnapshot } from '../context/snapshot.ts';
 import { GitHubCLI } from '../delivery/provider.ts';
-import { refresh, eligibility } from '../delivery/frontier.ts';
+import { refresh, eligibility, watchFrontier } from '../delivery/frontier.ts';
 import { ProgramCoordinator } from '../program/coordinator.ts';
 const reply=(value:unknown)=>({content:[{type:'text' as const,text:JSON.stringify(value,null,2)}],details:value});
 export function registerProtocolTools(pi:ExtensionAPI,engine:WorkflowEngine):void {
@@ -30,9 +30,9 @@ export function registerProtocolTools(pi:ExtensionAPI,engine:WorkflowEngine):voi
     }
     await engine.verifyCall(w.id,c.key,agent);return reply(engine.get(w.id)?.calls[c.key]);
   }} as any);
-  pi.registerTool({name:'pstack_delivery',label:'Pstack Delivery Plan',description:'Read live GitHub PR stack state and return deterministic shipping blockers. This tool never merges; authorized merge is a human CLI operation.',parameters:object({id:string(),repo:string(),numbers:array(number()),requireReview:{type:'boolean'},requireBehavior:{type:'boolean'}},['id','repo','numbers']),executionMode:'sequential',async execute(_id,p:any,_signal,_update,ctx){
+  pi.registerTool({name:'pstack_delivery',label:'Pstack Delivery Plan',description:'Read live GitHub PR stack state and return deterministic shipping blockers. This tool never merges; authorized merge is a human CLI operation.',parameters:object({id:string(),repo:string(),numbers:array(number()),rootBase:string(),requireReview:{type:'boolean'},requireBehavior:{type:'boolean'}},['id','repo','numbers']),executionMode:'sequential',async execute(_id,p:any,_signal,_update,ctx){
     assertGitHubRepository(ctx.cwd,p.repo);
-    const f=await refresh({...p,repoId:fingerprint(ctx.cwd).repoId,owner:ctx.sessionManager.getSessionId()},new GitHubCLI());return reply({frontier:f,decisions:eligibility(f),dryRun:true});
+    const f=await refresh({...p,repoId:fingerprint(ctx.cwd).repoId,owner:ctx.sessionManager.getSessionId()},new GitHubCLI());return reply({frontier:f,decisions:eligibility(f),watch:watchFrontier(f),dryRun:true});
   }} as any);
   pi.registerTool({name:'pstack_context',label:'Pstack Context Snapshot',description:'Rebuild authoritative handoff and current evidence status from durable records.',parameters:object({}),async execute(_id,_p,_signal,_update,ctx){return reply(contextSnapshot(engine,ctx.sessionManager.getSessionId()));}} as any);
   const coordinator=new ProgramCoordinator(engine);

@@ -14,7 +14,7 @@ export function loadRunnerPolicy(): RunnerPolicy {
   catch { return {commands:[]}; }
 }
 function redact(s: string): string {
-  return s.replace(/(authorization\s*[:=]\s*(?:bearer\s+)?|(?:api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,"'}]+/gi,'$1[REDACTED]').replace(/https?:\/\/[^\s/@]+:[^\s/@]+@/g,'https://[REDACTED]@');
+  return s.replace(/(authorization\s*[:=]\s*(?:bearer\s+)?|(?:api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,"'}]+/gi,'$1[REDACTED]').replace(/(https?:\/\/)[^\s/@]+@/gi,'$1[REDACTED]@').replace(/\b(?:ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{16,})\b/g,'[REDACTED]');
 }
 function filePath(cwd: string, path: string): string {
   const base = realpathSync(cwd); const candidate = realpathSync(resolve(base,path)); const rel = relative(base,candidate);

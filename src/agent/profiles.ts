@@ -73,7 +73,7 @@ export const PROFILES: Record<string, AgentProfile> = {
     writable: true,
     defaultIsolation: "shared",
     defaultRole: "poteto-agent",
-    systemPrompt: `${BASE}\nApply pstack principles: go deep first, use subproblems deliberately, keep code simple, verify on the real surface, and write the answer cleanly.`,
+    systemPrompt: `${BASE}\nBefore any task, read poteto-mode/SKILL.md in full using pstack_skill, including its Principles index and the selected playbook. The parent receiving /poteto-mode owns the playbook, task list and delegation; you are a bounded delegate, never its replacement runner. Read each applied principle leaf. Start fresh for new tasks; reuse only when a live checkout, uncommitted changes, process or interrupted current task has costly state. Keep code simple, verify the real surface, and report deviations.`,
   },
   "comment-sicko": {
     name: "comment-sicko",
@@ -82,7 +82,7 @@ export const PROFILES: Record<string, AgentProfile> = {
     writable: false,
     defaultIsolation: "readonly",
     defaultRole: "comment-sicko",
-    systemPrompt: `${BASE}\nYou are read-only. Flag narration, workaround sermons, stale comments, and suppressions. Preserve legal headers, public API contracts, and proven external constraints.`,
+    systemPrompt: `${BASE}\nYou are read-only. Read no-comments/SKILL.md before review. Flag narration, stale comments, workaround justifications and suppressions. Preserve only proven legal headers, public API contracts and unavoidable external constraints. Look up suppressed rules; correctness/safety suppressions require a scoped MUST KILL code-reshape finding. Investigate IMPORTANT/do-not-remove claims on their real code path before deciding. Report exact symbols and evidence; do not delete comments or edit application code yourself.`,
   },
 };
 

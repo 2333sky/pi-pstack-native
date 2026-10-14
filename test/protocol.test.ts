@@ -53,7 +53,7 @@ async function deliveryFixture(repo:string){
   writeFileSync(join(repo,'source.txt'),'baseline delivery');git(repo,['add','source.txt']);git(repo,['commit','-qm','delivery']);
   const fp=fingerprint(repo);const head=fp.commitSha;
   const spec={id:'stack',repoId:fp.repoId,repo:'example/project',numbers:[1,2,3],owner:'session'};
-  const prs:PullRequest[]=[1,2,3].map((n,i)=>({number:n,repo:spec.repo,headSha:i===0?head:`head-${n}`,baseSha:i===0?baseSha:i===1?head:'head-2',baseRef:i?'branch-'+i:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved'}));
+  const prs:PullRequest[]=[1,2,3].map((n,i)=>({number:n,repo:spec.repo,headSha:i===0?head:`head-${n}`,baseSha:i===0?baseSha:i===1?head:'head-2',baseRef:i?'branch-'+i:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved',reviewThreads:{status:'checked',total:0,unresolved:0,bugbotUnresolved:0}}));
   let merges=0;const provider={async read(_repo:string,n:number){return structuredClone(prs[n-1]);},async merge(p:PullRequest){assert.equal(p.headSha,prs[p.number-1].headSha);prs[p.number-1].state='MERGED';merges++;}};
   await verify(repo,commandBrief(repo),{policy:{commands:[pass]},pr:{repoId:fp.repoId,number:1,headSha:head,baseSha},report:{...report(fp),base:baseSha}});
   return {spec,prs,provider,merges:()=>merges};
@@ -69,7 +69,7 @@ for(const flag of ['--skip-worktree','--assume-unchanged']) {
       const fp=fingerprint(f.repo);
       const argv=['node','-e','process.exit(require("node:fs").readFileSync("forbidden.txt","utf8")==="hidden"?0:7)'];
       const b=commandBrief(f.repo,argv);b.scope.include=['source.txt'];
-      const pr:PullRequest={repo:'example/project',number:1,headSha:fp.commitSha,baseSha:fp.commitSha,baseRef:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved'};
+      const pr:PullRequest={repo:'example/project',number:1,headSha:fp.commitSha,baseSha:fp.commitSha,baseRef:'main',state:'OPEN',mergeable:'MERGEABLE',ci:'passed',review:'approved',reviewThreads:{status:'checked',total:0,unresolved:0,bugbotUnresolved:0}};
       const provider={async read(){return structuredClone(pr);},async merge(){throw new Error('must not merge');}};
       const spec={id:'round4',repoId:fp.repoId,repo:pr.repo,numbers:[1],owner:'test'};
       const options={policy:{commands:[argv]},pr:{repoId:fp.repoId,number:1,headSha:fp.commitSha,baseSha:fp.commitSha},report:report(fp)};

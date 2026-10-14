@@ -75,5 +75,6 @@ jobs:
             const fs = require('node:fs');
             const result = JSON.parse(fs.readFileSync('scan-artifact/scan-result.json', 'utf8'));
             if (!/^[a-f0-9]{12}_[a-f0-9]{12}$/.test(result.syncId)) throw new Error('Invalid sync ID');
-            const report = JSON.parse(fs.readFileSync(`scan-artifact/docs/upstream-sync/reports/${result.syncId}.json`, 'utf8'));
+            if (!/^docs\/upstream-sync\/reports\/[a-f0-9]{12}_[a-f0-9]{12}(?:-[a-f0-9]{16})?\.json$/.test(result.report)) throw new Error('Invalid report path');
+            const report = JSON.parse(fs.readFileSync(`scan-artifact/${result.report}`, 'utf8'));
             await require('./scripts/upstream/notify.cjs')({github, ...context.repo, report});

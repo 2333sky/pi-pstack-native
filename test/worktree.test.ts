@@ -25,3 +25,15 @@ test("worktree manager isolates writers and refuses dirty cleanup", async () => 
     rmSync(base,{recursive:true,force:true}); rmSync(home,{recursive:true,force:true});
   }
 });
+
+test('worktree audit compares the explicit PR parent, not a hard-coded default branch',async()=>{
+ const {auditWorktree}=await import('../src/worktree/manager.ts');
+ const base=mkdtempSync(join(process.cwd(),'.audit-git-')),home=mkdtempSync(join(process.cwd(),'.audit-home-')),old=process.env.PSTACK_NATIVE_HOME;process.env.PSTACK_NATIVE_HOME=home;
+ try{
+  git(base,'init','-q','-b','main');git(base,'config','user.email','test@example.invalid');git(base,'config','user.name','Test');writeFileSync(join(base,'x'),'base');git(base,'add','.');git(base,'commit','-qm','base');
+  const wt=await createWorktree(base,'audit-owner','main');writeFileSync(join(wt.path,'unit'),'unit');git(wt.path,'add','.');git(wt.path,'commit','-qm','unit');
+  const notMerged=await auditWorktree(wt,'main');assert.equal(notMerged.merged,false);assert.equal(notMerged.ahead,1);assert.equal(notMerged.dirty,false);
+  git(base,'branch','parent',git(wt.path,'rev-parse','HEAD'));const merged=await auditWorktree(wt,'parent');assert.equal(merged.merged,true);assert.equal(merged.ahead,0);assert.equal(merged.comparisonBase,'parent');
+  await assert.rejects(auditWorktree(wt,'--all'));await removeWorktree(wt);
+ }finally{if(old===undefined)delete process.env.PSTACK_NATIVE_HOME;else process.env.PSTACK_NATIVE_HOME=old;rmSync(base,{recursive:true,force:true});rmSync(home,{recursive:true,force:true});}
+});

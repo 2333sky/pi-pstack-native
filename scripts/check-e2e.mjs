@@ -27,7 +27,7 @@ const tiers = {
       },
       {
         file: 'test/e2e/reported-defects.test.ts',
-        tests: ['[offline] reported src defect: read-only child profiles receive no read-only tools', '[offline] reported src defect: a captured evidence log leaks a credential embedded in a URL'].map((name) => ({ name, state: 'todo' })),
+        tests: ['[offline] reported src defect: read-only child profiles receive no read-only tools', '[offline] reported src defect: a captured evidence log leaks a credential embedded in a URL'].map((name) => ({ name, state: 'pass' })),
       },
     ],
   },

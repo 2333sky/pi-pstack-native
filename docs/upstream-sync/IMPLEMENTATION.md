@@ -1,5 +1,7 @@
 # Continuous upstream sync implementation
 
+This records the original M1–M4 delivery. The subsequent candidate ports and report revision behavior are documented in [PORT-0.15.23.md](PORT-0.15.23.md).
+
 The reviewed baseline remains pstack 0.15.17 at
 `978ca6e9c0e012047cd5058b8e829240336e704e`. No product runtime, Skill,
 Playbook, UPSTREAM.json or PARITY.json was changed by this implementation.

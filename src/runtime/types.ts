@@ -1,3 +1,4 @@
+import type { EvidencePacket } from "../agent/resources.ts";
 import type { TaskBrief, TaskReport, Fingerprint, Usage, Budget, GateStatus } from "../contracts/types.ts";
 export type WorkflowState = "created" | "running" | "blocked" | "paused" | "completed" | "failed" | "cancelling" | "cancelled";
 export type CallState = "pending" | "ready" | "running" | "waiting" | "completed" | "failed" | "cancelled" | "skipped";
@@ -13,6 +14,7 @@ export interface DurableError {
 }
 
 export interface AgentRecord {
+  evidencePackets?: EvidencePacket[];
   brief?: TaskBrief;
   baseline?: Fingerprint;
   report?: TaskReport;
@@ -46,6 +48,7 @@ export interface AgentRecord {
 }
 
 export interface WorkflowCall {
+  evidencePackets?: EvidencePacket[];
   brief?: TaskBrief;
   thinkingLevel?: ThinkingLevelName;
   budget?: Budget;
@@ -75,6 +78,7 @@ export interface WorkflowEdge {
 }
 
 export interface WorkflowRecord {
+  deliveryContract?: "local-dag" | "remote-stack-required";
   schemaVersion?: 2;
   reviewFingerprint?: Fingerprint;
   budget?: Budget;
@@ -141,6 +145,7 @@ export interface AgentProfile {
 }
 
 export interface WorkflowNodeSpec {
+  evidencePackets?: EvidencePacket[];
   brief?: TaskBrief;
   thinkingLevel?: ThinkingLevelName;
   budget?: Budget;
@@ -153,6 +158,7 @@ export interface WorkflowNodeSpec {
 }
 
 export interface WorkflowRunSpec {
+  deliveryContract?: "local-dag" | "remote-stack-required";
   contractLevel?: "strict" | "minimal";
   budget?: Budget;
   name?: string;

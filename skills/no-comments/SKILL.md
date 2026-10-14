@@ -26,7 +26,7 @@ Narration, section banners, commented-out code, stale TODO explanations, and pro
 ## Steps
 
 1. Spawn the read-only reviewer on the exact scope.
-2. Inspect each flag in context.
+2. Inspect each flag in context. Reject out-of-scope changes, protected-exception deletions, false MUST KILL reasons and findings without scoped proof. Look up lint/TypeScript suppression rules; suppressions hiding correctness or safety bugs require an exact-symbol MUST KILL finding. For IMPORTANT/do-not-remove claims, inspect the live path with how/why rather than trusting the comment. Rerun one rejected report with the failure named; a second rejection remains failed/open.
 3. Delete accepted comment-only noise.
 4. When a comment reveals that internal code itself is surprising, prefer a rename/extraction/type/architecture fix rather than shortening the explanation. Keep that code change separate and verify it.
 5. Re-run formatting/lint/tests appropriate to touched files.

@@ -16,6 +16,7 @@ function text(value: string) { return { content: [{ type: "text" as const, text:
 function confined(root: string, input = "."): string {
   const base = realpathSync(resolve(root));
   const candidate = resolve(base, input);
+  if (candidate !== base && !candidate.startsWith(`${base}${sep}`)) throw new Error(`Path escapes child workspace: ${input}`);
   if (!existsSync(candidate)) throw new Error(`Path does not exist: ${input}`);
   const real = realpathSync(candidate);
   if (real !== base && !real.startsWith(`${base}${sep}`)) throw new Error(`Path escapes child workspace: ${input}`);

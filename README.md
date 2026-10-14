@@ -268,9 +268,9 @@ embed raw upstream prose, shell output, environment or credential-bearing URLs.
 Exit codes: 0 = `no_change` or `changes_detected` (inspect JSON status),
 3 = `blocked`, 2 = `error`. A branch-history divergence blocks proposals.
 Failures preserve the baseline and can be retried. Same SHA pair produces the
-same fingerprint; changed local mapping for an existing ID is rejected rather
-than overwriting historical evidence. Review a new local mapping in a separate
-copy/report location if needed. Content-addressed reports and historical
+same fingerprint; an intentional local mapping change produces a fingerprint-suffixed report
+revision while inconsistent upstream evidence is rejected. Historical reports
+are retained. Content-addressed reports and historical
 `docs/upstream-sync-0.15.17.json` are retained.
 
 The daily workflow scans with read-only permissions, needs no npm install and
@@ -322,3 +322,97 @@ match names/counts/files, retain `make-bot-ui` and all unsupported declarations,
 and retain the PENDING_PORT blocking gate. Only after that PR is approved and
 merged may the candidate be described as integrated. No CLI provides an
 `integrated` shortcut. See [implementation evidence](docs/upstream-sync/IMPLEMENTATION.md).
+
+## Candidate pstack 0.15.23 behavior ports
+
+The reviewed baseline stays **0.15.17**. Candidate 0.15.23 behavior changes are
+implemented or explicitly mapped in
+[the per-file candidate receipt](docs/upstream-sync/candidate-0.15.23.json),
+with every upstream diff accounted for. They remain **proposed / pending
+maintainer semantic review**, not integrated or proven Cursor equivalence.
+See [port details and limitations](docs/upstream-sync/PORT-0.15.23.md).
+
+### Read-only children and external evidence
+
+Reviewer/scout/verifier/synthesizer children receive only confined
+`read/ls/find/grep`, `pstack_skill` and `pstack_evidence`. Their active SDK tool
+allowlist excludes bash/edit/write and unrestricted builtin reads. The resource
+tool reads only bundled Skill/reference Markdown by ID, such as
+`poteto-mode/SKILL.md` or `why/references/epistemics.md`; it rejects traversal,
+symlinks, scripts and arbitrary files. Paginate until `hasMore=false` for a
+full Skill. Normal workspace reads still reject files outside the worktree.
+
+For external investigation, the **parent** performs authorized live queries
+and supplies `evidencePackets` on an agent or workflow node. Each packet has
+one category (`source-control`, `issues`, `documents`, `team-chat`,
+`observability`, `errors`, `analytics`), a status (`available`, `empty`,
+`unavailable`, `inconclusive`), a reason and bounded items with `source`,
+`observedAt`, and `excerpt`. The child receives a fixed snapshot, marked
+parent-supplied and not independently verified. Missing access is unavailable,
+not an empty search or permission to find credentials. The parent must verify
+decisive citations against authorized sources and sanitize sensitive data.
+No live MCP/credential forwarding is enabled by this change.
+
+### Actual linear PR stacks
+
+The `autopilot-stack` DAG is a **local preparation** template. Its
+`deliveryContract=remote-stack-required` prevents treating its completion as
+PR-stack delivery. Prepare separate clean worktree branches in a linear chain,
+verify each exact head against its exact parent, and push those branches only
+when authorized. The root owns topology; each worker owns its branch.
+
+A stack input contains `repo`, `rootBase`, `owner`, and ordered `lanes`:
+
+```json
+{
+  "repo": "owner/repository",
+  "rootBase": "main",
+  "owner": "operator",
+  "lanes": [
+    {"key":"first","cwd":"/absolute/worktree-one","head":"feature/one","ledgerId":"ver_first","title":"First unit"},
+    {"key":"second","cwd":"/absolute/worktree-two","head":"feature/two","ledgerId":"ver_second","title":"Second unit"}
+  ]
+}
+```
+
+```bash
+npm run build
+pstack-runner stack-plan /absolute/stack-input.json /absolute/stack-plan.json
+pstack-runner stack-open /absolute/stack-plan.json             # dry-run
+pstack-runner stack-open /absolute/stack-plan.json --approve   # explicit remote PR creation
+```
+
+Only the first PR targets `rootBase`; each child targets the preceding branch.
+Preparation verifies shared repository identity, distinct clean worktrees,
+branch ancestry, remote heads, current accepted behavior ledgers and exact
+parent diff bases. Plans contain stable patch IDs and reject source/ref drift.
+Opening rechecks each pair and reuses only an existing open, ready PR matching
+that pair. It does not rebase, force-push, retarget, push branches, merge or
+arm auto-merge. Publish branches separately with the user's authority.
+
+Existing custom PRProvider adapters must supply a checked reviewThreads summary; absent data is intentionally blocked rather than interpreted as no threads. Native Frontier snapshots paginate review threads, refuse invalid/repeated
+cursors and moved heads, and block unavailable/unresolved review evidence,
+drafts and blocked merge states even if CI passes. Native states are
+`waiting/reviewable/advance/complete/closed`; they do not pretend to be Cursor
+watcher verdicts. Auto-merge requested is not proof of queue readiness.
+After a lower PR merges, the root must explicitly prepare/retarget the new frontier to the pinned trunk branch; the native gate refuses landing it into the old parent branch. Head/base changes always invalidate native ledgers; a matching patch ID does
+not bypass re-verification. GitHub branch protection must enforce final
+server-side merge requirements.
+
+### Explicit-base audit and strict plans
+
+`pstack-runner worktree-audit /absolute/worktree-info.json origin/parent`
+reads the explicit PR base and reports dirty/ahead/merged state without deleting
+anything. The info object uses the existing `WorktreeInfo` fields `path`,
+`branch`, `repoRoot`, `baseRef`. Cursor transcript/sidebar/simulator inspection
+remains unsupported; runtime-owned cleanup and active/dirty guards remain.
+
+`npm run check:plan -- /absolute/plan.md` checks the strict upstream program
+checklist format with corrected Markdown fence handling and native loop markers.
+The format's ten live-proof lanes are opt-in, not authority to launch agents,
+spend model budget or run credentialed E2E. No Bun lifecycle is imported.
+
+When local mappings change for the same upstream SHA pair, scans now preserve
+the original report and write a fingerprint-suffixed revision. Git blob bytes
+are checked against their SHA. Different upstream evidence under the same ID
+still fails explicitly; historical evidence is never silently overwritten.

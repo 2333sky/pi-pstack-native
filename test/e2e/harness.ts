@@ -132,6 +132,7 @@ export async function startModelServer(script: (call: ModelCall) => ModelStep): 
 }
 
 export interface GitHubView {
+  reviewThreads?: {status:"checked";total:number;unresolved:number;bugbotUnresolved:number};
   number: number; headSha: string; baseSha: string; baseRef: string; state: "OPEN" | "MERGED" | "CLOSED";
   mergeable: "MERGEABLE" | "CONFLICTING" | "UNKNOWN"; ci: "passed" | "failed" | "pending" | "unknown";
   review: "approved" | "changes-requested" | "pending";
@@ -155,7 +156,7 @@ export async function startGitHubServer(checks: "passed" | "failed" | "pending" 
     if (path === "/read") {
       calls.push({ op: "read", detail: String(body.number) });
       const view = views.get(Number(body.number));
-      return view ? reply(200, view) : reply(404, { error: "unknown pull request" });
+      return view ? reply(200, {...view,reviewThreads:view.reviewThreads ?? {status:"checked",total:0,unresolved:0,bugbotUnresolved:0}}) : reply(404, { error: "unknown pull request" });
     }
     if (path === "/merge") {
       const view = views.get(Number(body.number));
@@ -192,7 +193,7 @@ export async function startGitHubServer(checks: "passed" | "failed" | "pending" 
 export interface MergeCrash { mode: "normal" | "crash-before" | "crash-after" }
 
 export function githubClient(port: number, crash: MergeCrash["mode"] = "normal", repo = "loopback-owner/lemn-disposable") {
-  const view = (value: any): GitHubView => ({ number: value.number, headSha: value.headSha, baseSha: value.baseSha, baseRef: value.baseRef, state: value.state, mergeable: value.mergeable, ci: value.ci, review: value.review });
+  const view = (value: any): GitHubView => ({ number: value.number, headSha: value.headSha, baseSha: value.baseSha, baseRef: value.baseRef, state: value.state, mergeable: value.mergeable, ci: value.ci, review: value.review, reviewThreads:value.reviewThreads });
   return {
     async read(target: string, number: number) {
       const { status, json } = await post(port, "/read", { repo: target, number });

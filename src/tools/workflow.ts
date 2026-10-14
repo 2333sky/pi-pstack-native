@@ -1,3 +1,4 @@
+import { upstreamVersion } from "../runtime/upstream.ts";
 import { buildTemplate } from "../templates/build.ts";
 import { validateBrief } from "../contracts/brief.ts";
 import { validateGraph, dependencyEdges } from "../workflow/graph.ts";
@@ -9,6 +10,7 @@ import { assertSessionOwner } from "../runtime/ownership.ts";
 import { array, enums, number, object, string } from "./schema.ts";
 
 const NODE = object({
+  evidencePackets: {type:"array",items:{type:"object",additionalProperties:true}},
   brief: { type: "object", additionalProperties: true },
   thinkingLevel: enums(["off","minimal","low","medium","high","xhigh","max"]),
   budget: {type:"object",additionalProperties:true},
@@ -65,12 +67,13 @@ export function registerWorkflowTool(pi: ExtensionAPI, workflows: WorkflowEngine
           if(params.action==="plan" || params.dryRun) return reply({nodes,edges:dependencyEdges(nodes),plan,budget:params.budget ?? null,dryRun:true});
           const record = workflows.create({
             name: params.name,
+            deliveryContract: plan?.deliveryContract,
             type: params.mode || "graph",
             nodes, contractLevel: params.contractLevel, budget:params.budget,
             maxConcurrency: params.maxConcurrency,
             parentSessionId: ctx.sessionManager.getSessionId(),
             cwd: ctx.cwd,
-            pstackVersion: "0.15.15",
+            pstackVersion: upstreamVersion(),
           });
           return reply(params.action === "run" ? await workflows.run(record.id, ctx) : workflows.start(record.id, ctx));
         }

@@ -10,7 +10,7 @@
 4. Decompose into independently verifiable phases/PR units. For each unit state: goal, files/owner, dependencies, implementation steps, verification, rollback/cleanup, and done predicate.
 5. Name the execution playbook: one bounded run, Orchestrate for a standing multi-unit program, Autopilot-full when authorized to land, or Autopilot-stack when it must stop before merge.
 6. Include program-level ordering, integration gates, shared-state strategy, risks, prototypes/alternatives, and final cleanup. Temporary compatibility mechanisms need an explicit deletion phase.
-7. Run `/skill:technical-writing` and `/skill:unslop`. Hand back the plan and stop; implementation begins only on explicit go.
+7. For the strict upstream-style program checklist format, use `npm run check:plan -- <plan.md>`. It validates properly closed backtick/tilde code fences and expects native `/pstack-loop 1h` markers. Its ten-lane live-proof format is opt-in, not permission to start ten agents or exceed operator budgets. Run `/skill:technical-writing` and `/skill:unslop`. Hand back the plan and stop; implementation begins only on explicit go.
 
 ## Native runtime rules
 

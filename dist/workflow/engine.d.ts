@@ -1,9 +1,11 @@
+import { type EvidencePacket } from "../agent/resources.js";
 import type { TaskBrief, Budget } from "../contracts/types.js";
 import type { ThinkingLevelName } from "../runtime/types.js";
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { AgentRecord, WorkflowCall, WorkflowRecord, WorkflowRunSpec } from "../runtime/types.js";
 export interface AgentRunner {
     run(spec: {
+        evidencePackets?: EvidencePacket[];
         brief?: TaskBrief;
         thinkingLevel?: ThinkingLevelName;
         budget?: Budget;
