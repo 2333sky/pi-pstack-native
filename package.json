@@ -46,7 +46,8 @@
     "docs/validate-pr.mjs",
     "dist/",
     "tsconfig.build.json",
-    "INSTALLATION-CHECK.md"
+    "INSTALLATION-CHECK.md",
+    "docs/upstream-sync/"
   ],
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "^1.1.0"
@@ -62,7 +63,7 @@
     "check:package": "node scripts/check-package.mjs",
     "check:parity": "node scripts/check-parity.mjs",
     "review": "node scripts/review.mjs",
-    "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm run check:playbooks && npm test && npm run review",
+    "check": "npm run check:syntax && npm run check:package && npm run check:parity && npm run check:playbooks && npm run test:upstream && npm test && npm run review",
     "check:playbooks": "node scripts/check-e2e.mjs playbooks",
     "check:pr-body": "node docs/validate-pr.mjs",
     "prepack": "npm run check:release",
@@ -77,7 +78,13 @@
     "check:e2e": "npm run test:e2e:offline && npm run test:e2e:fake",
     "test:live": "node --experimental-strip-types scripts/e2e-live.mjs",
     "smoke:installed": "node scripts/smoke-install.mjs",
-    "check:release": "npm run check && npm run check:types && npm run check:e2e && npm run build && npm run check:host && npm run benchmark:smoke && npm run smoke:installed"
+    "check:release": "npm run check && npm run check:types && npm run check:e2e && npm run build && npm run check:host && npm run benchmark:smoke && npm run smoke:installed",
+    "upstream:scan": "node scripts/upstream/cli.mjs scan",
+    "upstream:plan": "node scripts/upstream/cli.mjs plan",
+    "upstream:verify": "node scripts/upstream/cli.mjs verify",
+    "upstream:prepare": "node scripts/upstream/cli.mjs prepare",
+    "upstream:propose": "node scripts/upstream/cli.mjs propose",
+    "test:upstream": "node --test scripts/upstream/*.test.mjs"
   },
   "engines": {
     "node": ">=22.19.0"

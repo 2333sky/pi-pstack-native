@@ -233,3 +233,92 @@ npm run benchmark -- --agent-dir /absolute/path/to/pi-agent --model provider/mod
 ```
 
 `benchmark:smoke` does **not** measure real tasks. Model-driven benchmarks require separately configured credentials, run in dedicated local repositories, and have not been used to justify performance claims.
+
+## Continuous upstream sync (M1–M4)
+
+Detection ≠ porting ≠ semantic review ≠ integration. The reviewed baseline in
+`UPSTREAM.json`/`PARITY.json` stays unchanged when a scan, proposal or test passes.
+Tools use Node standard libraries and Git; no AI API key is needed.
+
+```bash
+npm run upstream:scan -- --candidate-ref main
+npm run upstream:scan -- --from /path/to/cursor/plugins/pstack --candidate-ref <full-sha>
+npm run sync:upstream -- --from /path/to/cursor/plugins/pstack
+npm run upstream:plan -- --report docs/upstream-sync/reports/<sync_id>.json
+npm run upstream:verify -- --report docs/upstream-sync/reports/<sync_id>.json
+```
+
+`--baseline-ref <sha>` overrides the scan baseline only. Network mode accepts
+`main` or a full SHA and fetches the approved `cursor/plugins` source into an
+isolated temporary bare repository. Offline `--from` requires a Git checkout
+with both commits available (loose archives cannot establish history evidence).
+Only committed `pstack/` content is inspected. Upstream hooks, scripts, prompts,
+lifecycle scripts and Actions files are never executed by the detector.
+Legacy `--write-report <relative-path>` remains available within this checkout.
+
+Reports and task packages are in `docs/upstream-sync/{reports,tasks}/` with
+stable SHA-derived IDs, Git blob/mode evidence, name drift, advisory mappings,
+old/new Cursor seam locations, risk and pending acceptance work. Keyword hits
+are not runtime-dependency proof. Auxiliary files, binary/non-UTF8 content,
+symlinks and oversized files remain visible for human review; files over
+512 KiB are not interpreted. Whole Git operations are capped at 32 MiB and
+120 seconds; trees/seams over 10,000 entries fail explicitly. Reports do not
+embed raw upstream prose, shell output, environment or credential-bearing URLs.
+
+Exit codes: 0 = `no_change` or `changes_detected` (inspect JSON status),
+3 = `blocked`, 2 = `error`. A branch-history divergence blocks proposals.
+Failures preserve the baseline and can be retried. Same SHA pair produces the
+same fingerprint; changed local mapping for an existing ID is rejected rather
+than overwriting historical evidence. Review a new local mapping in a separate
+copy/report location if needed. Content-addressed reports and historical
+`docs/upstream-sync-0.15.17.json` are retained.
+
+The daily workflow scans with read-only permissions, needs no npm install and
+uploads reports when content changes. Issue writes occur in a separate trusted
+job and are **opt-in**: set repository variable `UPSTREAM_SYNC_NOTIFY=true` for
+scheduled notifications or select `notify` on manual dispatch. Issues are keyed
+by `sync_id`, including closed Issues. No-change scans create no remote resource.
+Network/API failures fail the job; the next run retries from the unchanged
+baseline. Notifications choose tracking Issues rather than report PRs.
+
+### Optional isolated candidate workflow
+
+Commit the detector reports first, then prepare an isolated worktree:
+
+```bash
+npm run upstream:prepare -- --report docs/upstream-sync/reports/<sync_id>.json --worktree /absolute/new/worktree
+cd /absolute/new/worktree
+# Give docs/upstream-sync/tasks/<sync_id>.md to your explicitly authorized developer Agent.
+# Port semantics, add tests and per-task rationale/evidence/unresolved differences; commit changes.
+npm ci --no-audit --no-fund
+npm run upstream:verify -- --report docs/upstream-sync/reports/<sync_id>.json
+# Commit ONLY generated verification evidence after a clean committed candidate was verified.
+npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json
+# Optional remote write, requires separately configured Git/gh credentials and explicit flag:
+npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json --repo 2333sky/pi-pstack-native-2 --allow-remote-write
+```
+
+M4 exports a constrained Agent prompt; it does not select a provider/model or
+launch autonomous inference. Agent execution needs the existing Pi isolation
+and authorization policy (a worktree alone is not an OS sandbox). Preparation
+refuses a dirty checkout or existing destination. Proposal requires the prepared
+worktree branch, committed candidate, all seven gates, unchanged source since
+verification, and unchanged baseline metadata. Remote proposals are deduplicated
+**draft** sync PRs; this specific maintenance flow intentionally differs from the
+normal ready-PR playbook. No automatic merge, npm publish or baseline advancement.
+A failed/partial candidate remains local/blocked; review its verification JSON.
+
+`upstream:verify` runs check, types, build, host, offline/fake E2E, benchmark smoke
+and installed-package smoke and records passed/failed individually. Live
+credentialed LLM/GitHub E2E and semantic review remain `not_run`; these are not
+inferred from smoke results. Tests execute local candidate code and therefore
+must run in a trusted or externally sandboxed environment.
+
+Maintainers advance a baseline in a separately reviewed metadata change only
+after every task is resolved (including explicit unsupported behavior), required
+CI is green and semantic approval is obtained. Point `coverage.countEvidence`
+to the validated pinned report, update both manifests' SHA/version together,
+match names/counts/files, retain `make-bot-ui` and all unsupported declarations,
+and retain the PENDING_PORT blocking gate. Only after that PR is approved and
+merged may the candidate be described as integrated. No CLI provides an
+`integrated` shortcut. See [implementation evidence](docs/upstream-sync/IMPLEMENTATION.md).
