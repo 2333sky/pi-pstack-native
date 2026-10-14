@@ -26,6 +26,7 @@ const copyPackage = (dir) => {
   const repo = process.cwd();
   mkdirSync(join(dir, "scripts"), { recursive: true });
   for (const script of ["benchmark.mjs", "check-benchmark.mjs"]) cpSync(join(repo, "scripts", script), join(dir, "scripts", script));
+  cpSync(join(repo, "UPSTREAM.json"), join(dir, "UPSTREAM.json"));
   cpSync(join(repo, "benchmarks"), join(dir, "benchmarks"), { recursive: true });
   cpSync(join(repo, "dist"), join(dir, "dist"), { recursive: true });
   symlinkSync(join(repo, "node_modules"), join(dir, "node_modules"), "dir");

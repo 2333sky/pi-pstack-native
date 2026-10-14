@@ -129,3 +129,14 @@ malicious code or concurrent filesystem attacks. Parent snapshots are not signed
 source attestations. Some new content has structural discovery/contract tests,
 not independently proven model conversational behavior. This PR does not claim
 full upstream semantic equivalence or advance the reviewed baseline.
+
+## Final CI regression correction
+
+The first final remote matrix failed in the relocated/symlinked benchmark test:
+the copied package fixture omitted UPSTREAM.json, which is now required to
+record the reviewed runtime version. The fixture now copies that shipped
+metadata too. Its existing assertions still require a real benchmark run,
+AUTHENTICATION_UNAVAILABLE, 20 case results and zero verified cases; no auth or
+verification check is bypassed. The corrected fixture passes on Node 22.19.0
+and 24.19.0. A fresh full remote matrix runs on the follow-up commit; the failed
+run is retained rather than relabeled or silently retried as a flake.
