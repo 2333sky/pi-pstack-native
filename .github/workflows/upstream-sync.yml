@@ -1,0 +1,79 @@
+name: Upstream pstack sync
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: 'main or full upstream commit SHA'
+        default: main
+        type: string
+      notify:
+        description: 'Explicitly enable deduplicated tracking Issue writes'
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: upstream-pstack-sync
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      status: ${{ steps.scan.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - id: scan
+        name: Read-only pinned scan
+        env:
+          CANDIDATE_REF: ${{ inputs.candidate_ref || 'main' }}
+        shell: bash
+        run: |
+          set +e
+          node scripts/upstream/cli.mjs scan --candidate-ref "$CANDIDATE_REF" > scan-result.json
+          code=$?
+          set -e
+          if [ "$code" != 0 ] && [ "$code" != 3 ]; then exit "$code"; fi
+          node --input-type=module -e 'import fs from "node:fs"; const r=JSON.parse(fs.readFileSync("scan-result.json")); if(!["no_change","changes_detected","blocked"].includes(r.status)) process.exit(2); fs.appendFileSync(process.env.GITHUB_OUTPUT, `status=${r.status}\n`);'
+      - uses: actions/upload-artifact@v4
+        if: steps.scan.outputs.status != 'no_change'
+        with:
+          name: upstream-sync
+          path: |
+            scan-result.json
+            docs/upstream-sync/reports/
+            docs/upstream-sync/tasks/
+  notify:
+    needs: scan
+    # Daily writes require explicit repository configuration; manual writes require checkbox.
+    if: needs.scan.outputs.status != 'no_change' && (inputs.notify == true || (github.event_name == 'schedule' && vars.UPSTREAM_SYNC_NOTIFY == 'true'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: upstream-sync
+          path: scan-artifact
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const result = JSON.parse(fs.readFileSync('scan-artifact/scan-result.json', 'utf8'));
+            if (!/^[a-f0-9]{12}_[a-f0-9]{12}$/.test(result.syncId)) throw new Error('Invalid sync ID');
+            const report = JSON.parse(fs.readFileSync(`scan-artifact/docs/upstream-sync/reports/${result.syncId}.json`, 'utf8'));
+            await require('./scripts/upstream/notify.cjs')({github, ...context.repo, report});
