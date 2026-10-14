@@ -60,7 +60,7 @@ async function verifiedLedger(f: Fixture, number: number) {
 }
 
 function spec(f: Fixture, number = 1) {
-  return { id: `e2e-ship-${number}`, repoId: f.repoId, repo: REPO, numbers: [number], owner: "e2e-operator" };
+  return { id: `e2e-ship-${number}`, repoId: f.repoId, repo: REPO, numbers: [number], owner: "e2e-operator", rootBase: "main" };
 }
 
 function events(): ProtocolState["events"] {
@@ -112,7 +112,7 @@ test(`${FAKE_PROVIDER} a stale head SHA blocks the merge`, { timeout: 60_000 }, 
     await verifiedLedger(f, 1);
     server.branches.set("main", f.baseSha);
     server.branches.set("feature/e2e", f.headSha);
-    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
+    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", draft: false, mergeState: "CLEAN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
 
     const client = githubClient(server.port);
     const frontier = await refresh(spec(f), client);
@@ -143,7 +143,7 @@ test(`${FAKE_PROVIDER} a crash before the external side effect replays exactly o
     await verifiedLedger(f, 1);
     server.branches.set("main", f.baseSha);
     server.branches.set("feature/e2e", f.headSha);
-    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
+    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", draft: false, mergeState: "CLEAN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
     const token = authorizeMerge(await refresh(spec(f), githubClient(server.port)), 1, "human-cli");
 
     const child = spawnChild(join(process.cwd(), "test", "e2e", "fixture-child.mjs"), ["ship", String(server.port), f.checkout, f.home, f.repoId, REPO, "1", token, "crash-before"], {});
@@ -175,7 +175,7 @@ test(`${FAKE_PROVIDER} a crash after the external side effect is at most once be
     await verifiedLedger(f, 1);
     server.branches.set("main", f.baseSha);
     server.branches.set("feature/e2e", f.headSha);
-    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
+    server.views.set(1, { number: 1, headSha: f.headSha, baseSha: f.baseSha, baseRef: "main", state: "OPEN", draft: false, mergeState: "CLEAN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
     const token = authorizeMerge(await refresh(spec(f), githubClient(server.port)), 1, "human-cli");
 
     const child = spawnChild(join(process.cwd(), "test", "e2e", "fixture-child.mjs"), ["ship", String(server.port), f.checkout, f.home, f.repoId, REPO, "1", token, "crash-after"], {});

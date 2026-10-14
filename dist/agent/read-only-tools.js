@@ -4,6 +4,8 @@ import { relative, resolve, sep } from "node:path";
 const SKIP_DIRS = new Set([".git", "node_modules", ".next", "dist", "build", "coverage"]);
 const MAX_FILE = 1_000_000;
 const MAX_RESULTS = 300;
+const MAX_TREE_ENTRIES = 20_000;
+const MAX_TREE_DEPTH = 32;
 const GREP_TIMEOUT_MS = 1500;
 const MAX_READ_LINES = 300;
 function schema(properties, required = []) {
@@ -22,31 +24,41 @@ function confined(root, input = ".") {
         throw new Error(`Path escapes child workspace: ${input}`);
     return real;
 }
+// Iterative so a deep tree cannot exhaust the call stack, with entry and depth bounds because a
+// tree of empty directories never reaches the file limit. `truncated` tells the caller that the
+// answer is partial rather than complete.
 function walk(root, start, max = MAX_RESULTS) {
     const base = realpathSync(resolve(root));
+    const from = confined(base, start);
+    if (lstatSync(from).isFile())
+        return { files: [relative(base, from) || "."], truncated: false };
     const out = [];
-    const visit = (path) => {
-        if (out.length >= max)
-            return;
-        const stat = lstatSync(path);
-        if (stat.isSymbolicLink())
-            return;
-        if (stat.isFile()) {
-            out.push(relative(base, path) || ".");
-            return;
+    const pending = [{ path: from, depth: 0 }];
+    let visited = 0, truncated = false;
+    while (pending.length) {
+        const { path, depth } = pending.pop();
+        if (depth > MAX_TREE_DEPTH) {
+            truncated = true;
+            continue;
         }
-        if (!stat.isDirectory())
-            return;
         for (const entry of readdirSync(path, { withFileTypes: true })) {
-            if (out.length >= max)
+            if (visited >= MAX_TREE_ENTRIES || out.length >= max) {
+                truncated = true;
                 break;
-            if (entry.isDirectory() && SKIP_DIRS.has(entry.name))
+            }
+            visited++;
+            if (entry.isSymbolicLink())
                 continue;
-            visit(resolve(path, entry.name));
+            const child = resolve(path, entry.name);
+            if (entry.isDirectory()) {
+                if (!SKIP_DIRS.has(entry.name))
+                    pending.push({ path: child, depth: depth + 1 });
+            }
+            else if (entry.isFile())
+                out.push(relative(base, child) || ".");
         }
-    };
-    visit(confined(base, start));
-    return out;
+    }
+    return { files: out, truncated };
 }
 export function createReadOnlyTools(cwd) {
     return [
@@ -89,8 +101,10 @@ export function createReadOnlyTools(cwd) {
             async execute(_id, args) {
                 const query = String(args.query).toLowerCase();
                 const max = Math.max(1, Math.min(MAX_RESULTS, Number(args.maxResults) || 100));
-                const rows = walk(cwd, args.path || ".", MAX_RESULTS * 4).filter((p) => p.toLowerCase().includes(query)).slice(0, max);
-                return text(rows.join("\n") || "(no matches)");
+                const { files, truncated } = walk(cwd, args.path || ".", MAX_RESULTS * 4);
+                const rows = files.filter((p) => p.toLowerCase().includes(query)).slice(0, max);
+                const note = truncated ? "\n(walk stopped at the traversal limit; results may be incomplete)" : "";
+                return text((rows.join("\n") || "(no matches)") + note);
             },
         },
         {

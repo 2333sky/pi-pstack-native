@@ -1,5 +1,8 @@
 import { hash, protocol, transact, uid } from "../runtime/protocol.js";
 import { ledgerCurrent } from "../verification/runner.js";
+// GitHub reports CLEAN only when the base and the required checks are settled. Every other merge
+// state, and a missing one, needs a human look before shipping.
+const CLEAN_MERGE_STATE = 'CLEAN';
 export async function refresh(spec, provider) {
     if (!/^[a-zA-Z0-9._-]+$/.test(spec.id) || ['__proto__', 'constructor', 'prototype'].includes(spec.id))
         throw new Error('INVALID_STACK_ID');
@@ -23,8 +26,12 @@ export async function refresh(spec, provider) {
             if (p && (!e.diffBase || e.diffBase.commitSha !== p.baseSha || e.pr.headSha !== p.headSha))
                 s.invalidations[e.id] = { at: new Date().toISOString(), reason: 'PR_BASE_OR_HEAD_CHANGED' };
         }
-        const rootBase = spec.rootBase ?? old?.rootBase ?? prs[0].baseRef;
-        if (old?.rootBase && rootBase !== old.rootBase)
+        // The shipping trunk is operator input, never a property of the PR under test. A persisted
+        // value wins so a later refresh cannot retarget the trunk silently.
+        const rootBase = old?.rootBase ?? spec.rootBase;
+        if (!rootBase)
+            throw new Error('STACK_ROOT_BASE_REQUIRED');
+        if (old?.rootBase && spec.rootBase && spec.rootBase !== old.rootBase)
             throw new Error('STACK_ROOT_BASE_CHANGED');
         const digest = hash({ prs, rootBase, requireReview: spec.requireReview !== false, requireBehavior: spec.requireBehavior !== false });
         const f = { ...spec, rootBase, prs, digest, generation: (old?.generation ?? 0) + (old?.digest === digest ? 0 : 1), checkedAt: new Date().toISOString() };
@@ -46,14 +53,15 @@ export function eligibility(f) {
         lower = true;
         if (p.state !== 'OPEN')
             blockers.push('PR_NOT_OPEN');
-        if (p.draft)
+        // Runtime callers can be plain JavaScript, so absent provider fields must still block.
+        if (p.draft !== false)
             blockers.push('PR_DRAFT');
         if (p.reviewThreads?.status !== 'checked')
             blockers.push('REVIEW_THREADS_NOT_CHECKED');
         else if (p.reviewThreads.unresolved > 0)
             blockers.push('UNRESOLVED_REVIEW_THREADS');
-        if (['DIRTY', 'UNSTABLE', 'BEHIND', 'UNKNOWN', 'BLOCKED'].includes(p.mergeState ?? ''))
-            blockers.push(`MERGE_STATE_${p.mergeState}`);
+        if (p.mergeState !== CLEAN_MERGE_STATE)
+            blockers.push(`MERGE_STATE_${p.mergeState ?? 'MISSING'}`);
         if (p.mergeable !== 'MERGEABLE')
             blockers.push(p.mergeable === 'CONFLICTING' ? 'CONFLICT' : 'STATE_UNCERTAIN');
         if (p.review === 'changes-requested' || f.requireReview !== false && p.review !== 'approved')

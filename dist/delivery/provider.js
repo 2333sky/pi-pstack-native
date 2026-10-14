@@ -17,7 +17,7 @@ export class GitHubCLI {
         p = confirmed;
         const checks = p.statusCheckRollup;
         const ci = !Array.isArray(checks) || !checks.length ? 'unknown' : checks.some((c) => ['FAILURE', 'ERROR', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED'].includes(c.conclusion ?? c.state)) ? 'failed' : checks.every((c) => ['SUCCESS'].includes(c.conclusion ?? c.state)) ? 'passed' : 'pending';
-        return { headRef: p.headRefName, draft: p.isDraft, mergeState: p.mergeStateStatus, autoMergeRequested: p.autoMergeRequest != null, reviewThreads, number: p.number, repo, headSha: p.headRefOid, baseSha: p.baseRefOid, baseRef: p.baseRefName, state: p.state, mergeable: p.mergeable, ci, review: p.reviewDecision === 'APPROVED' ? 'approved' : p.reviewDecision === 'CHANGES_REQUESTED' ? 'changes-requested' : 'pending' };
+        return { headRef: p.headRefName, draft: p.isDraft, mergeState: p.mergeStateStatus ?? 'UNKNOWN', autoMergeRequested: p.autoMergeRequest != null, reviewThreads, number: p.number, repo, headSha: p.headRefOid, baseSha: p.baseRefOid, baseRef: p.baseRefName, state: p.state, mergeable: p.mergeable, ci, review: p.reviewDecision === 'APPROVED' ? 'approved' : p.reviewDecision === 'CHANGES_REQUESTED' ? 'changes-requested' : 'pending' };
     }
     async merge(pr) {
         this.gh(['pr', 'merge', String(pr.number), '--repo', pr.repo, '--merge', '--match-head-commit', pr.headSha]);

@@ -1,8 +1,8 @@
 import { type ReviewThreadSummary } from './review-threads.js';
 export interface PullRequest {
     headRef?: string;
-    draft?: boolean;
-    mergeState?: string;
+    draft: boolean;
+    mergeState: string;
     autoMergeRequested?: boolean;
     reviewThreads?: ReviewThreadSummary;
     number: number;

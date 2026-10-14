@@ -220,6 +220,7 @@ MIT. Upstream pstack semantics/content are attributed to Lauren Tan and retain u
 - **Transactional workflow lifecycle:** pause, resume, retry, cancel, and executor node updates share short-lived cross-process state locks and a monotonic `revision`. Long-lived execution locks remain separate; rename alone was never sufficient for read-modify-write correctness.
 - **Confined read-only tools:** non-writable profiles receive only custom workspace-confined `read/ls/find/grep` and do not load nested pstack extensions. Their custom `read` limits text size and lines; the Pi native unrestricted `read` is not enabled. This is path confinement, not an OS sandbox.
 - **Bounded grep:** regex searches run in a killable Worker with a 1.5-second deadline, input and result limits. Catastrophic backtracking times out instead of blocking the host process.
+- **Bounded traversal:** `find` walks iteratively under entry, depth and result limits, so a tree of empty directories cannot stall the host process. A walk that stops early says so instead of reporting a complete answer.
 - **Verification:** new unit/subprocess regression tests cover terminal status, cancellation, path traversal, ReDoS, and actual OS-process contention. The previous `scripts/review.mjs` string-matching checks have been replaced by explicit validation metadata.
 
 Run offline-safe local checks with `npm run check`. With dependencies installed on a supported Node runtime, also run `npm run check:types` and `npm run check:host`. Run authenticated inference tests in a real configured Pi Host before production deployment. The `.github/workflows/ci.yml` workflow runs source checks, type checks, compilation, SDK smoke tests and benchmark fixture smoke checks on supported Node 22 and 24 runtimes. **Do not treat successful mock tests as proof of live provider behavior.**
@@ -383,14 +384,18 @@ pstack-runner stack-open /absolute/stack-plan.json --approve   # explicit remote
 ```
 
 Only the first PR targets `rootBase`; each child targets the preceding branch.
-Preparation verifies shared repository identity, distinct clean worktrees,
+`rootBase` is operator input: the first frontier refuses to take its trunk from
+the PRs under review, and no later refresh can retarget it. Preparation verifies
+shared repository identity, distinct clean worktrees,
 branch ancestry, remote heads, current accepted behavior ledgers and exact
 parent diff bases. Plans contain stable patch IDs and reject source/ref drift.
 Opening rechecks each pair and reuses only an existing open, ready PR matching
-that pair. It does not rebase, force-push, retarget, push branches, merge or
+that pair. It reads every newly created PR back and compares head and base; a ref
+that moves during creation revokes that lane's ledger and stops the remaining
+lanes. It does not rebase, force-push, retarget, push branches, merge or
 arm auto-merge. Publish branches separately with the user's authority.
 
-Existing custom PRProvider adapters must supply a checked reviewThreads summary; absent data is intentionally blocked rather than interpreted as no threads. Native Frontier snapshots paginate review threads, refuse invalid/repeated
+Existing custom PRProvider adapters must supply a checked reviewThreads summary, an explicit draft flag and a merge state; absent or unrecognized values block, because missing evidence is not evidence of a safe state. Only `draft: false` with the `CLEAN` merge state passes. Native Frontier snapshots paginate review threads, refuse invalid/repeated
 cursors and moved heads, and block unavailable/unresolved review evidence,
 drafts and blocked merge states even if CI passes. Native states are
 `waiting/reviewable/advance/complete/closed`; they do not pretend to be Cursor

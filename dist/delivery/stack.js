@@ -4,6 +4,9 @@ import { fingerprint, git } from "../artifacts/fingerprint.js";
 import { hash, protocol, transact } from "../runtime/protocol.js";
 import { preparePR, openPreparedPR } from "./prepare.js";
 function validBranch(branch) { return typeof branch === 'string' && /^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch) && !branch.includes('..') && !branch.includes('//') && !branch.endsWith('/') && !branch.endsWith('.lock'); }
+function laneMatches(pr, repo, lane) {
+    return pr.repo === repo && pr.state === 'OPEN' && pr.baseRef === lane.base && pr.baseSha === lane.baseSha && pr.headSha === lane.headSha && pr.draft === false;
+}
 function patchId(cwd, base, head) {
     const diff = execFileSync('git', ['-C', cwd, 'diff', '--no-ext-diff', '--no-textconv', '--binary', base, head], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
     const result = execFileSync('git', ['patch-id', '--stable'], { input: diff, encoding: 'utf8', maxBuffer: 1024 }).trim().split(/\s/)[0];
@@ -63,7 +66,7 @@ export async function openStack(plan, provider, approve = false) {
         const existing = await provider.find(plan.repo, lane.head);
         if (existing !== null) {
             const pr = await provider.read(plan.repo, existing);
-            if (pr.repo !== plan.repo || pr.state !== 'OPEN' || pr.baseRef !== lane.base || pr.baseSha !== lane.baseSha || pr.headSha !== lane.headSha || pr.draft)
+            if (!laneMatches(pr, plan.repo, lane))
                 throw new Error('STACK_EXISTING_PR_MISMATCH');
             opened.push({ key: lane.key, number: existing, reused: true });
             continue;
@@ -71,7 +74,17 @@ export async function openStack(plan, provider, approve = false) {
         const prepared = preparePR(lane.cwd, lane.ledgerId, { repo: plan.repo, base: lane.base, head: lane.head, title: lane.title });
         prepared.body = `## Why\n${lane.title}\n\n## What changed\nVerified stack unit ${lane.key}.\n\n## Scope\nOnly this branch relative to ${lane.base}.\n\n## Blast Radius\nReview this unit independently; dependencies land bottom-up. No merge authority.\n\n## Verification\nHead: ${lane.headSha}\nBase: ${lane.baseSha}\nPatch ID: ${lane.patchId}\nLedger: ${lane.ledgerId}\nIndependent semantic review and current remote CI remain required.\n`;
         const result = await openPreparedPR(lane.cwd, prepared, provider, true);
-        opened.push({ key: lane.key, ...result, reused: false });
+        // A ref can move between the last check and creation. Read the new PR back, or this lane's
+        // verification would describe a commit the PR does not hold. Stop the stack and revoke the
+        // lane's ledger when that happens.
+        const created = await provider.find(plan.repo, lane.head);
+        if (created === null)
+            throw new Error('STACK_CREATED_PR_UNREADABLE');
+        if (!laneMatches(await provider.read(plan.repo, created), plan.repo, lane)) {
+            transact('stack-verification-stale', plan.id, plan.owner, s => { s.invalidations[lane.ledgerId] = { at: new Date().toISOString(), reason: 'PR_CREATED_FROM_UNVERIFIED_REFS' }; return { key: lane.key, number: created }; });
+            throw new Error('STACK_CREATED_PR_MISMATCH');
+        }
+        opened.push({ key: lane.key, number: created, ...result, reused: false });
     }
     transact('stack-opened', plan.id, plan.owner, () => ({ opened, mergeAuthorized: false }));
     return { id: plan.id, opened, mergeAuthorized: false };

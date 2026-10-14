@@ -1,7 +1,7 @@
 import { collectReviewThreads, REVIEW_THREADS_QUERY, type ReviewThreadSummary } from './review-threads.ts';
 import { execFileSync } from 'node:child_process';
 export interface PullRequest {
-  headRef?:string; draft?:boolean; mergeState?:string; autoMergeRequested?:boolean; reviewThreads?:ReviewThreadSummary;
+  headRef?:string; draft:boolean; mergeState:string; autoMergeRequested?:boolean; reviewThreads?:ReviewThreadSummary;
   number:number; repo:string; headSha:string; baseSha:string; baseRef:string; state:'OPEN'|'MERGED'|'CLOSED';
   mergeable:'MERGEABLE'|'CONFLICTING'|'UNKNOWN'; ci:'passed'|'failed'|'pending'|'unknown'; review:'approved'|'changes-requested'|'pending';
 }
@@ -20,7 +20,7 @@ export class GitHubCLI implements PRProvider {
     p=confirmed;
     const checks=p.statusCheckRollup;
     const ci = !Array.isArray(checks) || !checks.length ? 'unknown' : checks.some((c:any)=>['FAILURE','ERROR','CANCELLED','TIMED_OUT','ACTION_REQUIRED'].includes(c.conclusion ?? c.state))?'failed':checks.every((c:any)=>['SUCCESS'].includes(c.conclusion ?? c.state))?'passed':'pending';
-    return {headRef:p.headRefName,draft:p.isDraft,mergeState:p.mergeStateStatus,autoMergeRequested:p.autoMergeRequest!=null,reviewThreads,number:p.number,repo,headSha:p.headRefOid,baseSha:p.baseRefOid,baseRef:p.baseRefName,state:p.state,mergeable:p.mergeable,ci,review:p.reviewDecision==='APPROVED'?'approved':p.reviewDecision==='CHANGES_REQUESTED'?'changes-requested':'pending'};
+    return {headRef:p.headRefName,draft:p.isDraft,mergeState:p.mergeStateStatus ?? 'UNKNOWN',autoMergeRequested:p.autoMergeRequest!=null,reviewThreads,number:p.number,repo,headSha:p.headRefOid,baseSha:p.baseRefOid,baseRef:p.baseRefName,state:p.state,mergeable:p.mergeable,ci,review:p.reviewDecision==='APPROVED'?'approved':p.reviewDecision==='CHANGES_REQUESTED'?'changes-requested':'pending'};
   }
   async merge(pr:PullRequest):Promise<void> {
     this.gh(['pr','merge',String(pr.number),'--repo',pr.repo,'--merge','--match-head-commit',pr.headSha]);

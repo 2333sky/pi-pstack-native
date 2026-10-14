@@ -133,7 +133,7 @@ export async function startModelServer(script: (call: ModelCall) => ModelStep): 
 
 export interface GitHubView {
   reviewThreads?: {status:"checked";total:number;unresolved:number;bugbotUnresolved:number};
-  number: number; headSha: string; baseSha: string; baseRef: string; state: "OPEN" | "MERGED" | "CLOSED";
+  number: number; headSha: string; baseSha: string; baseRef: string; state: "OPEN" | "MERGED" | "CLOSED"; draft: boolean; mergeState: string;
   mergeable: "MERGEABLE" | "CONFLICTING" | "UNKNOWN"; ci: "passed" | "failed" | "pending" | "unknown";
   review: "approved" | "changes-requested" | "pending";
 }
@@ -176,7 +176,7 @@ export async function startGitHubServer(checks: "passed" | "failed" | "pending" 
       const base = branches.get(String(body.base));
       if (!head || !base) { calls.push({ op: "open", detail: "unknown-ref" }); return reply(422, { error: "unknown ref" }); }
       const number = views.size + 1;
-      views.set(number, { number, headSha: head, baseSha: base, baseRef: String(body.base), state: "OPEN", mergeable: "MERGEABLE", ci: checks, review });
+      views.set(number, { number, headSha: head, baseSha: base, baseRef: String(body.base), state: "OPEN", draft: false, mergeState: "CLEAN", mergeable: "MERGEABLE", ci: checks, review });
       calls.push({ op: "open", detail: `${number} ${body.base}<-${body.head}` });
       return reply(201, { number, url: `https://github.com/loopback-owner/lemn-disposable/pull/${number}` });
     }
@@ -193,7 +193,7 @@ export async function startGitHubServer(checks: "passed" | "failed" | "pending" 
 export interface MergeCrash { mode: "normal" | "crash-before" | "crash-after" }
 
 export function githubClient(port: number, crash: MergeCrash["mode"] = "normal", repo = "loopback-owner/lemn-disposable") {
-  const view = (value: any): GitHubView => ({ number: value.number, headSha: value.headSha, baseSha: value.baseSha, baseRef: value.baseRef, state: value.state, mergeable: value.mergeable, ci: value.ci, review: value.review, reviewThreads:value.reviewThreads });
+  const view = (value: any): GitHubView => ({ number: value.number, headSha: value.headSha, baseSha: value.baseSha, baseRef: value.baseRef, state: value.state, draft: value.draft, mergeState: value.mergeState, mergeable: value.mergeable, ci: value.ci, review: value.review, reviewThreads:value.reviewThreads });
   return {
     async read(target: string, number: number) {
       const { status, json } = await post(port, "/read", { repo: target, number });

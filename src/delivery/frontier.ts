@@ -1,6 +1,9 @@
 import { hash, protocol, transact, uid } from '../runtime/protocol.ts';
 import { ledgerCurrent } from '../verification/runner.ts';
 import type { PRProvider, PullRequest } from './provider.ts';
+// GitHub reports CLEAN only when the base and the required checks are settled. Every other merge
+// state, and a missing one, needs a human look before shipping.
+const CLEAN_MERGE_STATE='CLEAN';
 export interface StackSpec { id:string; repoId:string; repo:string; numbers:number[]; owner:string; requireReview?:boolean; requireBehavior?:boolean; rootBase?:string }
 export interface Frontier extends StackSpec { generation:number; digest:string; prs:PullRequest[]; checkedAt:string }
 export async function refresh(spec:StackSpec,provider:PRProvider):Promise<Frontier> {
@@ -17,8 +20,11 @@ export async function refresh(spec:StackSpec,provider:PRProvider):Promise<Fronti
       const p=prs.find(p=>e.pr?.repoId===spec.repoId && e.pr.number===p.number);
       if(p && (!e.diffBase || e.diffBase.commitSha!==p.baseSha || e.pr!.headSha!==p.headSha))s.invalidations[e.id]={at:new Date().toISOString(),reason:'PR_BASE_OR_HEAD_CHANGED'};
     }
-    const rootBase=spec.rootBase ?? old?.rootBase ?? prs[0].baseRef;
-    if(old?.rootBase && rootBase!==old.rootBase)throw new Error('STACK_ROOT_BASE_CHANGED');
+    // The shipping trunk is operator input, never a property of the PR under test. A persisted
+    // value wins so a later refresh cannot retarget the trunk silently.
+    const rootBase=old?.rootBase ?? spec.rootBase;
+    if(!rootBase)throw new Error('STACK_ROOT_BASE_REQUIRED');
+    if(old?.rootBase && spec.rootBase && spec.rootBase!==old.rootBase)throw new Error('STACK_ROOT_BASE_CHANGED');
     const digest=hash({prs,rootBase,requireReview:spec.requireReview!==false,requireBehavior:spec.requireBehavior!==false});
     const f:Frontier={...spec,rootBase,prs,digest,generation:(old?.generation ?? 0)+(old?.digest===digest?0:1),checkedAt:new Date().toISOString()};s.frontiers[spec.id]=f;return f;
   });
@@ -32,10 +38,11 @@ export function eligibility(f:Frontier):{number:number;eligible:boolean;blockers
     else if(f.rootBase && p.baseRef!==f.rootBase)blockers.push('FRONTIER_BASE_NOT_TRUNK');
     lower=true;
     if(p.state!=='OPEN')blockers.push('PR_NOT_OPEN');
-    if(p.draft)blockers.push('PR_DRAFT');
+    // Runtime callers can be plain JavaScript, so absent provider fields must still block.
+    if(p.draft!==false)blockers.push('PR_DRAFT');
     if(p.reviewThreads?.status!=='checked')blockers.push('REVIEW_THREADS_NOT_CHECKED');
     else if(p.reviewThreads.unresolved>0)blockers.push('UNRESOLVED_REVIEW_THREADS');
-    if(['DIRTY','UNSTABLE','BEHIND','UNKNOWN','BLOCKED'].includes(p.mergeState ?? ''))blockers.push(`MERGE_STATE_${p.mergeState}`);
+    if(p.mergeState!==CLEAN_MERGE_STATE)blockers.push(`MERGE_STATE_${p.mergeState ?? 'MISSING'}`);
     if(p.mergeable!=='MERGEABLE')blockers.push(p.mergeable==='CONFLICTING'?'CONFLICT':'STATE_UNCERTAIN');
     if(p.review==='changes-requested' || f.requireReview!==false && p.review!=='approved')blockers.push('REVIEW_REQUIRED');
     if(p.ci!=='passed')blockers.push('CI_NOT_PASSED');
