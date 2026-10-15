@@ -1,5 +1,8 @@
 import { hash, protocol, transact, uid } from "../runtime/protocol.js";
 import { ledgerCurrent } from "../verification/runner.js";
+// GitHub reports CLEAN only when the base and the required checks are settled. Every other merge
+// state, and a missing one, needs a human look before shipping.
+const CLEAN_MERGE_STATE = 'CLEAN';
 export async function refresh(spec, provider) {
     if (!/^[a-zA-Z0-9._-]+$/.test(spec.id) || ['__proto__', 'constructor', 'prototype'].includes(spec.id))
         throw new Error('INVALID_STACK_ID');
@@ -12,9 +15,8 @@ export async function refresh(spec, provider) {
         throw new Error('STATE_UNCERTAIN');
     // A dependent base must equal the preceding head before that predecessor is merged.
     for (let i = 1; i < prs.length; i++)
-        if (prs[i - 1].state !== 'MERGED' && prs[i].baseSha !== prs[i - 1].headSha)
+        if (prs[i - 1].state !== 'MERGED' && (prs[i].baseSha !== prs[i - 1].headSha || Boolean(prs[i - 1].headRef && prs[i].baseRef !== prs[i - 1].headRef)))
             throw new Error('STACK_TOPOLOGY_MISMATCH');
-    const digest = hash(prs);
     return transact('frontier-refreshed', spec.id, 'provider', s => {
         const old = s.frontiers[spec.id];
         if (old && (old.owner !== spec.owner || old.repo !== spec.repo || old.repoId !== spec.repoId))
@@ -24,7 +26,15 @@ export async function refresh(spec, provider) {
             if (p && (!e.diffBase || e.diffBase.commitSha !== p.baseSha || e.pr.headSha !== p.headSha))
                 s.invalidations[e.id] = { at: new Date().toISOString(), reason: 'PR_BASE_OR_HEAD_CHANGED' };
         }
-        const f = { ...spec, prs, digest, generation: (old?.generation ?? 0) + (old?.digest === digest ? 0 : 1), checkedAt: new Date().toISOString() };
+        // The shipping trunk is operator input, never a property of the PR under test. A persisted
+        // value wins so a later refresh cannot retarget the trunk silently.
+        const rootBase = old?.rootBase ?? spec.rootBase;
+        if (!rootBase)
+            throw new Error('STACK_ROOT_BASE_REQUIRED');
+        if (old?.rootBase && spec.rootBase && spec.rootBase !== old.rootBase)
+            throw new Error('STACK_ROOT_BASE_CHANGED');
+        const digest = hash({ prs, rootBase, requireReview: spec.requireReview !== false, requireBehavior: spec.requireBehavior !== false });
+        const f = { ...spec, rootBase, prs, digest, generation: (old?.generation ?? 0) + (old?.digest === digest ? 0 : 1), checkedAt: new Date().toISOString() };
         s.frontiers[spec.id] = f;
         return f;
     });
@@ -38,9 +48,20 @@ export function eligibility(f) {
         const blockers = [];
         if (lower)
             blockers.push('LOWER_UNMERGED');
+        else if (f.rootBase && p.baseRef !== f.rootBase)
+            blockers.push('FRONTIER_BASE_NOT_TRUNK');
         lower = true;
         if (p.state !== 'OPEN')
             blockers.push('PR_NOT_OPEN');
+        // Runtime callers can be plain JavaScript, so absent provider fields must still block.
+        if (p.draft !== false)
+            blockers.push('PR_DRAFT');
+        if (p.reviewThreads?.status !== 'checked')
+            blockers.push('REVIEW_THREADS_NOT_CHECKED');
+        else if (p.reviewThreads.unresolved > 0)
+            blockers.push('UNRESOLVED_REVIEW_THREADS');
+        if (p.mergeState !== CLEAN_MERGE_STATE)
+            blockers.push(`MERGE_STATE_${p.mergeState ?? 'MISSING'}`);
         if (p.mergeable !== 'MERGEABLE')
             blockers.push(p.mergeable === 'CONFLICTING' ? 'CONFLICT' : 'STATE_UNCERTAIN');
         if (p.review === 'changes-requested' || f.requireReview !== false && p.review !== 'approved')
@@ -88,4 +109,15 @@ export async function ship(spec, provider, options = {}) {
         throw new Error('MERGE_UNCONFIRMED');
     transact('merge-confirmed', f.id, 'provider', () => ({ number: actual.number, head: actual.headSha }));
     return { merged: actual.number, frontier: await refresh(spec, provider) };
+}
+/** Native snapshot states, not fabricated Cursor watcher verdicts. No merging or polling. */
+export function watchFrontier(f, previous) {
+    const target = f.prs.find(p => p.state !== 'MERGED');
+    if (!target)
+        return { state: 'complete', frontier: null, digest: f.digest };
+    if (target.state === 'CLOSED')
+        return { state: 'closed', frontier: target.number, digest: f.digest };
+    const decision = eligibility(f).find(d => d.number === target.number);
+    const advanced = previous && previous.number !== target.number;
+    return { state: advanced ? 'advance' : decision.eligible ? 'reviewable' : 'waiting', frontier: target.number, headSha: target.headSha, digest: f.digest, blockers: decision.blockers, autoMergeRequested: target.autoMergeRequested ?? false, queueState: 'not-claimed', stopBeforeMerge: true };
 }

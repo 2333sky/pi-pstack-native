@@ -13,3 +13,7 @@ export * from './runner/service.ts';
 export * from './runtime/migrate.ts';
 export * from './delivery/prepare.ts';
 export * from './delivery/git.ts';
+
+export * from './agent/resources.ts';
+export * from './delivery/stack.ts';
+export * from './delivery/review-threads.ts';

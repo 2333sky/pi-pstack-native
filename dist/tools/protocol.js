@@ -6,7 +6,7 @@ import { fingerprint } from "../artifacts/fingerprint.js";
 import { protocol } from "../runtime/protocol.js";
 import { contextSnapshot } from "../context/snapshot.js";
 import { GitHubCLI } from "../delivery/provider.js";
-import { refresh, eligibility } from "../delivery/frontier.js";
+import { refresh, eligibility, watchFrontier } from "../delivery/frontier.js";
 import { ProgramCoordinator } from "../program/coordinator.js";
 const reply = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value, null, 2) }], details: value });
 export function registerProtocolTools(pi, engine) {
@@ -42,10 +42,10 @@ export function registerProtocolTools(pi, engine) {
             await engine.verifyCall(w.id, c.key, agent);
             return reply(engine.get(w.id)?.calls[c.key]);
         } });
-    pi.registerTool({ name: 'pstack_delivery', label: 'Pstack Delivery Plan', description: 'Read live GitHub PR stack state and return deterministic shipping blockers. This tool never merges; authorized merge is a human CLI operation.', parameters: object({ id: string(), repo: string(), numbers: array(number()), requireReview: { type: 'boolean' }, requireBehavior: { type: 'boolean' } }, ['id', 'repo', 'numbers']), executionMode: 'sequential', async execute(_id, p, _signal, _update, ctx) {
+    pi.registerTool({ name: 'pstack_delivery', label: 'Pstack Delivery Plan', description: 'Read live GitHub PR stack state and return deterministic shipping blockers. The operator must name the trusted rootBase; it is never taken from the PRs under review. This tool never merges; authorized merge is a human CLI operation.', parameters: object({ id: string(), repo: string(), numbers: array(number()), rootBase: string(), requireReview: { type: 'boolean' }, requireBehavior: { type: 'boolean' } }, ['id', 'repo', 'numbers', 'rootBase']), executionMode: 'sequential', async execute(_id, p, _signal, _update, ctx) {
             assertGitHubRepository(ctx.cwd, p.repo);
             const f = await refresh({ ...p, repoId: fingerprint(ctx.cwd).repoId, owner: ctx.sessionManager.getSessionId() }, new GitHubCLI());
-            return reply({ frontier: f, decisions: eligibility(f), dryRun: true });
+            return reply({ frontier: f, decisions: eligibility(f), watch: watchFrontier(f), dryRun: true });
         } });
     pi.registerTool({ name: 'pstack_context', label: 'Pstack Context Snapshot', description: 'Rebuild authoritative handoff and current evidence status from durable records.', parameters: object({}), async execute(_id, _p, _signal, _update, ctx) { return reply(contextSnapshot(engine, ctx.sessionManager.getSessionId())); } });
     const coordinator = new ProgramCoordinator(engine);

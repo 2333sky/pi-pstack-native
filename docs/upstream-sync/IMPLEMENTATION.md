@@ -1,5 +1,7 @@
 # Continuous upstream sync implementation
 
+This records the original M1–M4 delivery. The subsequent candidate ports and report revision behavior are documented in [PORT-0.15.23.md](PORT-0.15.23.md).
+
 The reviewed baseline remains pstack 0.15.17 at
 `978ca6e9c0e012047cd5058b8e829240336e704e`. No product runtime, Skill,
 Playbook, UPSTREAM.json or PARITY.json was changed by this implementation.
@@ -23,7 +25,10 @@ Playbook, UPSTREAM.json or PARITY.json was changed by this implementation.
 - M4: explicit prepare → exported developer prompt → local implementation →
   verify → dry-run/authorized draft proposal. Prepared branches use independent
   worktrees. Dirty/existing worktrees, missing gates, stale verification,
-  history divergence and automatic baseline changes block proposals. Optional
+  history divergence and automatic baseline changes block proposals. Task
+  packages, verification evidence, worktrees, branches and PR bodies are keyed by
+  report revision, so two mapping revisions of one upstream pair never share an
+  artifact or a branch. Optional
   commands reuse the native artifact fingerprint, including hidden-index-flag
   rejection and pre/post-test source equality. No
   provider/model is selected and no automatic inference is started.

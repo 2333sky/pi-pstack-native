@@ -5,7 +5,7 @@
 ## Steps
 
 1. List `~/.pi/agent/pstack-native/worktrees/`, agent records, and `git worktree list`. Match every candidate path to a pstack agent/workflow record. Unknown paths are out of scope.
-2. For each owned worktree, inspect `git status --porcelain`, branch, commits ahead of base, remote/PR state when relevant, and whether a non-terminal workflow/agent still references it.
+2. Use the optional worktree-audit CLI with an explicit comparison base when PRs target a parent branch. For each owned worktree, inspect `git status --porcelain`, branch, the explicitly chosen PR base/ref (not an assumed default), commits ahead of that base, remote/PR state when relevant, and whether a non-terminal workflow/agent still references it.
 3. Do not remove dirty worktrees, active workflow worktrees, unpushed/unmerged valuable commits, or anything whose ownership is uncertain.
 4. Remove only safe owned worktrees with `git worktree remove <path>` (no `--force` unless the user explicitly authorizes destruction after seeing the state).
 5. Prune stale Git worktree metadata only after path-level cleanup. Delete pstack records only when doing so cannot break recovery/audit history.

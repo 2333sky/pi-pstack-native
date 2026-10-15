@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 Use for rationale, regressions, thresholds, “why did we choose X?”, or postmortem-style questions. Use `/skill:how` when the question is only current runtime behavior.
 
+Read references/epistemics.md in full using pstack_skill.
+
 ## Operating posture
 
 Do not treat the newest commit or current code as the whole rationale. Decisions accrete. Separate documented intent from inference.
@@ -35,11 +37,11 @@ Use only sources available in the current environment. Candidate categories:
 - error/observability data;
 - product analytics/warehouse.
 
-Assign one read-only investigator per useful category when the question is complex. If a source category is unavailable, report that gap. Skip a category only when it is provably irrelevant.
+Before spawning, build a coverage map for all seven categories from pstack_evidence: source-control, issues, documents, team-chat, observability, errors and analytics. The parent performs authorized live connector/Git queries and supplies evidencePackets per investigator; read-only children do not gain MCP access. Give each investigator references/investigator-prompt.md and its references/sources/<category>.md. For defensive code include incident-postmortem.md. Assign one read-only investigator per useful category when the question is complex. If a source category is unavailable, report that gap. Skip a category only when it is provably irrelevant.
 
 ## Step 4: Synthesize
 
-Build a timeline of decisions and constraints. Resolve conflicts by source proximity and date. Mark:
+Use references/synthesizer-prompt.md. The parent spot-checks decisive live citations; do not claim the child queried a connector. Build a timeline of decisions and constraints. Resolve conflicts by source proximity and date. Mark:
 
 - **fact:** directly supported;
 - **inference:** best explanation from evidence;

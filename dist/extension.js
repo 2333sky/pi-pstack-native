@@ -1,3 +1,4 @@
+import { upstreamVersion } from "./runtime/upstream.js";
 import { registerProtocolTools } from "./tools/protocol.js";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -16,7 +17,7 @@ import { WorkflowEngine } from "./workflow/engine.js";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = join(ROOT, "skills");
 const VERSION = "0.6.0-preview.1";
-const PSTACK_VERSION = "0.15.15";
+const PSTACK_VERSION = upstreamVersion();
 const POTETO_RE = /(?<![a-z0-9._%+-])\$poteto-mode(?![a-z0-9_-]|\.[a-z0-9])/i;
 function readJsonFile(name, fallback) {
     try {

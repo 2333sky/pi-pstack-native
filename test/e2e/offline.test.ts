@@ -123,7 +123,7 @@ test(`${OFFLINE} GitHubCLI rejects invalid repository and pull request inputs be
 test(`${OFFLINE} the GitHub provider refuses a merge whose expected head is stale`, { timeout: 60_000 }, async () => {
   const server = await startGitHubServer("passed", "approved");
   try {
-    server.views.set(1, { number: 1, headSha: "b".repeat(40), baseSha: "a".repeat(40), baseRef: "main", state: "OPEN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
+    server.views.set(1, { number: 1, headSha: "b".repeat(40), baseSha: "a".repeat(40), baseRef: "main", state: "OPEN", draft: false, mergeState: "CLEAN", mergeable: "MERGEABLE", ci: "passed", review: "approved" });
     const client = githubClient(server.port);
     await assert.rejects(client.merge({ number: 1, headSha: "c".repeat(40) }), /HEAD_MOVED/);
     assert.equal(server.views.get(1)!.state, "OPEN");

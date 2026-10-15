@@ -101,3 +101,34 @@ test('M4 dirty checkout and divergence block prepare; failed gates block proposa
   assert.equal(cli(destination,'propose','--report',reportPath).status,2);
 });
 function basenameForTest(path) { return path.split('/').at(-1); }
+test('intentional local remapping creates stable content-addressed report revision without overwriting history',t=>{
+ const f=fixture(t);f.put('skills/new/SKILL.md','new');const candidate=f.commit();const before=f.run(candidate),original=saveReport(f.dir,before);
+ mkdirSync(join(f.dir,'local','skills','new'),{recursive:true});writeFileSync(join(f.dir,'local','skills','new','SKILL.md'),'native');
+ const after=scan({repo:f.dir,baselineRef:f.base,candidateRef:candidate,localRoot:join(f.dir,'local')});const revision=saveReport(f.dir,after);
+ assert.notEqual(revision,original);assert.ok(revision.includes(after.fingerprint.slice(0,16)));assert.equal(JSON.parse(readFileSync(join(f.dir,original),'utf8')).fingerprint,before.fingerprint);assert.equal(saveReport(f.dir,after),revision);
+});
+test('two mapping revisions of one sync ID keep separate tasks, evidence, branches and worktrees',t=>{
+ const f=fixture(t);f.git('branch','-M','main');f.put('skills/one/SKILL.md','changed');const candidate=f.commit();
+ const canonical=f.run(candidate);saveReport(f.dir,canonical);
+ writeFileSync(join(f.dir,'UPSTREAM.json'),readFileSync(join(root,'UPSTREAM.json')));
+ writeFileSync(join(f.dir,'PARITY.json'),readFileSync(join(root,'PARITY.json')));
+ const gates=['check','check:types','build','check:host','check:e2e','benchmark:smoke','smoke:installed'];
+ writeFileSync(join(f.dir,'package.json'),JSON.stringify({scripts:Object.fromEntries(gates.map(g=>[g,'node -e "process.exit(0)"']))}));
+ mkdirSync(join(f.dir,'local','skills','one'),{recursive:true});writeFileSync(join(f.dir,'local','skills','one','SKILL.md'),'native');
+ const revisedPath=saveReport(f.dir,scan({repo:f.dir,baselineRef:f.base,candidateRef:candidate,localRoot:join(f.dir,'local')}));
+ f.commit();
+ const stems=[canonical.syncId,revisedPath.split('/').at(-1).replace(/\.json$/,'')];
+ assert.ok(stems[1].startsWith(`${canonical.syncId}-`));assert.notEqual(stems[0],stems[1]);
+ for(const stem of stems) {
+  const reportPath=`docs/upstream-sync/reports/${stem}.json`;
+  const destination=join(f.dir,'..',`revision-${stem}`);t.after(()=>rmSync(destination,{recursive:true,force:true}));
+  const prepared=spawnSync(process.execPath,[resolve('scripts/upstream/cli.mjs'),'prepare','--report',reportPath,'--worktree',destination],{cwd:f.dir,encoding:'utf8'});
+  assert.equal(prepared.status,0,prepared.stderr);assert.equal(JSON.parse(prepared.stdout).branch,`upstream/${stem}`);
+  const verified=spawnSync(process.execPath,[resolve('scripts/upstream/cli.mjs'),'verify','--report',reportPath],{cwd:destination,encoding:'utf8'});
+  assert.equal(verified.status,0,verified.stderr);
+  assert.equal(JSON.parse(verified.stdout).reportFingerprint,JSON.parse(readFileSync(join(f.dir,reportPath),'utf8')).fingerprint);
+  assert.ok(existsSync(join(destination,`docs/upstream-sync/tasks/${stem}.md`)));
+  assert.ok(existsSync(join(destination,`docs/upstream-sync/verification/${stem}.json`)));
+  assert.equal(existsSync(join(destination,`docs/upstream-sync/verification/${stems.find(s=>s!==stem)}.json`)),false);
+ }
+});

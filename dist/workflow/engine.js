@@ -1,3 +1,5 @@
+import { upstreamVersion } from "../runtime/upstream.js";
+import { validateEvidencePackets } from "../agent/resources.js";
 import { loadModels } from "../runtime/config.js";
 import { validateBrief, saveBrief, validateBudget, reportSatisfies } from "../contracts/brief.js";
 import { verify, ledgerCurrent } from "../verification/runner.js";
@@ -45,8 +47,10 @@ export class WorkflowEngine {
     create(spec) {
         validateGraph(spec.nodes);
         validateBudget(spec.budget);
-        for (const node of spec.nodes)
+        for (const node of spec.nodes) {
             validateBudget(node.budget);
+            validateEvidencePackets(node.evidencePackets);
+        }
         for (const node of spec.nodes) {
             if (spec.contractLevel === "strict" && !node.brief)
                 throw new Error(`BRIEF_INCOMPLETE: ${node.key}.brief`);
@@ -65,7 +69,7 @@ export class WorkflowEngine {
         const calls = {};
         for (const node of spec.nodes) {
             calls[node.key] = {
-                brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
+                evidencePackets: validateEvidencePackets(node.evidencePackets), brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
                 key: node.key, profile: node.profile ?? "worker", task: node.task.trim(),
                 state: "pending", dependsOn: [...(node.dependsOn ?? [])], attempt: 0,
                 ...(node.model || loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] ? { model: node.model ?? loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] } : {}),
@@ -75,12 +79,13 @@ export class WorkflowEngine {
         const record = {
             id, revision: 0, schemaVersion: 2, reviewFingerprint: spec.type === "review" ? fingerprint(spec.cwd) : undefined, budget: spec.budget, verification: "unknown",
             ...(spec.name ? { name: spec.name } : {}),
-            type: spec.type ?? "graph", state: "created", createdAt, updatedAt: createdAt,
+            type: spec.type ?? "graph",
+            deliveryContract: spec.deliveryContract, state: "created", createdAt, updatedAt: createdAt,
             ...(spec.parentSessionId ? { parentSessionId: spec.parentSessionId } : {}),
             parentCwd: spec.cwd, calls, edges: dependencyEdges(spec.nodes),
             maxConcurrency: Math.max(1, Math.min(16, spec.maxConcurrency ?? loadConfig().defaultConcurrency)),
             upstreamContext: {
-                pstackVersion: spec.pstackVersion ?? "0.15.15",
+                pstackVersion: spec.pstackVersion ?? upstreamVersion(),
                 ...(spec.skill ? { skill: spec.skill } : {}),
                 ...(spec.playbook ? { playbook: spec.playbook } : {}),
             },
@@ -291,7 +296,7 @@ export class WorkflowEngine {
                 const spec = {
                     id: idForAgent, workflowId: latest.id, callKey: key, profile: call.profile,
                     task: this.taskWithDependencies(latest, call), cwd: target.cwd,
-                    isolation: target.isolation, model: call.model, attempt: call.attempt, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
+                    isolation: target.isolation, model: call.model, attempt: call.attempt, evidencePackets: call.evidencePackets, brief: call.brief, thinkingLevel: call.thinkingLevel, budget: call.budget,
                 };
                 const veto = ordersVeto(id);
                 if (veto) {

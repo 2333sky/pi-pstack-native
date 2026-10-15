@@ -5,6 +5,8 @@ import { relative, resolve, sep } from "node:path";
 const SKIP_DIRS = new Set([".git", "node_modules", ".next", "dist", "build", "coverage"]);
 const MAX_FILE = 1_000_000;
 const MAX_RESULTS = 300;
+const MAX_TREE_ENTRIES = 20_000;
+const MAX_TREE_DEPTH = 32;
 const GREP_TIMEOUT_MS = 1500;
 const MAX_READ_LINES = 300;
 
@@ -16,29 +18,36 @@ function text(value: string) { return { content: [{ type: "text" as const, text:
 function confined(root: string, input = "."): string {
   const base = realpathSync(resolve(root));
   const candidate = resolve(base, input);
+  if (candidate !== base && !candidate.startsWith(`${base}${sep}`)) throw new Error(`Path escapes child workspace: ${input}`);
   if (!existsSync(candidate)) throw new Error(`Path does not exist: ${input}`);
   const real = realpathSync(candidate);
   if (real !== base && !real.startsWith(`${base}${sep}`)) throw new Error(`Path escapes child workspace: ${input}`);
   return real;
 }
 
-function walk(root: string, start: string, max = MAX_RESULTS): string[] {
+// Iterative so a deep tree cannot exhaust the call stack, with entry and depth bounds because a
+// tree of empty directories never reaches the file limit. `truncated` tells the caller that the
+// answer is partial rather than complete.
+function walk(root: string, start: string, max = MAX_RESULTS): { files: string[]; truncated: boolean } {
   const base = realpathSync(resolve(root));
+  const from = confined(base, start);
+  if (lstatSync(from).isFile()) return { files: [relative(base, from) || "."], truncated: false };
   const out: string[] = [];
-  const visit = (path: string): void => {
-    if (out.length >= max) return;
-    const stat = lstatSync(path);
-    if (stat.isSymbolicLink()) return;
-    if (stat.isFile()) { out.push(relative(base, path) || "."); return; }
-    if (!stat.isDirectory()) return;
+  const pending: { path: string; depth: number }[] = [{ path: from, depth: 0 }];
+  let visited = 0, truncated = false;
+  while (pending.length) {
+    const { path, depth } = pending.pop()!;
+    if (depth > MAX_TREE_DEPTH) { truncated = true; continue; }
     for (const entry of readdirSync(path, { withFileTypes: true })) {
-      if (out.length >= max) break;
-      if (entry.isDirectory() && SKIP_DIRS.has(entry.name)) continue;
-      visit(resolve(path, entry.name));
+      if (visited >= MAX_TREE_ENTRIES || out.length >= max) { truncated = true; break; }
+      visited++;
+      if (entry.isSymbolicLink()) continue;
+      const child = resolve(path, entry.name);
+      if (entry.isDirectory()) { if (!SKIP_DIRS.has(entry.name)) pending.push({ path: child, depth: depth + 1 }); }
+      else if (entry.isFile()) out.push(relative(base, child) || ".");
     }
-  };
-  visit(confined(base, start));
-  return out;
+  }
+  return { files: out, truncated };
 }
 
 export function createReadOnlyTools(cwd: string): any[] {
@@ -78,8 +87,10 @@ export function createReadOnlyTools(cwd: string): any[] {
       async execute(_id: string, args: any) {
         const query = String(args.query).toLowerCase();
         const max = Math.max(1, Math.min(MAX_RESULTS, Number(args.maxResults) || 100));
-        const rows = walk(cwd, args.path || ".", MAX_RESULTS * 4).filter((p) => p.toLowerCase().includes(query)).slice(0, max);
-        return text(rows.join("\n") || "(no matches)");
+        const { files, truncated } = walk(cwd, args.path || ".", MAX_RESULTS * 4);
+        const rows = files.filter((p) => p.toLowerCase().includes(query)).slice(0, max);
+        const note = truncated ? "\n(walk stopped at the traversal limit; results may be incomplete)" : "";
+        return text((rows.join("\n") || "(no matches)") + note);
       },
     },
     {

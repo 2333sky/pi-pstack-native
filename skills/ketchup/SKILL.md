@@ -24,6 +24,10 @@ An action item is a decision or step only the user can take. Include approvals, 
 
 Open with the number of action items, or say there are none. If nothing changed and nothing waits on the user, say so and stop.
 
+Keep the reply well under 150 words including labels in visuals. Use plain sentences; omit hashes, paths, build numbers and counts unless the user needs them to act. Check every number against its source. Use at most four compact boxes to show the outcomes of requested work, never mark work done while it awaits the user, and never repeat a fact in both prose and a visual. Use available screenshots for visible changes; otherwise mark the missing screenshot and describe the visible change. A Mermaid diagram can represent nonvisual work. Do not start an app or job to manufacture a visual.
+
 List the important results first. Say what each result means for the user. Skip steps that changed nothing. Name work you can still do yourself in one line.
+
+Give each action item a recommendation and why, followed by what happens if the user does not answer. For choices, show the real options or before/after in a small visual with their costs; skip visuals for access requests and unasked irreversible steps. Never invent an action item just to fill a format.
 
 Give each action item a short summary that stays useful out of context. Name the affected work, the decision, why it matters now, the options and their costs, your recommendation, and the default if the user does not answer. State unknown facts instead of guessing. Link to detail when available, but include enough context to decide without opening it.

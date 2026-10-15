@@ -119,3 +119,20 @@ Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native impl
 ## Attribution
 
 Upstream pstack is by Lauren Tan under MIT terms. This port is independent and is not endorsed by Cursor. Preserve upstream copyright and license obligations for derived material. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+
+## Proposed 0.15.23 ports (not integrated)
+
+The reviewed metadata above remains at 0.15.17. The new restatement Skill,
+chat catch-up/verification/Poteto rules, safe bundled-resource access,
+external evidence snapshots, linear PR-stack CLI, all-page review-thread
+checks and explicit-base worktree audit are candidate implementations.
+[The candidate receipt](docs/upstream-sync/candidate-0.15.23.json) maps every
+pinned diff to code/tests or an explicit platform limit. All entries await
+maintainer semantic review. The active Skill loader can expose candidate
+Skills; their availability does not advance the reviewed baseline.
+
+Exact Cursor watcher/merge-queue verdicts, Bugbot pass-based dismissal policy,
+Cursor manifests/cloud/private-tool provenance and Cursor transcript/simulator
+cleanup remain unsupported. Local read-only investigation uses supplied
+snapshots rather than implicit MCP access. Native head/base verification stays
+stricter than the upstream patch-ID/noisy-build reuse rule.

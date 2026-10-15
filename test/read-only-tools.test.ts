@@ -44,3 +44,26 @@ test("catastrophic regex runs in a killable worker rather than stalling the main
     assert.match((await tools.read.execute("2", { path: "re.txt" })).content[0].text, /a+/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test("find stops at the traversal bound instead of walking a tree of empty directories", async () => {
+  const root = mkdtempSync(join(process.cwd(), ".pstack-walk-"));
+  try {
+    for (let i = 0; i < 25_000; i++) mkdirSync(join(root, `empty-${i}`));
+    const find = createReadOnlyTools(root).find((t) => t.name === "find")!;
+    const text = (await find.execute("1", { query: "nothing-matches" })).content[0].text;
+    assert.equal(text, "(no matches)\n(walk stopped at the traversal limit; results may be incomplete)");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("find does not descend past the depth limit", async () => {
+  const root = mkdtempSync(join(process.cwd(), ".pstack-depth-"));
+  try {
+    let deep = root; for (let i = 0; i < 40; i++) { deep = join(deep, "d"); mkdirSync(deep); }
+    writeFileSync(join(deep, "deep.txt"), "x");
+    let near = root; for (let i = 0; i < 3; i++) { near = join(near, "n"); mkdirSync(near); }
+    writeFileSync(join(near, "near.txt"), "x");
+    const find = createReadOnlyTools(root).find((t) => t.name === "find")!;
+    assert.ok(!(await find.execute("1", { query: "deep.txt" })).content[0].text.includes("deep.txt"));
+    assert.match((await find.execute("2", { query: "near.txt" })).content[0].text, /near\.txt/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

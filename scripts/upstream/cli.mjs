@@ -43,9 +43,11 @@ try {
   } else {
     const reportPath = safePath(options.report ?? '');
     const report = validateReport(readJSON(join(root,reportPath)));
+    const taskStem = basename(reportPath,'.json');
+    if(!new RegExp(`^${report.syncId}(?:-[a-f0-9]{16})?$`).test(taskStem))throw new Error('Invalid report revision path');
     if (command === 'plan') {
-      writeConfined(root,`docs/upstream-sync/tasks/${report.syncId}.md`,taskMarkdown(report));
-      console.log(JSON.stringify({status:report.status,taskPackage:`docs/upstream-sync/tasks/${report.syncId}.md`}));
+      writeConfined(root,`docs/upstream-sync/tasks/${taskStem}.md`,taskMarkdown(report));
+      console.log(JSON.stringify({status:report.status,taskPackage:`docs/upstream-sync/tasks/${taskStem}.md`}));
     } else if (command === 'verify') {
       const {fingerprint, sameFingerprint} = await import('../../src/artifacts/fingerprint.ts');
       const snapshot = fingerprint(root);
@@ -59,27 +61,27 @@ try {
       const current = fingerprint(root);
       const passed = results.every(g => g.status === 'passed') && sameFingerprint(snapshot,current);
       const evidence = {schemaVersion:1,syncId:report.syncId,reportFingerprint:report.fingerprint,localHead:head,candidateFingerprint:{workspaceDigest:snapshot.workspaceDigest,treeSha:snapshot.treeSha,indexTree:snapshot.indexTree,dirty:snapshot.dirty},sourceUnchanged:sameFingerprint(snapshot,current),workingTreeFingerprint:digest(tree),gates:results,liveE2E:'not_run',semanticReview:'not_run',status:passed && !report.impact.history_diverged ? 'verified':'blocked',integrated:false};
-      writeConfined(root,`docs/upstream-sync/verification/${report.syncId}.json`,JSON.stringify(evidence,null,2)+'\n');
+      writeConfined(root,`docs/upstream-sync/verification/${taskStem}.json`,JSON.stringify(evidence,null,2)+'\n');
       console.log(JSON.stringify(evidence));
       if(evidence.status === 'blocked') process.exitCode = 3;
     } else if (command === 'prepare') {
       if(report.impact.history_diverged || report.status === 'no_change') throw new Error('Candidate cannot be proposed');
       const {fingerprint} = await import('../../src/artifacts/fingerprint.ts');
       fingerprint(root,'committed'); // Reuse native dirty/index-flag/submodule safety checks.
-      const destination = resolve(options.worktree ?? join(dirname(root),`upstream-${report.syncId}`));
+      const destination = resolve(options.worktree ?? join(dirname(root),`upstream-${taskStem}`));
       if(existsSync(destination)) throw new Error('Worktree destination already exists');
-      const branch = `upstream/${report.syncId}`;
+      const branch = `upstream/${taskStem}`;
       git(root,['worktree','add','-b',branch,destination,'HEAD']);
-      writeConfined(destination,`docs/upstream-sync/tasks/${report.syncId}.md`,taskMarkdown(report));
-      console.log(JSON.stringify({status:'prepared',branch,worktree:destination,prompt:`docs/upstream-sync/tasks/${report.syncId}.md`,agent:'manual/exported prompt; no provider or model dependency',baselineAdvanced:false}));
+      writeConfined(destination,`docs/upstream-sync/tasks/${taskStem}.md`,taskMarkdown(report));
+      console.log(JSON.stringify({status:'prepared',branch,worktree:destination,prompt:`docs/upstream-sync/tasks/${taskStem}.md`,agent:'manual/exported prompt; no provider or model dependency',baselineAdvanced:false}));
     } else if (command === 'propose') {
       if(report.impact.history_diverged || report.status === 'no_change') throw new Error('Candidate cannot be proposed');
       const {fingerprint} = await import('../../src/artifacts/fingerprint.ts');
       fingerprint(root,'committed');
       const branch = git(root,['branch','--show-current']).trim();
-      if(branch !== `upstream/${report.syncId}` || git(root,['rev-parse','--git-dir']).trim() === '.git') throw new Error('Proposal requires prepared isolated worktree');
+      if(branch !== `upstream/${taskStem}` || git(root,['rev-parse','--git-dir']).trim() === '.git') throw new Error('Proposal requires prepared isolated worktree');
       if(git(root,['status','--porcelain','--untracked-files=all']).trim()) throw new Error('Commit candidate and verification evidence before proposing');
-      const evidence = readJSON(join(root,`docs/upstream-sync/verification/${report.syncId}.json`));
+      const evidence = readJSON(join(root,`docs/upstream-sync/verification/${taskStem}.json`));
       if(evidence.sourceUnchanged !== true || evidence.candidateFingerprint?.dirty !== false || evidence.reportFingerprint !== report.fingerprint || evidence.status !== 'verified' || evidence.gates.length !== gates.length || !gates.every(g => evidence.gates.some(e => e.command === `npm run ${g}` && e.status === 'passed'))) throw new Error('Required gate evidence missing');
       // Verification must belong to this candidate commit (evidence-only follow-up commits allowed).
       const head = git(root,['rev-parse','HEAD']).trim();
@@ -90,8 +92,8 @@ try {
       const initial = git(root,['merge-base',head,'main']).trim();
       const protectedChanges = git(root,['diff','--name-only',initial,head,'--','UPSTREAM.json','PARITY.json']).trim();
       if(protectedChanges) throw new Error('Automatic proposal cannot advance baseline');
-      const bodyPath = `docs/upstream-sync/pr-${report.syncId}.md`;
-      const body = `## Why\nTrack and propose upstream ${report.candidate.sha}.\n\n## What changed\nCandidate semantic port; see task package ${report.syncId}.\n\n## Scope\nPending maintainer semantic review. Baseline remains unchanged.\n\n## Blast Radius\nHigh-risk seams and unresolved behavior are listed in the task package.\n\n## Verification\nRequired local gates passed. Live LLM/GitHub E2E: not_run. Semantic review: not_run. CI must independently pass.\n\n${taskMarkdown(report)}`;
+      const bodyPath = `docs/upstream-sync/pr-${taskStem}.md`;
+      const body = `## Why\nTrack and propose upstream ${report.candidate.sha}.\n\n## What changed\nCandidate semantic port; see task package ${taskStem}.\n\n## Scope\nPending maintainer semantic review. Baseline remains unchanged.\n\n## Blast Radius\nHigh-risk seams and unresolved behavior are listed in the task package.\n\n## Verification\nRequired local gates passed. Live LLM/GitHub E2E: not_run. Semantic review: not_run. CI must independently pass.\n\n${taskMarkdown(report)}`;
       if(!options['allow-remote-write']) { console.log(JSON.stringify({status:'proposed',dryRun:true,branch,body,integrated:false})); }
       else {
         if(options.repo !== '2333sky/pi-pstack-native-2') throw new Error('Explicit approved target repository required');
@@ -102,7 +104,7 @@ try {
         else {
           // Push only this branch, without hooks, never merge or publish.
           git(root,['push',`https://github.com/${options.repo}.git`,`${head}:refs/heads/${branch}`]);
-          const url = gh(['pr','create','--repo',options.repo,'--base','main','--head',branch,'--draft','--title',`Upstream candidate ${report.syncId}`,'--body-file',join(root,bodyPath)]).trim();
+          const url = gh(['pr','create','--repo',options.repo,'--base','main','--head',branch,'--draft','--title',`Upstream candidate ${taskStem}`,'--body-file',join(root,bodyPath)]).trim();
           console.log(JSON.stringify({status:'proposed',url,integrated:false}));
         }
       }

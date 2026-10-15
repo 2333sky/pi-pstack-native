@@ -45,5 +45,5 @@ export function buildTemplate(t) {
     }
     validateGraph(nodes);
     planArtifacts(nodes);
-    return { nodes, estimatedAgents: nodes.length, budget: t.budget, notes: ['Strict deterministic gates run on each artifact. Failed panels are visible; no silent fallback.', 'Model cost estimate is unknown until provider usage is available.'] };
+    return { deliveryContract: t.kind === 'autopilot-stack' ? 'remote-stack-required' : 'local-dag', nodes, estimatedAgents: nodes.length, budget: t.budget, notes: ['Strict deterministic gates run on each artifact. Failed panels are visible; no silent fallback.', 'Model cost estimate is unknown until provider usage is available.', ...(t.kind === 'autopilot-stack' ? ['This DAG prepares local work, not a delivered PR stack. Use pstack-runner stack-plan/stack-open with independently verified linear worktree branches.'] : [])] };
 }

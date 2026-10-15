@@ -11,7 +11,7 @@ Use this for “how does X work?”, code walkthroughs, ownership/layering quest
 
 **Simple:** one function/module or a narrow call path. Explore and explain in one pass.
 
-**Complex:** multiple packages/services, cross-cutting state, or unclear ownership. Fan out 2-4 read-only scouts by concern: entry points, data/state, side effects/integration, tests/config. Keep scopes disjoint.
+**Complex:** multiple packages/services, cross-cutting state, or unclear ownership. Fan out 2-4 read-only scouts by concern: entry points, data/state, side effects/integration, tests/config. Keep scopes disjoint. Use references/explorer-prompt.md through pstack_skill for each scout.
 
 ## Step 2: Trace the real path
 

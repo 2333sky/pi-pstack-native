@@ -46,11 +46,13 @@ test("real Pi AgentSession loads pstack tools, routes models, and exercises chil
   let failureRequestSeen = false;
   let successRequestSeen = false;
   let server: Server | undefined;
+  const childRequests:any[]=[];
   let parentSession: Awaited<ReturnType<typeof createAgentSession>>["session"] | undefined;
   const host = new AgentHost();
 
   try {
     const testServer = createServer((request, response) => {
+      let requestBody="";request.on("data",chunk=>{requestBody+=chunk;});request.on("end",()=>{try{childRequests.push(JSON.parse(requestBody));}catch{}});
       request.resume();
       if (mode === "hold") {
         holdRequestSeen = true;
@@ -163,6 +165,9 @@ test("real Pi AgentSession loads pstack tools, routes models, and exercises chil
     assert.equal(recovered.state, "completed");
     assert.match(recovered.result ?? "", /real Pi SDK local-protocol success/);
     assert.equal(host.get("ag_real_sdk_recovery")?.state, "completed");
+    const names=childRequests.at(-1)?.tools?.map((t:any)=>t.function?.name) ?? [];
+    for(const name of ["read","ls","find","grep","pstack_skill","pstack_evidence"])assert.ok(names.includes(name),`readonly SDK exposes ${name}`);
+    for(const name of ["bash","edit","write"])assert.ok(!names.includes(name),`readonly SDK excludes ${name}`);
   } finally {
     parentSession?.dispose();
     if (server) {

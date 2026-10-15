@@ -26,4 +26,5 @@ export declare function buildTemplate(t: TemplateSpec): {
     estimatedAgents: number;
     budget: Budget | undefined;
     notes: string[];
+    deliveryContract: 'local-dag' | 'remote-stack-required';
 };

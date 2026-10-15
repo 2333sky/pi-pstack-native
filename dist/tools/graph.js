@@ -1,5 +1,6 @@
+import { upstreamVersion } from "../runtime/upstream.js";
 import { array, enums, number, object, string } from "./schema.js";
-const NODE = object({ key: string(), profile: string(), task: string(), model: string(), isolation: enums(["shared", "readonly", "worktree"]) }, ["key", "task"]);
+const NODE = object({ evidencePackets: { type: "array", items: { type: "object", additionalProperties: true } }, key: string(), profile: string(), task: string(), model: string(), isolation: enums(["shared", "readonly", "worktree"]) }, ["key", "task"]);
 const EDGE = object({ from: string(), to: string() }, ["from", "to"]);
 const PARAMETERS = object({
     action: enums(["run", "start"]), name: string(), nodes: array(NODE), edges: array(EDGE), maxConcurrency: number(undefined, { minimum: 1, maximum: 16 }),
@@ -26,7 +27,7 @@ export function registerGraphTool(pi, workflows) {
                 type: "graph",
                 nodes: params.nodes.map((node) => ({ ...node, dependsOn: deps.get(node.key) })),
                 maxConcurrency: params.maxConcurrency,
-                parentSessionId: ctx.sessionManager.getSessionId(), cwd: ctx.cwd, pstackVersion: "0.15.15",
+                parentSessionId: ctx.sessionManager.getSessionId(), cwd: ctx.cwd, pstackVersion: upstreamVersion(),
             });
             return reply(params.action === "run" ? await workflows.run(record.id, ctx) : workflows.start(record.id, ctx));
         },

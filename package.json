@@ -84,7 +84,8 @@
     "upstream:verify": "node scripts/upstream/cli.mjs verify",
     "upstream:prepare": "node scripts/upstream/cli.mjs prepare",
     "upstream:propose": "node scripts/upstream/cli.mjs propose",
-    "test:upstream": "node --test scripts/upstream/*.test.mjs"
+    "test:upstream": "node --test scripts/upstream/*.test.mjs",
+    "check:plan": "node scripts/check-plan.mjs"
   },
   "engines": {
     "node": ">=22.19.0"

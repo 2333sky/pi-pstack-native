@@ -16,7 +16,7 @@ export function loadRunnerPolicy() {
     }
 }
 function redact(s) {
-    return s.replace(/(authorization\s*[:=]\s*(?:bearer\s+)?|(?:api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,"'}]+/gi, '$1[REDACTED]').replace(/https?:\/\/[^\s/@]+:[^\s/@]+@/g, 'https://[REDACTED]@');
+    return s.replace(/(authorization\s*[:=]\s*(?:bearer\s+)?|(?:api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,"'}]+/gi, '$1[REDACTED]').replace(/(https?:\/\/)[^\s/@]+@/gi, '$1[REDACTED]@').replace(/\b(?:ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{16,})\b/g, '[REDACTED]');
 }
 function filePath(cwd, path) {
     const base = realpathSync(cwd);

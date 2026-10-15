@@ -3,6 +3,7 @@ import { assertSessionOwner } from "../runtime/ownership.js";
 import { array, enums, object, string } from "./schema.js";
 const PARAMETERS = object({
     action: enums(["run", "start", "status", "list", "send", "stop"], "Operation."),
+    evidencePackets: { type: "array", items: { type: "object", additionalProperties: true } },
     brief: { type: "object", additionalProperties: true },
     budget: { type: "object", additionalProperties: true },
     thinkingLevel: enums(["off", "minimal", "low", "medium", "high", "xhigh", "max"]),
@@ -31,14 +32,14 @@ export function registerAgentTool(pi, agents) {
                 case "run": {
                     if (!params.profile || !params.task)
                         throw new Error("run requires profile and task");
-                    return reply(await agents.run({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation: params.isolation, model: params.model, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
+                    return reply(await agents.run({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation: params.isolation, model: params.model, evidencePackets: params.evidencePackets, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
                 }
                 case "start": {
                     if (!params.profile || !params.task)
                         throw new Error("start requires profile and task");
                     const profile = getProfile(params.profile);
                     const isolation = params.isolation ?? (profile.writable ? "worktree" : profile.defaultIsolation);
-                    return reply(agents.start({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation, model: params.model, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
+                    return reply(agents.start({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation, model: params.model, evidencePackets: params.evidencePackets, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
                 }
                 case "status": {
                     if (!params.id)

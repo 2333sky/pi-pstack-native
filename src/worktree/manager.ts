@@ -48,3 +48,13 @@ export async function removeWorktree(info: WorktreeInfo, force = false): Promise
   if (!force && await isWorktreeDirty(info.path)) throw new Error(`Refusing to remove dirty worktree: ${info.path}`);
   await git(info.repoRoot, ["worktree", "remove", ...(force ? ["--force"] : []), info.path]);
 }
+
+export async function auditWorktree(info:WorktreeInfo,comparisonBase=info.baseRef):Promise<{path:string;branch:string;comparisonBase:string;baseSha:string;headSha:string;dirty:boolean;ahead:number;merged:boolean}> {
+  if(!comparisonBase || comparisonBase.startsWith('-') || !/^[A-Za-z0-9_./-]+$/.test(comparisonBase))throw new Error('Invalid comparison base');
+  const headSha=await git(info.path,['rev-parse','HEAD']),baseSha=await git(info.repoRoot,['rev-parse','--verify',`${comparisonBase}^{commit}`]);
+  const actualBranch=await git(info.path,['branch','--show-current']);
+  if(actualBranch!==info.branch)throw new Error('Worktree branch changed');
+  const ahead=Number(await git(info.path,['rev-list','--count',`${baseSha}..${headSha}`]));
+  let merged=true;try{await git(info.path,['merge-base','--is-ancestor',headSha,baseSha]);}catch{merged=false;}
+  return {path:info.path,branch:actualBranch,comparisonBase,baseSha,headSha,dirty:await isWorktreeDirty(info.path),ahead,merged};
+}

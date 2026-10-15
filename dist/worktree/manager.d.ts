@@ -8,3 +8,13 @@ export declare function gitRoot(cwd: string): Promise<string | undefined>;
 export declare function createWorktree(cwd: string, ownerId: string, baseRef?: string): Promise<WorktreeInfo>;
 export declare function isWorktreeDirty(path: string): Promise<boolean>;
 export declare function removeWorktree(info: WorktreeInfo, force?: boolean): Promise<void>;
+export declare function auditWorktree(info: WorktreeInfo, comparisonBase?: string): Promise<{
+    path: string;
+    branch: string;
+    comparisonBase: string;
+    baseSha: string;
+    headSha: string;
+    dirty: boolean;
+    ahead: number;
+    merged: boolean;
+}>;
