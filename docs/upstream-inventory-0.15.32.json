@@ -26,18 +26,13 @@
     "nestedSkills": 3
   },
   "dispositionSummary": {
-    "local": 76,
+    "local": 81,
     "sourceOnly": 2,
     "unsupported": 1,
-    "pending": 121
+    "pending": 116
   },
   "openWork": {
     "pendingSkills": [
-      "create-formal-verification-skill",
-      "in-your-own-words",
-      "ketchup-video",
-      "maintain-formal-verification-skill",
-      "sharpen",
       "statechart"
     ],
     "pendingPlaybooks": [],
@@ -58,6 +53,7 @@
       "skills/reflect/references/synthesizer.md",
       "skills/statechart/scripts/render.mjs",
       "skills/statechart/scripts/snapshot.mjs",
+      "skills/statechart/scripts/statechart.mjs",
       "skills/typescript-best-practices/references/patterns.md",
       "skills/why/references/epistemics.md",
       "skills/why/references/investigator-prompt.md",
@@ -1253,8 +1249,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/create-formal-verification-skill/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1490,8 +1488,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/in-your-own-words/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1648,8 +1648,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/ketchup-video/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1698,8 +1700,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/maintain-formal-verification-skill/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3906,8 +3910,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/sharpen/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4457,7 +4463,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {

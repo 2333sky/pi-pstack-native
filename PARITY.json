@@ -10,11 +10,15 @@
     "blast-radius": "ADAPTED",
     "bro": "ADAPTED",
     "correct": "ADAPTED",
+    "create-formal-verification-skill": "ADAPTED",
     "create-verification-skill": "ADAPTED",
     "figure-it-out": "ADAPTED",
     "how": "ADAPTED",
+    "in-your-own-words": "ADAPTED",
     "interrogate": "ADAPTED",
     "ketchup": "ADAPTED",
+    "ketchup-video": "ADAPTED",
+    "maintain-formal-verification-skill": "ADAPTED",
     "maintain-verification-skill": "ADAPTED",
     "make-bot-ui": "CURSOR_ONLY",
     "no-comments": "ADAPTED",
@@ -47,6 +51,7 @@
     "recall": "ADAPTED",
     "reflect": "ADAPTED",
     "setup-pstack": "ADAPTED",
+    "sharpen": "ADAPTED",
     "show-me-your-work": "ADAPTED",
     "swarm": "ADAPTED",
     "tdd": "ADAPTED",
@@ -104,6 +109,15 @@
     "behavioralAudit": "not-claimed",
     "ketchupEvidence": "Pi skill loader and structural sections only; chat behavior not exercised (issue #6)",
     "fileLevelAudit": "not-claimed",
-    "auxiliaryFiles": "references/scripts/assets are not vendored or claimed byte-for-byte; required behavior is incorporated into adapted semantic ports where applicable"
+    "auxiliaryFiles": "references/scripts/assets are not vendored or claimed byte-for-byte; required behavior is incorporated into adapted semantic ports where applicable",
+    "targetSkills": 58,
+    "targetPlaybooks": 23,
+    "targetInventory": "docs/upstream-target-0.15.32.json",
+    "pendingTargetSkills": [
+      "statechart"
+    ],
+    "pendingTargetReasons": {
+      "statechart": "27 upstream files including a TLA+/TLC toolchain and a 260 KB test fixture; needs its own work package, not a prose port"
+    }
   }
 }
