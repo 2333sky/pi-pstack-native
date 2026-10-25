@@ -32,6 +32,33 @@ test("state lock prevents lost read-modify-write between independent OS processe
   }
 });
 
+test("a contended state lock retries to its budget instead of failing a legitimate writer", async () => {
+  const root = mkdtempSync(join(process.cwd(), ".pstack-tx-budget-"));
+  const before = process.env.PSTACK_NATIVE_HOME;
+  process.env.PSTACK_NATIVE_HOME = root;
+  try {
+    const file = join(root, "counter.json");
+    writeFileSync(file, JSON.stringify({ id: "one", value: 0, revision: 0 }));
+    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).pathname;
+    const worker = `import { updateRecord } from ${JSON.stringify(tx)};\n` +
+      `const file=process.argv[1]; for(let i=0;i<35;i++) updateRecord('workflow','one',file,(r)=>{r.value++;});`;
+    const burst = (budget?: number) => Promise.allSettled(Array.from({length:4}, () => run(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", worker, file],
+      { env: { ...process.env, PSTACK_NATIVE_HOME: root, ...(budget ? { PSTACK_STATE_LOCK_BUDGET_MS: String(budget) } : {}) } })));
+    const control = await burst(150);
+    assert(control.some(result => result.status === "rejected" && /is busy after 150 ms/.test(String(result.reason))), "a 150 ms budget must expose the contention instead of hiding it");
+    writeFileSync(file, JSON.stringify({ id: "one", value: 0, revision: 0 }));
+    const settled = await burst();
+    assert.equal(settled.filter(result => result.status === "fulfilled").length, 4, "the default budget keeps every legitimate writer");
+    const result = readJson<{ value: number; revision: number }>(file, { value: -1, revision: -1 });
+    assert.equal(result.value, 140);
+    assert.equal(result.revision, 140);
+  } finally {
+    if (before === undefined) delete process.env.PSTACK_NATIVE_HOME;
+    else process.env.PSTACK_NATIVE_HOME = before;
+    rmSync(root, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  }
+});
+
 test("independent processes update one durable workflow record without stale status reads", async () => {
   const root = mkdtempSync(join(process.cwd(), ".pstack-wf-processes-"));
   const before = process.env.PSTACK_NATIVE_HOME;
