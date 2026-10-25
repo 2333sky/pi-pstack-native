@@ -93,6 +93,20 @@ CI 矩阵 22.19.0 与 24.x 的结果由本 PR 的 CI 给出。
 但 121 条仍是“未审核”，所以 M0 未退出。
 W07 的登记协议升级未开始，`PARITY.json` 和 `UPSTREAM.json` 未改。
 
+### 0.8 五个缺口 Skill 的交付
+
+本次登记 5 个 Skill。`in-your-own-words` 和 `sharpen` 之前已有本地文件，只是未登记。另外 3 个本次移植。
+
+- `in-your-own-words`。本地版本比上游 0.15.17、0.15.23、0.15.32 三个版本的正文更完整。三份上游正文都只有一句复述要求。本地版本增加了区分“明确要求”和“你的理解”、指出影响目标的歧义、以及“本请求不授权实施”的规则。这是有意的语义适配，予以保留。
+- `sharpen`。正文与上游逐字相同，只把调用写法从 `/sharpen` 改为 Pi 的 `/skill:sharpen`。
+- `ketchup-video`。保留上游的截止点、回复顺序和待决定事项规则。渲染器缺失时明确阻断。本包没有视频嵌入工具，客户端不能嵌入时只返回失败说明。
+- `create-formal-verification-skill`。保留上游触发条件和生成流程。生成的技能使用 Pi 的技能目录和 Agent Skills frontmatter。验证器缺失时不能声称完成。
+- `maintain-formal-verification-skill`。保留上游六步流程、四类漂移、四种结果和五项报告内容。形式验证工具缺失时报告 blocked。
+
+`statechart` 仍未支持。上游该技能有 27 个文件，含 TLA+ 与 TLC 工具链集成，以及一个 260 KB 的测试夹具。它需要独立工作包，不能算作文字移植。
+
+`PARITY.json` 现登记 57 个顶层 Skill。目标为 58 个。`coverage.pendingTargetSkills` 列出差额，`coverage.pendingTargetReasons` 记录原因。校验器要求这个差额集合与目标快照完全一致。
+
 ## 1. 原稿质量评审
 
 原稿适合作为方向说明。它还不能直接作为开发任务书。

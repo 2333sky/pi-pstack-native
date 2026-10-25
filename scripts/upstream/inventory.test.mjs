@@ -115,15 +115,16 @@ test('real recorded snapshot has a complete non-overlapping category partition',
   assert.deepEqual(inventory.openWork.pendingNestedSkills,['reproduce-and-fix-issues','setup-benny','triage-issue-reports']);
   assert.equal(inventory.openWork.pendingNestedSkills.length,3);
   assert.equal(inventory.entries.filter(e=>e.source.category === 'automation').length,12);
-  const missing = ['create-formal-verification-skill','in-your-own-words','ketchup-video','maintain-formal-verification-skill','sharpen','statechart'];
-  assert.deepEqual(inventory.openWork.pendingSkills,missing);
-  for(const name of missing) {
-    assert.equal(Object.hasOwn(parity.skills,name),false);
-    assert.deepEqual(inventory.entries.find(e=>e.source.path === `skills/${name}/SKILL.md`).port,{kind:'pending',reason:'not-in-reviewed-registry'});
+  const ported = ['create-formal-verification-skill','in-your-own-words','ketchup-video','maintain-formal-verification-skill','sharpen'];
+  for(const name of ported) {
+    assert.equal(parity.skills[name],'ADAPTED');
+    assert.deepEqual(inventory.entries.find(e=>e.source.path === `skills/${name}/SKILL.md`).port,{kind:'local',path:`skills/${name}/SKILL.md`,reason:'parity-adapted',parity:'ADAPTED'});
   }
+  assert.deepEqual(inventory.openWork.pendingSkills,['statechart']);
+  assert.deepEqual(inventory.entries.find(e=>e.source.path === 'skills/statechart/SKILL.md').port,{kind:'pending',reason:'not-in-reviewed-registry'});
   assert.deepEqual(inventory.entries.find(e=>e.source.path === 'skills/make-bot-ui/SKILL.md').port,{kind:'unsupported',reason:'cursor-only'});
   for(const entry of inventory.entries.filter(e=>e.port.kind === 'local')) assert.ok(existsSync(join(root,entry.port.path)),entry.source.path);
-  assert.deepEqual(inventory.dispositionSummary,{local:76,sourceOnly:2,unsupported:1,pending:121});
+  assert.deepEqual(inventory.dispositionSummary,{local:81,sourceOnly:2,unsupported:1,pending:116});
   assert.equal(serialize(inventory),serialize(buildInventory(inputs)));
   assert.equal(readFileSync(join(root,inventoryPath),'utf8'),serialize(inventory));
   assert.deepEqual(checkInventory(root),inventory);

@@ -2,6 +2,8 @@
 
 The verified baseline is `cursor/plugins` commit `978ca6e9c0e012047cd5058b8e829240336e704e`. The official tree contains 52 top-level skills and 23 playbooks. [Provenance](docs/upstream-provenance-0.15.17.json) verifies the commit, manifest, and 165 pstack blobs. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. These counts do not prove behavioral parity.
 
+The pinned target `0.15.32` (commit `99b609a72323b70204eab407c622f436e858e112`) contains 58 top-level skills and 23 playbooks. This package registers 57 of them. `statechart` stays pending because it needs its own work package: 27 files, a TLA+/TLC toolchain, and a 260 KB test fixture. [The target inventory](docs/upstream-inventory-0.15.32.json) records one disposition per upstream file.
+
 This package represents upstream intent with Pi-native instructions. It does not claim byte-for-byte, auxiliary-file, or Cursor platform parity. `make-bot-ui` remains Cursor-only. Private Cursor PR-tool provenance, upstream watcher verdicts, and Cursor-only cleanup plugins remain unsupported. [The wording review](docs/UPSTREAM-0.15.17.md) records retained differences.
 
 ## Native additions 0.6.0-preview.1
@@ -32,11 +34,15 @@ Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native impl
 | `blast-radius` | ADAPTED |
 | `bro` | ADAPTED |
 | `correct` | ADAPTED |
+| `create-formal-verification-skill` | ADAPTED |
 | `create-verification-skill` | ADAPTED |
 | `figure-it-out` | ADAPTED |
 | `how` | ADAPTED |
+| `in-your-own-words` | ADAPTED |
 | `interrogate` | ADAPTED |
 | `ketchup` | ADAPTED |
+| `ketchup-video` | ADAPTED |
+| `maintain-formal-verification-skill` | ADAPTED |
 | `maintain-verification-skill` | ADAPTED |
 | `make-bot-ui` | CURSOR_ONLY |
 | `no-comments` | ADAPTED |
@@ -69,6 +75,7 @@ Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native impl
 | `recall` | ADAPTED |
 | `reflect` | ADAPTED |
 | `setup-pstack` | ADAPTED |
+| `sharpen` | ADAPTED |
 | `show-me-your-work` | ADAPTED |
 | `swarm` | ADAPTED |
 | `tdd` | ADAPTED |
