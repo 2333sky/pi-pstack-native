@@ -6,7 +6,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { updateRecord } from "../src/runtime/transaction.ts";
 import { readJson } from "../src/runtime/store.ts";
-import { workflowPath } from "../src/runtime/home.ts";
+import { lockPath, workflowPath } from "../src/runtime/home.ts";
+import { FileLock } from "../src/runtime/lock.ts";
 import { WorkflowEngine } from "../src/workflow/engine.ts";
 
 const run = promisify(execFile);
@@ -22,6 +23,36 @@ test("state lock prevents lost read-modify-write between independent OS processe
       `const file=process.argv[1]; for(let i=0;i<35;i++) updateRecord('workflow','one',file,(r)=>{r.value++;});`;
     await Promise.all(Array.from({length:4}, () => run(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", worker, file],
       { env: { ...process.env, PSTACK_NATIVE_HOME: root } })));
+    const result = readJson<{ value: number; revision: number }>(file, { value: -1, revision: -1 });
+    assert.equal(result.value, 140);
+    assert.equal(result.revision, 140);
+  } finally {
+    if (before === undefined) delete process.env.PSTACK_NATIVE_HOME;
+    else process.env.PSTACK_NATIVE_HOME = before;
+    rmSync(root, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  }
+});
+
+test("a contended state lock retries to its budget instead of failing a legitimate writer", async () => {
+  const root = mkdtempSync(join(process.cwd(), ".pstack-tx-budget-"));
+  const before = process.env.PSTACK_NATIVE_HOME;
+  process.env.PSTACK_NATIVE_HOME = root;
+  try {
+    const file = join(root, "counter.json");
+    writeFileSync(file, JSON.stringify({ id: "one", value: 0, revision: 0 }));
+    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).pathname;
+    const worker = `import { updateRecord } from ${JSON.stringify(tx)};\n` +
+      `const file=process.argv[1]; for(let i=0;i<35;i++) updateRecord('workflow','one',file,(r)=>{r.value++;});`;
+    const holder = new FileLock(lockPath("state-workflow-one"));
+    assert.equal(holder.acquire(), true);
+    try {
+      const blocked = await run(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", worker, file],
+        { env: { ...process.env, PSTACK_NATIVE_HOME: root, PSTACK_STATE_LOCK_BUDGET_MS: "250" } }).then(() => undefined, error => String(error));
+      assert.match(String(blocked), /is busy after 250 ms/, "a held lock must fail at the configured budget");
+    } finally { holder.release(); }
+    const settled = await Promise.allSettled(Array.from({length:4}, () => run(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", worker, file],
+      { env: { ...process.env, PSTACK_NATIVE_HOME: root } })));
+    assert.equal(settled.filter(result => result.status === "fulfilled").length, 4, "the default budget keeps every legitimate writer");
     const result = readJson<{ value: number; revision: number }>(file, { value: -1, revision: -1 });
     assert.equal(result.value, 140);
     assert.equal(result.revision, 140);
