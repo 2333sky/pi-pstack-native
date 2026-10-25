@@ -107,6 +107,22 @@ W07 的登记协议升级未开始，`PARITY.json` 和 `UPSTREAM.json` 未改。
 
 `PARITY.json` 现登记 57 个顶层 Skill。目标为 58 个。`coverage.pendingTargetSkills` 列出差额，`coverage.pendingTargetReasons` 记录原因。校验器要求这个差额集合与目标快照完全一致。
 
+### 0.9 23 个 Playbook 的行为合同
+
+`docs/playbook-contracts.json` 登记 23 份合同，与上游 Playbook 文件一一对应。
+每份合同包含触发条件、角色、工具、步骤、必须观察的行为、必须拒绝的情况和证据状态。
+
+- 步骤按 Playbook 自身的编号列表提取。顺序和条数由 `scripts/check-contracts.mjs` 检查。
+- 角色只从 Playbook 的 Steps 段落提取。`src/agent/profiles.ts` 是角色的唯一来源。工具取这些角色的工具并集。
+- Steps 段没有点名任何角色时，合同记 `parentOnly: true`。23 份中有 15 份属于这种情况。
+- 必须观察的行为和必须拒绝的情况来自本文 7.3 节。该表是合同来源，不另行改写。
+- 每份合同的 `evidence.status` 为 `not_run`，`refs` 为空。本次不声明任何 Playbook 行为已通过验收。
+
+新增检查：`npm run check:contracts`。它重新生成并比较，检查步骤顺序、角色存在性、工具并集、`parentOnly` 一致性和证据声明规则。
+`test:upstream` 现在带 `--experimental-strip-types`，以便读取真实的角色配置。
+
+仍未做：真实 SDK 轨迹测试和真实模型路由测试。它们需要模型与受控 Provider，属于 M2 与 M3。
+
 ## 1. 原稿质量评审
 
 原稿适合作为方向说明。它还不能直接作为开发任务书。
