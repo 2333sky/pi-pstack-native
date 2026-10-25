@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReadOnlyTools } from "../src/agent/read-only-tools.ts";
+import { PROFILES, READ_ONLY_TOOL_NAMES, getProfile } from "../src/agent/profiles.ts";
 
 test("read-only search tools find content and reject paths outside the workspace", async () => {
   const root = mkdtempSync(join(process.cwd(), ".pstack-ro-"));
@@ -31,6 +32,22 @@ test("confined read rejects symlink and absolute paths outside the workspace", a
     await assert.rejects(() => tools.read.execute("2", { path: join(outside, "secret") }), /escapes/);
     await assert.rejects(() => tools.read.execute("3", { path: "link" }), /escapes/);
   } finally { rmSync(root, { recursive: true, force: true }); rmSync(outside, { recursive: true, force: true }); }
+});
+
+test("every read-only profile is limited to READ_ONLY_TOOL_NAMES and a stray writable tool is rejected", () => {
+  for (const profile of Object.values(PROFILES)) {
+    if (profile.writable) continue;
+    for (const tool of profile.tools) {
+      assert.ok((READ_ONLY_TOOL_NAMES as readonly string[]).includes(tool), `${profile.name} is read-only but lists ${tool}`);
+    }
+  }
+  PROFILES["probe-writer"] = { ...PROFILES.reviewer!, name: "probe-writer", tools: ["read", "bash"] };
+  try {
+    assert.throws(() => getProfile("probe-writer"), (error: unknown) =>
+      error instanceof Error && error.message.startsWith("PROFILE_TOOL_VIOLATION"));
+  } finally {
+    delete PROFILES["probe-writer"];
+  }
 });
 
 test("catastrophic regex runs in a killable worker rather than stalling the main thread", async () => {

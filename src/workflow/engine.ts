@@ -3,7 +3,7 @@ import { validateEvidencePackets, type EvidencePacket } from "../agent/resources
 import { loadModels } from "../runtime/config.ts";
 import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
-import { fingerprint } from "../artifacts/fingerprint.ts";
+import { fingerprint, ownerOf } from "../artifacts/fingerprint.ts";
 import { protocol, hash, transact } from "../runtime/protocol.ts";
 import type { TaskBrief, Budget } from "../contracts/types.ts";
 import type { ThinkingLevelName } from "../runtime/types.ts";
@@ -58,7 +58,7 @@ export class WorkflowEngine {
     this.onTerminal = onTerminal;
   }
 
-  create(spec: WorkflowRunSpec): WorkflowRecord {
+  build(spec: WorkflowRunSpec, id: string = workflowId()): WorkflowRecord {
     validateGraph(spec.nodes);
     validateBudget(spec.budget); for(const node of spec.nodes) {validateBudget(node.budget); validateEvidencePackets(node.evidencePackets);}
     for (const node of spec.nodes) {
@@ -66,8 +66,6 @@ export class WorkflowEngine {
       if (node.brief) {validateBrief(node.brief);if(node.brief.scope.repoId!==fingerprint(spec.cwd).repoId)throw new Error("REPOSITORY_MISMATCH");}
     }
     planArtifacts(spec.nodes);
-    for (const node of spec.nodes) if (node.brief) saveBrief(node.brief, "coordinator", "workflow-created");
-    const id = workflowId();
     const createdAt = now();
     const calls: Record<string, WorkflowCall> = {};
     for (const node of spec.nodes) {
@@ -93,8 +91,16 @@ export class WorkflowEngine {
         ...(spec.playbook ? { playbook: spec.playbook } : {}),
       },
     };
-    writeJsonAtomic(workflowPath(id), record);
-    appendJournal(journalPath(id), { type: "workflow-created", id, nodes: Object.keys(calls) });
+    return record;
+  }
+
+  create(spec: WorkflowRunSpec): WorkflowRecord { return this.materialize(this.build(spec)); }
+
+  /** Writes are separate from construction so a committed dispatch record can own the creation order. */
+  materialize(record: WorkflowRecord): WorkflowRecord {
+    for (const call of Object.values(record.calls)) if (call.brief) saveBrief(call.brief, "coordinator", "workflow-created");
+    writeJsonAtomic(workflowPath(record.id), record);
+    appendJournal(journalPath(record.id), { type: "workflow-created", id: record.id, nodes: Object.keys(record.calls) });
     return record;
   }
 
@@ -436,7 +442,7 @@ export class WorkflowEngine {
     this.change(id,"verification-started",w=>{w.calls[key].verification={status:"running"};});
     try {
       const parents=call.dependsOn.flatMap(d=>this.get(id)!.calls[d].artifactId ?? []);
-      const ledger=await verify(cwd,call.brief,{before:agent.baseline,parents,report:agent.report});
+      const ledger=await verify(cwd,call.brief,{before:agent.baseline,owner:ownerOf(call.brief,{workflowId:id,callKey:key}),parents,report:agent.report});
       const report=agent.report;
       let reason: string|undefined;
       if (call.brief.contractLevel === "strict") {

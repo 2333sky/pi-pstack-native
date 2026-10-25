@@ -1,4 +1,4 @@
-import type { TaskBrief, Ledger, Fingerprint, TaskReport } from '../contracts/types.js';
+import type { TaskBrief, Ledger, Fingerprint, TaskReport, BaselineOwner } from '../contracts/types.js';
 export interface RunnerPolicy {
     commands: string[][];
     environment?: Record<string, string>;
@@ -15,6 +15,7 @@ export declare function verify(cwd: string, brief: TaskBrief, options?: {
     policy?: RunnerPolicy;
     actor?: string;
     before?: Fingerprint;
+    owner?: BaselineOwner;
     parents?: string[];
     pr?: Ledger['pr'];
     signal?: AbortSignal;

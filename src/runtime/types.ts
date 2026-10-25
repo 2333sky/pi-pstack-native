@@ -105,6 +105,20 @@ export interface WorkflowRecord {
   };
 }
 
+export interface DispatchRecord {
+  id: string;
+  owner: string;
+  programId: string;
+  unitKey: string;
+  workflowId: string;
+  briefDigest: string;
+  ordersRevision?: number;
+  state: "committed" | "materialized";
+  workflow: WorkflowRecord;
+  createdAt: string;
+  materializedAt?: string;
+}
+
 export interface LoopRecord {
   id: string;
   sessionId: string;

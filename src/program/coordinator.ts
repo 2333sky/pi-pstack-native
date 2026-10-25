@@ -2,6 +2,7 @@ import type { ExtensionContext } from '@earendil-works/pi-coding-agent';
 import type { WorkflowRunSpec } from '../runtime/types.ts';
 import type { WorkflowEngine } from '../workflow/engine.ts';
 import { protocol, transact, uid, hash } from '../runtime/protocol.ts';
+import { buildDispatch, commitDispatch, materializeDispatch, requireDispatch } from './dispatch.ts';
 export interface Unit {key:string;spec:WorkflowRunSpec;workflowId?:string;ordersRevision?:number;ordersAcknowledgement?:{revision:number;actor:string;reason:string;at:string};state:'pending'|'running'|'needs-verify'|'blocked'|'failed'|'ready-to-integrate'|'reconciled';ledgerRefs:string[]}
 export interface OrdersDrift {key:string;dispatchedRevision:number|null;currentRevision:number;message:string}
 export interface Program {id:string;owner:string;revision:number;state:'pilot'|'scaling'|'paused'|'blocked'|'completed';maxConcurrency:number;units:Unit[];inbox:{id:string;key:string;state:Unit['state'];processed:boolean}[];orders?:{revision:number;instructions:string[];digest:string};blockedReason?:{code:'ORDERS_STALE';units:{key:string;dispatchedRevision:number|null}[];currentRevision:number;message:string};completionPredicate:'all-units-verified';createdAt:string}
@@ -37,10 +38,18 @@ export class ProgramCoordinator {
       if(!unit.workflowId) {
         const currentProgram=this.get(id,owner);const orders=currentProgram.orders;
         this.assertOrdersDigest(currentProgram);
-        const wf=this.workflows.create({...unit.spec,nodes:unit.spec.nodes.map(n=>({...n,brief:n.brief && orders?{...n.brief,id:`${n.brief.id}.${currentProgram.id}.${unit.key}`,revision:1,standingOrders:orders.instructions}:n.brief})),parentSessionId:owner,contractLevel:'strict'});
-        transact('unit-dispatched',id,owner,s=>{const u=s.programs[id].units.find((x:Unit)=>x.key===key);u.workflowId=wf.id;u.state='running';if(orders)u.ordersRevision=orders.revision;return {key,workflowId:wf.id};});
+        const workflow=this.workflows.build({...unit.spec,nodes:unit.spec.nodes.map(n=>({...n,brief:n.brief && orders?{...n.brief,id:`${n.brief.id}.${currentProgram.id}.${unit.key}`,revision:1,standingOrders:orders.instructions}:n.brief})),parentSessionId:owner,contractLevel:'strict'});
+        const dispatch=buildDispatch({programId:id,unitKey:key,owner,workflow,ordersRevision:orders?.revision});
+        transact('unit-dispatched',id,owner,s=>{
+          const u=s.programs[id].units.find((x:Unit)=>x.key===key);
+          if(u.workflowId && u.workflowId!==dispatch.workflowId)throw new Error('UNIT_ALREADY_DISPATCHED');
+          u.workflowId=dispatch.workflowId;u.state='running';if(orders)u.ordersRevision=orders.revision;
+          commitDispatch(s,dispatch);
+          return {key,workflowId:dispatch.workflowId,dispatchId:dispatch.id};
+        });
         unit=this.get(id,owner).units.find(u=>u.key===key)!;
       }
+      materializeDispatch(requireDispatch(unit.workflowId!), (record)=>this.workflows.materialize(record));
       const wf=await this.workflows.run(unit.workflowId!,ctx);
       transact('unit-completion',id,owner,s=>{
         const program=s.programs[id] as Program;const u=program.units.find(x=>x.key===key)!;

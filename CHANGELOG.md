@@ -7,6 +7,9 @@
 - Add panels/budgets, standalone Runner, migration, fault tests and benchmark harness.
 - Preview: real authenticated model/GitHub E2E remain separate release gates.
 - GitHub bootstrap: fix benchmark compiled imports; add offline benchmark smoke, CI, release documentation, and contribution/security guidance.
+- Bind every baseline receipt to the consuming task. Foreign, stale-revision and ownerless baselines are refused with `BASELINE_NOT_OWNED` instead of being trusted on id and fingerprint alone.
+- Commit a program unit's dispatch record with the unit link in one transaction, then rebuild the workflow file from it. Orphan workflow files and files that drifted from their dispatch are refused before a child starts.
+- Redact evidence through one rule table over the joined buffer before tail truncation, and name the read-only tool allowlist once so a read-only profile cannot list a writing tool.
 
 
 ## Earlier releases

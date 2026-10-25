@@ -3,7 +3,7 @@ import { validateEvidencePackets } from "../agent/resources.js";
 import { loadModels } from "../runtime/config.js";
 import { validateBrief, saveBrief, validateBudget, reportSatisfies } from "../contracts/brief.js";
 import { verify, ledgerCurrent } from "../verification/runner.js";
-import { fingerprint } from "../artifacts/fingerprint.js";
+import { fingerprint, ownerOf } from "../artifacts/fingerprint.js";
 import { protocol, hash, transact } from "../runtime/protocol.js";
 import { randomUUID } from "node:crypto";
 import { dirname } from "node:path";
@@ -44,7 +44,7 @@ export class WorkflowEngine {
         this.agents = agents;
         this.onTerminal = onTerminal;
     }
-    create(spec) {
+    build(spec, id = workflowId()) {
         validateGraph(spec.nodes);
         validateBudget(spec.budget);
         for (const node of spec.nodes) {
@@ -61,10 +61,6 @@ export class WorkflowEngine {
             }
         }
         planArtifacts(spec.nodes);
-        for (const node of spec.nodes)
-            if (node.brief)
-                saveBrief(node.brief, "coordinator", "workflow-created");
-        const id = workflowId();
         const createdAt = now();
         const calls = {};
         for (const node of spec.nodes) {
@@ -90,8 +86,16 @@ export class WorkflowEngine {
                 ...(spec.playbook ? { playbook: spec.playbook } : {}),
             },
         };
-        writeJsonAtomic(workflowPath(id), record);
-        appendJournal(journalPath(id), { type: "workflow-created", id, nodes: Object.keys(calls) });
+        return record;
+    }
+    create(spec) { return this.materialize(this.build(spec)); }
+    /** Writes are separate from construction so a committed dispatch record can own the creation order. */
+    materialize(record) {
+        for (const call of Object.values(record.calls))
+            if (call.brief)
+                saveBrief(call.brief, "coordinator", "workflow-created");
+        writeJsonAtomic(workflowPath(record.id), record);
+        appendJournal(journalPath(record.id), { type: "workflow-created", id: record.id, nodes: Object.keys(record.calls) });
         return record;
     }
     get(id) { return readJson(workflowPath(id), undefined); }
@@ -502,7 +506,7 @@ export class WorkflowEngine {
         this.change(id, "verification-started", w => { w.calls[key].verification = { status: "running" }; });
         try {
             const parents = call.dependsOn.flatMap(d => this.get(id).calls[d].artifactId ?? []);
-            const ledger = await verify(cwd, call.brief, { before: agent.baseline, parents, report: agent.report });
+            const ledger = await verify(cwd, call.brief, { before: agent.baseline, owner: ownerOf(call.brief, { workflowId: id, callKey: key }), parents, report: agent.report });
             const report = agent.report;
             let reason;
             if (call.brief.contractLevel === "strict") {

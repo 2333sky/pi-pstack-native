@@ -1,5 +1,5 @@
 import { briefPrompt, validateBrief, parseReport, scopeViolations, changedPaths } from "../contracts/brief.ts";
-import { capture, fingerprint, sameFingerprint } from "../artifacts/fingerprint.ts";
+import { capture, fingerprint, ownerOf, sameFingerprint } from "../artifacts/fingerprint.ts";
 import type { TaskBrief, Budget } from "../contracts/types.ts";
 import type { ThinkingLevelName } from "../runtime/types.ts";
 import { randomUUID } from "node:crypto";
@@ -28,6 +28,7 @@ import { getProfile } from "./profiles.ts";
 import { createResourceTools, validateEvidencePackets, type EvidencePacket } from "./resources.ts";
 import { createReadOnlyTools } from "./read-only-tools.ts";
 import { assertCompatibleIsolation } from "./isolation.ts";
+import { dispatchVeto } from "../program/dispatch.ts";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SKILLS_DIR = join(PACKAGE_ROOT, "skills");
@@ -272,11 +273,15 @@ export class AgentHost {
       // Reload the authoritative contract on every spawn/recovery; never trust stale session text.
       const ownerWorkflow = record.workflowId ? readJson<WorkflowRecord | undefined>(workflowPath(record.workflowId), undefined) : undefined;
       const currentBrief = ownerWorkflow?.calls[record.callKey ?? ""]?.brief ?? spec.brief ?? record.brief;
+      if (record.workflowId) {
+        const veto = dispatchVeto(record.workflowId, ownerWorkflow);
+        if (veto) throw new Error(`${veto}: workflow ${record.workflowId} cannot start a child under the current dispatch record`);
+      }
       if (currentBrief) {
         validateBrief(currentBrief);
         const current = fingerprint(cwd);
         if(ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint,current))throw new Error("FIXED_REVIEW_ARTIFACT_CHANGED");
-        const baseline = record.baseline ?? capture(cwd, record.id).fingerprint;
+        const baseline = record.baseline ?? capture(cwd, record.id, [], 'working', {kind:'baseline', owner: ownerOf(currentBrief, {workflowId: record.workflowId, callKey: record.callKey})}).fingerprint;
         if (baseline.repoId !== currentBrief.scope.repoId) throw new Error("REPOSITORY_MISMATCH");
         record = this.change(record.id, a=>{a.brief=currentBrief;a.baseline=baseline;});
       }
@@ -307,7 +312,7 @@ export class AgentHost {
         resourceLoader: loader,
         ...(resolved.model ? { model: resolved.model } : {}),
         ...(resolved.thinkingLevel ? { thinkingLevel: resolved.thinkingLevel as any } : {}),
-        tools: [...(profile.writable ? profile.tools : ["read","grep","find","ls"]), "pstack_skill", "pstack_evidence"],
+        tools: [...profile.tools, "pstack_skill", "pstack_evidence"],
         ...(profile.writable ? {} : {noTools:"builtin" as const}),
         customTools: [...(profile.writable ? [] : createReadOnlyTools(cwd)), ...createResourceTools(SKILLS_DIR, record.evidencePackets)],
       });

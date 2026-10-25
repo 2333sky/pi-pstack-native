@@ -2,11 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash, uid, transact, protocol } from "../runtime/protocol.js";
+import { redactSecrets } from "../runtime/redact.js";
 export function git(cwd, args) { return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 30000 }).trimEnd(); }
 export function fingerprint(cwd, kind = 'working') {
     const root = realpathSync(git(cwd, ['rev-parse', '--show-toplevel']));
     const common = realpathSync(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']));
-    const remote = git(root, ['remote', '-v']).split('\n').map(x => x.replace(/https?:\/\/[^/@]+@/g, 'https://')).sort().join('\n');
+    const remote = redactSecrets(git(root, ['remote', '-v'])).split('\n').sort().join('\n');
     const repoId = hash({ common, remote });
     const commitSha = git(root, ['rev-parse', 'HEAD']);
     const treeSha = git(root, ['rev-parse', 'HEAD^{tree}']);
@@ -43,18 +44,32 @@ export function fingerprint(cwd, kind = 'working') {
 export function sameFingerprint(a, b) {
     return a.repoId === b.repoId && a.kind === b.kind && a.commitSha === b.commitSha && a.treeSha === b.treeSha && a.workspaceDigest === b.workspaceDigest && a.policyVersion === b.policyVersion;
 }
-export function capturedBaseline(before) {
+export function ownerOf(brief, extra = {}) {
+    return { briefId: brief.id, briefRevision: brief.revision, ...(extra.workflowId ? { workflowId: extra.workflowId } : {}), ...(extra.callKey ? { callKey: extra.callKey } : {}) };
+}
+function sameOwner(recorded, consumer) {
+    if (!recorded || !consumer)
+        return false;
+    if (recorded.briefId !== consumer.briefId || recorded.briefRevision !== consumer.briefRevision)
+        return false;
+    if (consumer.workflowId !== undefined || consumer.callKey !== undefined)
+        return recorded.workflowId === consumer.workflowId && recorded.callKey === consumer.callKey;
+    return recorded.workflowId === undefined && recorded.callKey === undefined;
+}
+export function resolveBaseline(before, consumer) {
     const id = before.baselineId;
     const artifact = typeof id === 'string' ? protocol().artifacts[id] : undefined;
-    return artifact && artifact.fingerprint.baselineId === artifact.id && hash(artifact.fingerprint) === hash(before) ? artifact.fingerprint : undefined;
+    if (!artifact || artifact.fingerprint.baselineId !== artifact.id || hash(artifact.fingerprint) !== hash(before))
+        return { kind: 'unknown' };
+    return sameOwner(artifact.owner, consumer) ? { kind: 'ok', fingerprint: artifact.fingerprint } : { kind: 'unowned' };
 }
-export function capture(cwd, producer, parents = [], kind = 'working', purpose = { kind: 'baseline' }) {
+export function capture(cwd, producer, parents, kind, purpose) {
     const id = uid('art');
     const fp = fingerprint(cwd, kind);
     const baselineId = purpose.kind === 'baseline' ? id : purpose.baseline?.baselineId;
     if (baselineId)
         fp.baselineId = baselineId;
-    const artifact = { id, cwd: realpathSync(cwd), fingerprint: fp, parents, producer, createdAt: new Date().toISOString() };
+    const artifact = { id, cwd: realpathSync(cwd), fingerprint: fp, parents, producer, ...(purpose.kind === 'baseline' ? { owner: purpose.owner } : {}), createdAt: new Date().toISOString() };
     transact('artifact-captured', artifact.id, 'runtime', s => { s.artifacts[artifact.id] = artifact; return artifact; });
     return artifact;
 }

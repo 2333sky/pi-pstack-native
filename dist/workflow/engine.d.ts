@@ -29,7 +29,10 @@ export declare class WorkflowEngine {
     private readonly agents;
     private readonly onTerminal?;
     constructor(agents: AgentRunner, onTerminal?: (record: WorkflowRecord) => void);
+    build(spec: WorkflowRunSpec, id?: string): WorkflowRecord;
     create(spec: WorkflowRunSpec): WorkflowRecord;
+    /** Writes are separate from construction so a committed dispatch record can own the creation order. */
+    materialize(record: WorkflowRecord): WorkflowRecord;
     get(id: string): WorkflowRecord | undefined;
     list(sessionId?: string): WorkflowRecord[];
     /** Read, mutate and journal under one short lock; never save a stale snapshot. */

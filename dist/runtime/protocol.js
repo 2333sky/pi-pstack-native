@@ -5,7 +5,7 @@ import { FileLock } from "./lock.js";
 import { writeJsonAtomic } from "./store.js";
 export const hash = (value) => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 export const uid = (prefix) => `${prefix}_${randomUUID().replaceAll('-', '')}`;
-const empty = () => ({ schemaVersion: 1, revision: 0, artifacts: {}, evidence: {}, ledgers: {}, briefs: {}, invalidations: {}, programs: {}, frontiers: {}, approvals: {}, leases: {}, events: [] });
+const empty = () => ({ schemaVersion: 1, revision: 0, artifacts: {}, evidence: {}, ledgers: {}, briefs: {}, invalidations: {}, programs: {}, frontiers: {}, approvals: {}, leases: {}, events: [], dispatches: {} });
 export function protocol() {
     const path = homePath('protocol.json');
     if (!existsSync(path))
@@ -13,6 +13,7 @@ export function protocol() {
     const state = JSON.parse(readFileSync(path, 'utf8'));
     if (state.schemaVersion !== 1 || !state.ledgers || !state.artifacts || !Array.isArray(state.events))
         throw new Error('STATE_UNCERTAIN: invalid protocol store');
+    state.dispatches ??= {};
     return state;
 }
 // State and audit events commit in one atomic envelope. No cross-file journal transaction claims.

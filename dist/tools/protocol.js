@@ -3,6 +3,7 @@ import { assertSessionOwner } from "../runtime/ownership.js";
 import { object, string, enums, array, number } from "./schema.js";
 import { verify } from "../verification/runner.js";
 import { fingerprint } from "../artifacts/fingerprint.js";
+import { ownerOf } from "../artifacts/fingerprint.js";
 import { protocol } from "../runtime/protocol.js";
 import { contextSnapshot } from "../context/snapshot.js";
 import { GitHubCLI } from "../delivery/provider.js";
@@ -37,7 +38,7 @@ export function registerProtocolTools(pi, engine) {
                 const current = fingerprint(c.cwd, 'committed');
                 if (actual.headSha !== current.commitSha || actual.state !== 'OPEN')
                     throw new Error('PR_HEAD_MISMATCH');
-                return reply(await verify(c.cwd, c.brief, { before: agent.baseline, report: agent.report, pr: { repoId: current.repoId, number: p.number, headSha: actual.headSha }, signal: _signal }));
+                return reply(await verify(c.cwd, c.brief, { before: agent.baseline, owner: ownerOf(c.brief, { workflowId: w.id, callKey: c.key }), report: agent.report, pr: { repoId: current.repoId, number: p.number, headSha: actual.headSha }, signal: _signal }));
             }
             await engine.verifyCall(w.id, c.key, agent);
             return reply(engine.get(w.id)?.calls[c.key]);
