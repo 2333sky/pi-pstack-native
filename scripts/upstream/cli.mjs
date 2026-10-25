@@ -4,20 +4,32 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { digest, gates, git, readJSON, safePath, saveReport, scan, taskMarkdown, validateReport, writeConfined } from './core.mjs';
+import { buildInventory, readSnapshot, validateInventory } from './inventory.mjs';
+import { checkInventory } from '../check-inventory.mjs';
 
 const root = realpathSync(process.cwd());
 const argv = process.argv.slice(2), command = argv.shift() ?? 'scan', options = {};
-const allowed = new Set(['from','candidate-ref','baseline-ref','report','write-report','worktree','allow-remote-write','repo']);
+const allowed = new Set(['from','candidate-ref','baseline-ref','report','write-report','worktree','allow-remote-write','repo','check']);
 let temporary;
 try {
   while (argv.length) {
     const flag = argv.shift();
     if (!flag.startsWith('--') || !allowed.has(flag.slice(2))) throw new Error('Unknown argument');
     const key = flag.slice(2);
-    if (key === 'allow-remote-write') options[key] = true;
+    if (key === 'allow-remote-write' || key === 'check') options[key] = true;
     else { const value = argv.shift(); if (!value || value.startsWith('--')) throw new Error('Missing argument value'); options[key] = value; }
   }
-  if (command === 'scan') {
+  if (command === 'inventory') {
+    if(options.check) {
+      const inventory = checkInventory(root);
+      console.log(JSON.stringify({status:'in-sync',files:inventory.counts.files}));
+    } else {
+      const inputs = {snapshot:readSnapshot(root),parity:readJSON(join(root,'PARITY.json')),localRoot:root};
+      const inventory = validateInventory(buildInventory(inputs),inputs);
+      writeConfined(root,'docs/upstream-inventory-0.15.32.json',JSON.stringify(inventory,null,2)+'\n');
+      console.log(JSON.stringify({status:'written',files:inventory.counts.files,pending:inventory.dispositionSummary.pending}));
+    }
+  } else if (command === 'scan') {
     const upstream = readJSON(join(root,'UPSTREAM.json'));
     let repo, candidateRef;
     if (options.from) {
