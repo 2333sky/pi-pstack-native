@@ -5,6 +5,7 @@ import { assertSessionOwner } from '../runtime/ownership.ts';
 import { object, string, enums, array, number } from './schema.ts';
 import { verify } from '../verification/runner.ts';
 import { fingerprint } from '../artifacts/fingerprint.ts';
+import { ownerOf } from '../artifacts/fingerprint.ts';
 import { protocol, hash } from '../runtime/protocol.ts';
 import { contextSnapshot } from '../context/snapshot.ts';
 import { GitHubCLI } from '../delivery/provider.ts';
@@ -26,7 +27,7 @@ export function registerProtocolTools(pi:ExtensionAPI,engine:WorkflowEngine):voi
       assertGitHubRepository(c.cwd,p.repo);
       const actual=await new GitHubCLI().read(p.repo,p.number);const current=fingerprint(c.cwd,'committed');
       if(actual.headSha!==current.commitSha || actual.state!=='OPEN')throw new Error('PR_HEAD_MISMATCH');
-      return reply(await verify(c.cwd,c.brief,{before:agent.baseline,report:agent.report,pr:{repoId:current.repoId,number:p.number,headSha:actual.headSha},signal:_signal}));
+      return reply(await verify(c.cwd,c.brief,{before:agent.baseline,owner:ownerOf(c.brief,{workflowId:w.id,callKey:c.key}),report:agent.report,pr:{repoId:current.repoId,number:p.number,headSha:actual.headSha},signal:_signal}));
     }
     await engine.verifyCall(w.id,c.key,agent);return reply(engine.get(w.id)?.calls[c.key]);
   }} as any);

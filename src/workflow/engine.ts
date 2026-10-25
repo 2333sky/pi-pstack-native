@@ -3,7 +3,7 @@ import { validateEvidencePackets, type EvidencePacket } from "../agent/resources
 import { loadModels } from "../runtime/config.ts";
 import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
-import { fingerprint } from "../artifacts/fingerprint.ts";
+import { fingerprint, ownerOf } from "../artifacts/fingerprint.ts";
 import { protocol, hash, transact } from "../runtime/protocol.ts";
 import type { TaskBrief, Budget } from "../contracts/types.ts";
 import type { ThinkingLevelName } from "../runtime/types.ts";
@@ -436,7 +436,7 @@ export class WorkflowEngine {
     this.change(id,"verification-started",w=>{w.calls[key].verification={status:"running"};});
     try {
       const parents=call.dependsOn.flatMap(d=>this.get(id)!.calls[d].artifactId ?? []);
-      const ledger=await verify(cwd,call.brief,{before:agent.baseline,parents,report:agent.report});
+      const ledger=await verify(cwd,call.brief,{before:agent.baseline,owner:ownerOf(call.brief,{workflowId:id,callKey:key}),parents,report:agent.report});
       const report=agent.report;
       let reason: string|undefined;
       if (call.brief.contractLevel === "strict") {

@@ -35,7 +35,8 @@ export interface Fingerprint {
   workspaceDigest: string; indexTree: string; policyVersion: 1;
   files: Record<string, string>; dirty: boolean;
 }
-export interface Artifact { id: string; cwd: string; fingerprint: Fingerprint; parents: string[]; producer?: string; createdAt: string }
+export interface BaselineOwner { briefId: string; briefRevision: number; workflowId?: string; callKey?: string }
+export interface Artifact { id: string; cwd: string; fingerprint: Fingerprint; parents: string[]; producer?: string; owner?: BaselineOwner; createdAt: string }
 export interface Evidence {
   id: string; gateId: string; gateDefinitionHash: string; status: GateStatus; reason?: string;
   command?: string[]; cwd: string; exitCode?: number | null; startedAt: string; finishedAt: string;

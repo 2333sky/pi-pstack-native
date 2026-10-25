@@ -5,16 +5,14 @@ import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { homePath, lockPath } from '../runtime/home.ts';
 import { FileLock } from '../runtime/lock.ts';
 import { hash, uid, transact, protocol } from '../runtime/protocol.ts';
-import { fingerprint, capture, capturedBaseline, sameFingerprint, git } from '../artifacts/fingerprint.ts';
+import { redactSecrets, redactLogTail } from '../runtime/redact.ts';
+import { fingerprint, capture, ownerOf, resolveBaseline, sameFingerprint, git } from '../artifacts/fingerprint.ts';
 import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies } from '../contracts/brief.ts';
-import type { GateSpec, GateStatus, TaskBrief, Evidence, Ledger, Fingerprint, TaskReport } from '../contracts/types.ts';
+import type { GateSpec, GateStatus, TaskBrief, Evidence, Ledger, Fingerprint, TaskReport, BaselineOwner } from '../contracts/types.ts';
 export interface RunnerPolicy { commands: string[][]; environment?: Record<string,string>; allowLocal?: boolean; allowRemote?: boolean; maxOutputBytes?: number; maxTimeoutSeconds?: number }
 export function loadRunnerPolicy(): RunnerPolicy {
   try { return JSON.parse(readFileSync(homePath('verification-policy.json'),'utf8')); }
   catch { return {commands:[]}; }
-}
-function redact(s: string): string {
-  return s.replace(/(authorization\s*[:=]\s*(?:bearer\s+)?|(?:api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,"'}]+/gi,'$1[REDACTED]').replace(/(https?:\/\/)[^\s/@]+@/gi,'$1[REDACTED]@').replace(/\b(?:ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{16,})\b/g,'[REDACTED]');
 }
 function filePath(cwd: string, path: string): string {
   const base = realpathSync(cwd); const candidate = realpathSync(resolve(base,path)); const rel = relative(base,candidate);
@@ -28,16 +26,16 @@ async function command(cwd: string, gate: GateSpec, policy: RunnerPolicy, signal
   return new Promise(resolveResult=>{
     const duration=Math.max(1,Math.min(gate.timeoutSeconds ?? 120,policy.maxTimeoutSeconds ?? 300))*1000;
     const child = spawn(process.execPath,[fileURLToPath(new URL('./process.mjs',import.meta.url)),String(duration),...gate.command!], {cwd, shell:false, detached:process.platform!=='win32', env:{PATH:process.env.PATH ?? '', ...policy.environment}});
-    let log=''; let reason: string|undefined;
+    let raw=''; let reason: string|undefined;
     const cap = Math.max(1024, Math.min(policy.maxOutputBytes ?? 65536, 4*1024*1024));
-    const collect = (b: Buffer) => { log=(log+b.toString('utf8')).slice(-cap); };
+    const collect = (b: Buffer) => { raw=(raw+b.toString('utf8')).slice(-(cap+8192)); };
     child.stdout?.on('data',collect); child.stderr?.on('data',collect);
     const kill = (why: string) => { reason=why; try { if (process.platform!=='win32' && child.pid) process.kill(-child.pid,'SIGKILL'); else child.kill('SIGKILL'); } catch {} };
     const timer = setTimeout(()=>kill('TIMEOUT'), duration);
     const abort = ()=>kill('CANCELLED'); signal?.addEventListener('abort',abort,{once:true});
     const cleanup = ()=>{clearTimeout(timer);signal?.removeEventListener('abort',abort);};
-    child.on('error',error=>{cleanup(); resolveResult({status:'blocked',reason:'ENVIRONMENT_UNAVAILABLE',log:redact(error.message)});});
-    child.on('close',code=>{cleanup();resolveResult({status:reason || code===124 || code===125 || code===127 ? 'blocked' : code===0 ? 'passed' : 'failed', exitCode:code,reason,log:redact(log)});});
+    child.on('error',error=>{cleanup(); resolveResult({status:'blocked',reason:'ENVIRONMENT_UNAVAILABLE',log:redactSecrets(error.message)});});
+    child.on('close',code=>{cleanup();resolveResult({status:reason || code===124 || code===125 || code===127 ? 'blocked' : code===0 ? 'passed' : 'failed', exitCode:code,reason,log:redactLogTail(raw,cap)});});
   });
 }
 export function parseTestReport(text: string, format: 'junit'|'tap'): boolean {
@@ -67,7 +65,7 @@ export function invalidate(cwd: string, reason: string): string[] {
     for(const id of ids)s.invalidations[id]={at:new Date().toISOString(),reason}; return ids;
   });
 }
-export async function verify(cwd: string, brief: TaskBrief, options: {policy?:RunnerPolicy; actor?:string; before?:Fingerprint; parents?:string[]; pr?:Ledger['pr']; signal?:AbortSignal; report?:TaskReport} = {}): Promise<Ledger> {
+export async function verify(cwd: string, brief: TaskBrief, options: {policy?:RunnerPolicy; actor?:string; before?:Fingerprint; owner?:BaselineOwner; parents?:string[]; pr?:Ledger['pr']; signal?:AbortSignal; report?:TaskReport} = {}): Promise<Ledger> {
   const actor=options.actor ?? 'verification-runner';
   try {validateBrief(brief);} catch(error) {transact('verification-rejected',brief?.id ?? 'unknown',actor,()=>({reason:String(error)}));throw error;}
   const policy=options.policy ?? loadRunnerPolicy();
@@ -78,8 +76,9 @@ export async function verify(cwd: string, brief: TaskBrief, options: {policy?:Ru
     await new Promise(resolve=>setTimeout(resolve,25));
   }
   try {
-    const baseline=options.before ? capturedBaseline(options.before) : undefined;
-    const artifact=capture(cwd,undefined,options.parents,options.pr?'committed':'working',{kind:'verification',baseline});
+    const resolution=options.before ? resolveBaseline(options.before, options.owner ?? ownerOf(brief)) : undefined;
+    const baseline=resolution?.kind==='ok' ? resolution.fingerprint : undefined;
+    const artifact=capture(cwd,undefined,options.parents ?? [],options.pr?'committed':'working',{kind:'verification',baseline});
     if(brief.scope.repoId!==artifact.fingerprint.repoId)throw new Error('REPOSITORY_MISMATCH');
     if(options.pr && (options.pr.repoId!==artifact.fingerprint.repoId || options.pr.headSha!==artifact.fingerprint.commitSha))throw new Error('PR_HEAD_MISMATCH');
     let paths:string[]=[];let diffBase:Ledger['diffBase'];let baselineError:string|undefined;
@@ -92,7 +91,7 @@ export async function verify(cwd: string, brief: TaskBrief, options: {policy?:Ru
         diffBase={kind:'pr',commitSha:base,refreshed:false};
       } else if(options.before) {
         const before=baseline;
-        if(!before)throw new Error('DIFF_BASE_UNPROVEN');
+        if(!before)throw new Error(resolution?.kind==='unowned' ? 'BASELINE_NOT_OWNED' : 'DIFF_BASE_UNPROVEN');
         if(before.repoId!==artifact.fingerprint.repoId || before.policyVersion!==1 || !['working','committed'].includes(before.kind) || !before.files || typeof before.files!=='object' || Array.isArray(before.files) || !Object.values(before.files).every(value=>typeof value==='string') || before.workspaceDigest!==hash({files:before.files,indexTree:before.indexTree}) || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(before.commitSha) || git(cwd,['rev-parse','--verify',`${before.commitSha}^{commit}`])!==before.commitSha)throw new Error('INVALID_DIFF_BASE');
         if(options.pr) {
           if(before.dirty!==false || before.treeSha!==before.indexTree || git(cwd,['rev-parse',`${before.commitSha}^{tree}`])!==before.treeSha)throw new Error('INVALID_DIFF_BASE');
@@ -102,7 +101,7 @@ export async function verify(cwd: string, brief: TaskBrief, options: {policy?:Ru
         diffBase={kind:'fingerprint',commitSha:before.commitSha,fingerprintHash:hash(before),refreshed:false};
       } else if(options.pr || brief.contractLevel==='strict')baselineError='DIFF_BASE_REQUIRED';
       else paths=[...new Set([...git(cwd,['diff','--no-renames','--name-only','-z','HEAD']).split('\0'),...git(cwd,['diff','--cached','--no-renames','--name-only','-z','HEAD']).split('\0'),...git(cwd,['ls-files','--others','--exclude-standard','-z']).split('\0')].filter(Boolean))].sort();
-    } catch(error) {baselineError=error instanceof Error && error.message==='DIFF_BASE_UNPROVEN'?'DIFF_BASE_UNPROVEN':'DIFF_BASE_UNAVAILABLE';}
+    } catch(error) {const message=error instanceof Error ? error.message : '';baselineError=message==='DIFF_BASE_UNPROVEN'?'DIFF_BASE_UNPROVEN':message==='BASELINE_NOT_OWNED'?'BASELINE_NOT_OWNED':'DIFF_BASE_UNAVAILABLE';}
     const baseKey=(base:Ledger['diffBase'])=>base?hash({kind:base.kind,commitSha:base.commitSha,fingerprintHash:base.fingerprintHash}):undefined;
     transact('verification-baseline',brief.id,actor,s=>{
       const old=Object.values(s.ledgers).filter(e=>e.fingerprint.repoId===artifact.fingerprint.repoId && (options.pr?e.pr?.number===options.pr.number && e.pr.repoId===options.pr.repoId:e.gateDefinitionHash===hash(brief) && !e.pr));
@@ -131,7 +130,7 @@ export async function verify(cwd: string, brief: TaskBrief, options: {policy?:Ru
         else if(gate.kind==='human-approval') {const approval=protocol().approvals[hash({fingerprint:artifact.fingerprint,gate:hash(gate)})];status=approval?'passed':'blocked';reason=approval?undefined:'HUMAN_APPROVAL_REQUIRED';log=JSON.stringify(approval ?? {});}
         else {reason='ADVISORY_ONLY';}
       } catch(error) {status='blocked';reason='CHECK_UNAVAILABLE';log=String(error);}
-      log=redact(log).slice(-Math.min(policy.maxOutputBytes ?? 65536,4*1024*1024));mkdirSync(dirname(logPath),{recursive:true});writeFileSync(logPath,log,{mode:0o600});
+      log=redactLogTail(log,Math.min(policy.maxOutputBytes ?? 65536,4*1024*1024));mkdirSync(dirname(logPath),{recursive:true});writeFileSync(logPath,log,{mode:0o600});
       const evidence:Evidence={id,gateId:gate.id,gateDefinitionHash:hash(gate),status,reason,command:gate.command,cwd,exitCode,startedAt,finishedAt:new Date().toISOString(),artifactId:artifact.id,logPath,checksum:hash(log),actor,environmentHash:hash({node:process.version,platform:process.platform,policy})};
       results.push(evidence);transact('gate-settled',id,actor,s=>{s.evidence[id]=evidence;return {id,status,reason};});
     }

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { mkdtempSync, writeFileSync, rmSync, readFileSync, mkdirSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { capture, fingerprint, sameFingerprint, git } from '../src/artifacts/fingerprint.ts';
+import { capture, fingerprint, ownerOf, sameFingerprint, git } from '../src/artifacts/fingerprint.ts';
 import { validateBrief, scopeViolations, matchPath, saveBrief } from '../src/contracts/brief.ts';
 import { verify, ledgerCurrent, parseTestReport } from '../src/verification/runner.ts';
 import { protocol, hash, transact } from '../src/runtime/protocol.ts';
@@ -31,21 +31,24 @@ function brief(repo:string,gates?:GateSpec[]):TaskBrief {
 }
 const pass=['node','-e','console.log("ok")'];
 function commandBrief(repo:string,command=pass){return brief(repo,[{id:'test',kind:'command',command,sideEffect:'none',category:'behavior',timeoutSeconds:2}]);}
+const BRIEF_OWNER={id:'brief',revision:1};
+function baseline(repo:string,own=BRIEF_OWNER){return capture(repo,undefined,[],'working',{kind:'baseline',owner:ownerOf(own)}).fingerprint;}
+function agentBaseline(spec:any){return capture(spec.cwd,undefined,[],'working',{kind:'baseline',owner:ownerOf(spec.brief ?? BRIEF_OWNER,{workflowId:spec.workflowId,callKey:spec.callKey})}).fingerprint;}
 
 test('strict brief validates required acceptance, commands and immutable revisions',()=>{const f=fixture();try{const b=brief(f.repo);validateBrief(b);assert.throws(()=>validateBrief({...b,acceptance:[]}),/BRIEF_INCOMPLETE/);assert.throws(()=>validateBrief({...b,timeboxSeconds:undefined}),/timebox/);saveBrief(b,'test','initial');saveBrief(b,'test','same');assert.equal(protocol().briefs.brief.length,1);assert.throws(()=>saveBrief({...b,goal:'new'},'test','update'),/REVISION/);saveBrief({...b,revision:2,goal:'new'},'test','update');assert.equal(protocol().briefs.brief.length,2);}finally{f.cleanup();}});
 test('scope globs include root paths, deny excluded and traversal patterns',()=>{const f=fixture();try{assert(matchPath('a.ts','**/*.ts'));assert(matchPath('src/a/b.ts','src/**'));assert.deepEqual(scopeViolations(brief(f.repo),['private/a','src/a']),['private/a']);assert.throws(()=>validateBrief({...brief(f.repo),scope:{...brief(f.repo).scope,include:['../*']}}),/relativeGlob/);}finally{f.cleanup();}});
 test('fingerprints distinguish staged, unstaged, untracked, mode and commits',()=>{const f=fixture();try{const a=fingerprint(f.repo);writeFileSync(join(f.repo,'source.txt'),'changed');const b=fingerprint(f.repo);assert(!sameFingerprint(a,b));git(f.repo,['add','.']);const c=fingerprint(f.repo);assert(!sameFingerprint(b,c));writeFileSync(join(f.repo,'other.txt'),'new');assert(!sameFingerprint(c,fingerprint(f.repo)));assert.throws(()=>fingerprint(f.repo,'committed'),/DIRTY/);git(f.repo,['add','.']);git(f.repo,['commit','-qm','new']);assert(!sameFingerprint(a,fingerprint(f.repo)));}finally{f.cleanup();}});
 test('worktrees share repo identity while different repos never share it',()=>{const f=fixture();try{git(f.repo,['worktree','add','-qb','isolated',join(f.root,'wt')]);assert.equal(fingerprint(f.repo).repoId,fingerprint(join(f.root,'wt')).repoId);const other=join(f.root,'other');mkdirSync(other);git(f.repo,['clone','-q',f.repo,other]);assert.notEqual(fingerprint(f.repo).repoId,fingerprint(other).repoId);}finally{f.cleanup();}});
 test('symlink fingerprints do not follow outside file contents',()=>{const f=fixture();try{writeFileSync(join(f.root,'outside'),'secret');symlinkSync(join(f.root,'outside'),join(f.repo,'link'));const a=fingerprint(f.repo);writeFileSync(join(f.root,'outside'),'different');assert(sameFingerprint(a,fingerprint(f.repo)));}finally{f.cleanup();}});
-test('real runner passes and records log hashes; source or evidence changes invalidate',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const l=await verify(f.repo,commandBrief(f.repo),{before,policy:{commands:[pass]}});assert.equal(l.status,'passed');assert.equal(l.verdict,'unit-test-verified');assert(ledgerCurrent(l,fingerprint(f.repo)));writeFileSync(protocol().evidence[l.evidenceRefs[0]].logPath,'tampered');assert(!ledgerCurrent(l,fingerprint(f.repo)));writeFileSync(join(f.repo,'source.txt'),'changed');assert(!ledgerCurrent(l,fingerprint(f.repo)));}finally{f.cleanup();}});
-test('agent narrative cannot override failing deterministic command',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const argv=['node','-e','process.exit(7)'];const l=await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}});assert.equal(l.status,'failed');assert.equal(protocol().evidence[l.evidenceRefs[0]].exitCode,7);}finally{f.cleanup();}});
-test('timeout, unknown side effects and unavailable executables are blocked',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const argv=['node','-e','setInterval(()=>{},1000)'];const b=commandBrief(f.repo,argv);b.verification[0].timeoutSeconds=.05;assert.equal((await verify(f.repo,b,{before,policy:{commands:[argv]}})).status,'blocked');delete b.verification[0].sideEffect;assert.equal((await verify(f.repo,b,{before,policy:{commands:[argv]}})).status,'blocked');const missing=['no-such-pstack-command'];assert.equal((await verify(f.repo,commandBrief(f.repo,missing),{before,policy:{commands:[missing]}})).status,'blocked');}finally{f.cleanup();}});
-test('shell chaining is never interpreted and command allowlist is exact',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;assert.equal((await verify(f.repo,commandBrief(f.repo),{before,policy:{commands:[]}})).status,'blocked');const cmd=['node','-e','console.log("x")',';','touch','oops'];assert.equal((await verify(f.repo,commandBrief(f.repo,cmd),{before,policy:{commands:[pass]}})).status,'blocked');}finally{f.cleanup();}});
-test('test-time source mutation produces stale evidence, never verified',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const argv=['node','-e','require("node:fs").writeFileSync("source.txt","mutation")'];assert.equal((await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}})).status,'stale');}finally{f.cleanup();}});
-test('scope and insufficient coverage reject acceptance',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;mkdirSync(join(f.repo,'private'));writeFileSync(join(f.repo,'private/a'),'bad');assert.equal((await verify(f.repo,brief(f.repo),{before})).status,'blocked');rmSync(join(f.repo,'private'),{recursive:true});writeFileSync(join(f.repo,'other'),'new');const b=brief(f.repo);b.verification[0].coverage=['source.txt'];assert.equal((await verify(f.repo,b,{before})).status,'blocked');}finally{f.cleanup();}});
-test('human and advisory gates never auto-pass',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const b=brief(f.repo,[{id:'human',kind:'human-approval'}]);assert.equal((await verify(f.repo,b,{before})).status,'blocked');assert.throws(()=>validateBrief(brief(f.repo,[{id:'judge',kind:'llm-review'}])),/machineGate/);}finally{f.cleanup();}});
+test('real runner passes and records log hashes; source or evidence changes invalidate',async()=>{const f=fixture();try{const before=baseline(f.repo);const l=await verify(f.repo,commandBrief(f.repo),{before,policy:{commands:[pass]}});assert.equal(l.status,'passed');assert.equal(l.verdict,'unit-test-verified');assert(ledgerCurrent(l,fingerprint(f.repo)));writeFileSync(protocol().evidence[l.evidenceRefs[0]].logPath,'tampered');assert(!ledgerCurrent(l,fingerprint(f.repo)));writeFileSync(join(f.repo,'source.txt'),'changed');assert(!ledgerCurrent(l,fingerprint(f.repo)));}finally{f.cleanup();}});
+test('agent narrative cannot override failing deterministic command',async()=>{const f=fixture();try{const before=baseline(f.repo);const argv=['node','-e','process.exit(7)'];const l=await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}});assert.equal(l.status,'failed');assert.equal(protocol().evidence[l.evidenceRefs[0]].exitCode,7);}finally{f.cleanup();}});
+test('timeout, unknown side effects and unavailable executables are blocked',async()=>{const f=fixture();try{const before=baseline(f.repo);const argv=['node','-e','setInterval(()=>{},1000)'];const b=commandBrief(f.repo,argv);b.verification[0].timeoutSeconds=.05;assert.equal((await verify(f.repo,b,{before,policy:{commands:[argv]}})).status,'blocked');delete b.verification[0].sideEffect;assert.equal((await verify(f.repo,b,{before,policy:{commands:[argv]}})).status,'blocked');const missing=['no-such-pstack-command'];assert.equal((await verify(f.repo,commandBrief(f.repo,missing),{before,policy:{commands:[missing]}})).status,'blocked');}finally{f.cleanup();}});
+test('shell chaining is never interpreted and command allowlist is exact',async()=>{const f=fixture();try{const before=baseline(f.repo);assert.equal((await verify(f.repo,commandBrief(f.repo),{before,policy:{commands:[]}})).status,'blocked');const cmd=['node','-e','console.log("x")',';','touch','oops'];assert.equal((await verify(f.repo,commandBrief(f.repo,cmd),{before,policy:{commands:[pass]}})).status,'blocked');}finally{f.cleanup();}});
+test('test-time source mutation produces stale evidence, never verified',async()=>{const f=fixture();try{const before=baseline(f.repo);const argv=['node','-e','require("node:fs").writeFileSync("source.txt","mutation")'];assert.equal((await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}})).status,'stale');}finally{f.cleanup();}});
+test('scope and insufficient coverage reject acceptance',async()=>{const f=fixture();try{const before=baseline(f.repo);mkdirSync(join(f.repo,'private'));writeFileSync(join(f.repo,'private/a'),'bad');assert.equal((await verify(f.repo,brief(f.repo),{before})).status,'blocked');rmSync(join(f.repo,'private'),{recursive:true});writeFileSync(join(f.repo,'other'),'new');const b=brief(f.repo);b.verification[0].coverage=['source.txt'];assert.equal((await verify(f.repo,b,{before})).status,'blocked');}finally{f.cleanup();}});
+test('human and advisory gates never auto-pass',async()=>{const f=fixture();try{const before=baseline(f.repo);const b=brief(f.repo,[{id:'human',kind:'human-approval'}]);assert.equal((await verify(f.repo,b,{before})).status,'blocked');assert.throws(()=>validateBrief(brief(f.repo,[{id:'judge',kind:'llm-review'}])),/machineGate/);}finally{f.cleanup();}});
 test('JUnit and TAP reject malformed, skipped and failed runs',()=>{assert(parseTestReport('<testsuite tests="2" failures="0" errors="0"></testsuite>','junit'));assert(!parseTestReport('<testsuite tests="2"></testsuite>','junit'));assert(!parseTestReport('<testsuite tests="2" failures="1" errors="0"></testsuite>','junit'));assert(parseTestReport('ok 1 works\n1..1','tap'));assert(!parseTestReport('ok 1 # SKIP\n1..1','tap'));assert(!parseTestReport('ok 1\n1..2','tap'));});
-test('evidence logs redact common credentials',async()=>{const f=fixture();try{const before=capture(f.repo).fingerprint;const argv=['node','-e','console.log("token=verysecret password=hidden")'];const l=await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}});assert.equal(l.status,'passed');const e=protocol().evidence[l.evidenceRefs[0]];assert.equal(e.exitCode,0);assert.equal(readFileSync(e.logPath,'utf8'),'token=[REDACTED] password=[REDACTED]\n');}finally{f.cleanup();}});
+test('evidence logs redact common credentials',async()=>{const f=fixture();try{const before=baseline(f.repo);const argv=['node','-e','console.log("token=verysecret password=hidden")'];const l=await verify(f.repo,commandBrief(f.repo,argv),{before,policy:{commands:[argv]}});assert.equal(l.status,'passed');const e=protocol().evidence[l.evidenceRefs[0]];assert.equal(e.exitCode,0);assert.equal(readFileSync(e.logPath,'utf8'),'token=[REDACTED] password=[REDACTED]\n');}finally{f.cleanup();}});
 function report(fp:any){return {status:'completed' as const,base:fp.commitSha,head:fp.commitSha,artifactRefs:[],commandsRun:[],evidenceRefs:[],deviations:[],unresolved:[],nextActions:[]};}
 const briefHistory=(id:string,key:string)=>Object.entries(protocol().briefs).filter(([briefId])=>briefId.endsWith(`.${id}.${key}`)).flatMap(([,versions])=>versions);
 async function deliveryFixture(repo:string){
@@ -92,7 +95,7 @@ test('lease tokens fence stale workers after expiration and takeover',()=>{const
 test('legacy migration backs up state, preserves ids and never fabricates verification',()=>{const f=fixture();try{writeJsonAtomic(homePath('workflows','legacy.json'),{id:'legacy',calls:{},state:'completed'});assert(migrate().records[0].needsMigration);assert.equal(JSON.parse(readFileSync(homePath('workflows','legacy.json'),'utf8')).schemaVersion,undefined);const r=migrate(false);assert(r.backup);assert.equal(JSON.parse(readFileSync(homePath('workflows','legacy.json'),'utf8')).verification,'unknown');assert.equal(JSON.parse(readFileSync(join(r.backup!,'legacy.json'),'utf8')).schemaVersion,undefined);}finally{f.cleanup();}});
 test('strict workflow runs real gates, blocks malformed reports and invalidates current status',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let malformed=false;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const baseline=capture(spec.cwd).fingerprint;const a={...spec,id:spec.id,state:'completed',cwd:spec.cwd,baseline,report:malformed?undefined:report(baseline),result:'done'};agents.set(a.id,a);return a;},async recover(a:any){return a;},async stop(id:string){return {...agents.get(id),state:'cancelled'};}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const baseline=agentBaseline(spec);const a={...spec,id:spec.id,state:'completed',cwd:spec.cwd,baseline,report:malformed?undefined:report(baseline),result:'done'};agents.set(a.id,a);return a;},async recover(a:any){return a;},async stop(id:string){return {...agents.get(id),state:'cancelled'};}};
   const engine=new WorkflowEngine(host);const ctx:any={sessionManager:{getSessionId:()=> 'session'},cwd:f.repo};
   const wf=engine.create({cwd:f.repo,parentSessionId:'session',contractLevel:'strict',nodes:[{key:'a',task:'check',profile:'verifier',brief:brief(f.repo)}]});
   const done=await engine.run(wf.id,ctx);assert.equal(done.state,'completed');assert.equal(done.verification,'verified');assert(engine.accepted(done.calls.a));
@@ -102,7 +105,7 @@ test('strict workflow runs real gates, blocks malformed reports and invalidates 
 test('new strict mode rejects omitted contract before dispatch',()=>{const f=fixture();try{const e=new WorkflowEngine({} as any);assert.throws(()=>e.create({cwd:f.repo,contractLevel:'strict',nodes:[{key:'a',task:'x'}]}),/BRIEF_INCOMPLETE/);assert.equal(protocol().events.length,0);}finally{f.cleanup();}});
 test('program pilot then rolling window clears 12 units and closes from Store',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let running=0,peak=0;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){running++;peak=Math.max(peak,running);await new Promise(r=>setTimeout(r,spec.callKey==='slow'?50:5));const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);running--;return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){running++;peak=Math.max(peak,running);await new Promise(r=>setTimeout(r,spec.callKey==='slow'?50:5));const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);running--;return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',Array.from({length:12},(_,i)=>({key:'unit'+i,spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:'unit'+i}}]}})),3);
   await coordinator.run(p.id,ctx);assert(peak>1 && peak<=3);assert.equal(coordinator.get(p.id,'session').units.filter(u=>u.state==='reconciled').length,12);
@@ -110,14 +113,15 @@ test('program pilot then rolling window clears 12 units and closes from Store',a
 }finally{f.cleanup();}});
 test('corrupt protocol Store fails closed instead of producing empty evidence',()=>{const f=fixture();try{mkdirSync(homePath(),{recursive:true});writeFileSync(homePath('protocol.json'),'{broken');assert.throws(()=>protocol());}finally{f.cleanup();}});
 test('crash after gate-start leaves no passed ledger; restart verifies anew',async()=>{const f=fixture();try{
-  const before=capture(f.repo).fingerprint;
+  const crashBrief={...brief(f.repo),id:'crash-brief'};
+  const before=baseline(f.repo,crashBrief);
   const {spawn}=await import('node:child_process');
   const child=spawn(process.execPath,['test/fixtures/verification-crash-worker.mjs',f.repo,JSON.stringify(before)],{cwd:process.cwd(),env:process.env,stdio:'ignore'});
   await new Promise<void>((resolve,reject)=>{const deadline=Date.now()+5000;const timer=setInterval(()=>{try{if(Object.values(protocol().evidence).some(e=>e.status==='running')){clearInterval(timer);resolve();}else if(Date.now()>deadline){clearInterval(timer);reject(new Error('worker never reached gate'));}}catch{}},20);});
   child.kill('SIGKILL');await new Promise(resolve=>child.once('exit',resolve));
   assert.equal(Object.values(protocol().ledgers).filter(l=>l.status==='passed').length,0);
   assert(Object.values(protocol().evidence).some(e=>e.status==='running'));
-  const again=await verify(f.repo,brief(f.repo),{before});assert.equal(again.status,'passed');
+  const again=await verify(f.repo,crashBrief,{before});assert.equal(again.status,'passed');
 }finally{f.cleanup();}});
 test('crash after remote merge request consumes authorization; reconcile reads remote',async()=>{const f=fixture();try{
   const d=await deliveryFixture(f.repo);const frontier=await refresh(d.spec,d.provider);const token=authorizeMerge(frontier,1,'human-cli');
@@ -136,7 +140,7 @@ test('structured evaluator reports cannot omit scores, evidence or selection',as
 test('program pause/resume and versioned orders persist for subsequent dispatch',()=>{const f=fixture();try{const e=new WorkflowEngine({} as any);const c=new ProgramCoordinator(e);const p=c.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'a',task:'x',brief:brief(f.repo)}]}}]);c.updateOrders(p.id,'session',['new rule'],'user update');assert.equal(c.get(p.id,'session').orders?.revision,1);c.pause(p.id,'session');assert.equal(c.resume(p.id,'session').state,'pilot');assert.equal(new ProgramCoordinator(e).get(p.id,'session').orders?.instructions[0],'new rule');}finally{f.cleanup();}});
 test('tampered standing orders digest blocks dispatch and creates no workflow',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:brief(f.repo)}]}}]);
   coordinator.updateOrders(p.id,'session',['ordered rule'],'operator update');
@@ -148,7 +152,7 @@ test('tampered standing orders digest blocks dispatch and creates no workflow',a
 }finally{f.cleanup();}});
 test('restored coordinator stamps each unit with the orders revision in force at dispatch',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let paused=false;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(spec.brief?.id.endsWith('.unit1') && !paused){paused=true;coordinator.pause(p.id,'session');coordinator.updateOrders(p.id,'session',['new rule'],'operator update');}return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(spec.brief?.id.endsWith('.unit1') && !paused){paused=true;coordinator.pause(p.id,'session');coordinator.updateOrders(p.id,'session',['new rule'],'operator update');}return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',['unit0','unit1','unit2'].map(key=>({key,spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:key}}]}})),1);
   coordinator.updateOrders(p.id,'session',['old rule'],'operator update');
@@ -173,7 +177,7 @@ test('restored coordinator stamps each unit with the orders revision in force at
 }finally{f.cleanup();}});
 test('orders revised while a unit is running block the program until the operator acknowledges that revision',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let runs=0;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(runs===1)coordinator.updateOrders(p.id,'session',['new safety rule'],'operator update');return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(runs===1)coordinator.updateOrders(p.id,'session',['new safety rule'],'operator update');return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:'unit'}}]}}]);
   coordinator.updateOrders(p.id,'session',['old rule'],'operator update');
@@ -190,7 +194,7 @@ test('orders revised while a unit is running block the program until the operato
 }finally{f.cleanup();}});
 test('orders acknowledgement is durable per unit, version stamped, and not implied by resume',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let runs=0;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:'unit'}}]}}]);
   coordinator.updateOrders(p.id,'session',['old rule'],'operator update');
@@ -219,7 +223,7 @@ test('orders acknowledgement is durable per unit, version stamped, and not impli
 }finally{f.cleanup();}});
 test('restarted coordinator never resumes a unit under superseded orders',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let runs=0;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:'unit'}}]}}]);
   coordinator.updateOrders(p.id,'session',['old rule'],'operator update');
@@ -242,7 +246,7 @@ test('restarted coordinator never resumes a unit under superseded orders',async(
 }finally{f.cleanup();}});
 test('a revised revision blocks only the units dispatched under the old one',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();let runs=0;
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(runs===2)coordinator.updateOrders(p.id,'session',['revised rule'],'operator update');return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){runs++;const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);if(runs===2)coordinator.updateOrders(p.id,'session',['revised rule'],'operator update');return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',['unit0','unit1','unit2','unit3'].map(key=>({key,spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:key}}]}})),1);
   coordinator.updateOrders(p.id,'session',['original rule'],'operator update');
@@ -265,7 +269,7 @@ test('a revised revision blocks only the units dispatched under the old one',asy
 }finally{f.cleanup();}});
 test('orders digest tampered after the pilot refuses the next unit dispatch',async(t)=>{const f=fixture();try{
   const agents=new Map<string,any>();const started:string[]=[];
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){started.push(spec.brief.id);const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){started.push(spec.brief.id);const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',['pilot','next'].map(key=>({key,spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:{...brief(f.repo),id:key}}]}})),1);
   coordinator.updateOrders(p.id,'session',['original rule'],'operator update');
@@ -284,7 +288,7 @@ test('orders digest tampered after the pilot refuses the next unit dispatch',asy
 }finally{t.mock.restoreAll();f.cleanup();}});
 test('orders revised by the first root veto the second call in the same batch',async()=>{const f=fixture();try{
   const agents=new Map<string,any>();const started:{key:string;orders:string[]}[]=[];
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){started.push({key:spec.callKey,orders:spec.brief.standingOrders});if(spec.callKey==='first')coordinator.updateOrders(p.id,'session',['revised rule'],'operator update');const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){started.push({key:spec.callKey,orders:spec.brief.standingOrders});if(spec.callKey==='first')coordinator.updateOrders(p.id,'session',['revised rule'],'operator update');const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,maxConcurrency:2,nodes:['first','second'].map(key=>({key,profile:'scout',task:'inspect',brief:{...brief(f.repo),id:key}}))}}]);
   coordinator.updateOrders(p.id,'session',['original rule'],'operator update');
@@ -302,7 +306,7 @@ test('orders revised by the first root veto the second call in the same batch',a
 test('orders acknowledgement refuses a revision moved before transaction lock acquisition',async(t)=>{const f=fixture();try{
   const {FileLock}=await import('../src/runtime/lock.ts');const {lockPath}=await import('../src/runtime/home.ts');
   const agents=new Map<string,any>();
-  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=capture(spec.cwd).fingerprint;const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
+  const host:any={get:(id:string)=>agents.get(id),async run(spec:any){const fp=agentBaseline(spec);const a={...spec,state:'completed',cwd:spec.cwd,baseline:fp,report:report(fp),result:'checked'};agents.set(a.id,a);return a;}};
   const engine=new WorkflowEngine(host);const ctx:any={cwd:f.repo,sessionManager:{getSessionId:()=> 'session'}};const coordinator=new ProgramCoordinator(engine);
   const p=coordinator.create('session',[{key:'unit',spec:{cwd:f.repo,nodes:[{key:'read',profile:'scout',task:'inspect',brief:brief(f.repo)}]}}]);
   coordinator.updateOrders(p.id,'session',['original rule'],'operator update');
