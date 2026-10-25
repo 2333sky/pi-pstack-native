@@ -58,7 +58,7 @@ export class WorkflowEngine {
     this.onTerminal = onTerminal;
   }
 
-  create(spec: WorkflowRunSpec): WorkflowRecord {
+  build(spec: WorkflowRunSpec, id: string = workflowId()): WorkflowRecord {
     validateGraph(spec.nodes);
     validateBudget(spec.budget); for(const node of spec.nodes) {validateBudget(node.budget); validateEvidencePackets(node.evidencePackets);}
     for (const node of spec.nodes) {
@@ -66,8 +66,6 @@ export class WorkflowEngine {
       if (node.brief) {validateBrief(node.brief);if(node.brief.scope.repoId!==fingerprint(spec.cwd).repoId)throw new Error("REPOSITORY_MISMATCH");}
     }
     planArtifacts(spec.nodes);
-    for (const node of spec.nodes) if (node.brief) saveBrief(node.brief, "coordinator", "workflow-created");
-    const id = workflowId();
     const createdAt = now();
     const calls: Record<string, WorkflowCall> = {};
     for (const node of spec.nodes) {
@@ -93,8 +91,16 @@ export class WorkflowEngine {
         ...(spec.playbook ? { playbook: spec.playbook } : {}),
       },
     };
-    writeJsonAtomic(workflowPath(id), record);
-    appendJournal(journalPath(id), { type: "workflow-created", id, nodes: Object.keys(calls) });
+    return record;
+  }
+
+  create(spec: WorkflowRunSpec): WorkflowRecord { return this.materialize(this.build(spec)); }
+
+  /** Writes are separate from construction so a committed dispatch record can own the creation order. */
+  materialize(record: WorkflowRecord): WorkflowRecord {
+    for (const call of Object.values(record.calls)) if (call.brief) saveBrief(call.brief, "coordinator", "workflow-created");
+    writeJsonAtomic(workflowPath(record.id), record);
+    appendJournal(journalPath(record.id), { type: "workflow-created", id: record.id, nodes: Object.keys(record.calls) });
     return record;
   }
 

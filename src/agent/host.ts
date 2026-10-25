@@ -28,6 +28,7 @@ import { getProfile } from "./profiles.ts";
 import { createResourceTools, validateEvidencePackets, type EvidencePacket } from "./resources.ts";
 import { createReadOnlyTools } from "./read-only-tools.ts";
 import { assertCompatibleIsolation } from "./isolation.ts";
+import { dispatchVeto } from "../program/dispatch.ts";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SKILLS_DIR = join(PACKAGE_ROOT, "skills");
@@ -272,6 +273,10 @@ export class AgentHost {
       // Reload the authoritative contract on every spawn/recovery; never trust stale session text.
       const ownerWorkflow = record.workflowId ? readJson<WorkflowRecord | undefined>(workflowPath(record.workflowId), undefined) : undefined;
       const currentBrief = ownerWorkflow?.calls[record.callKey ?? ""]?.brief ?? spec.brief ?? record.brief;
+      if (record.workflowId) {
+        const veto = dispatchVeto(record.workflowId, ownerWorkflow);
+        if (veto) throw new Error(`${veto}: workflow ${record.workflowId} cannot start a child under the current dispatch record`);
+      }
       if (currentBrief) {
         validateBrief(currentBrief);
         const current = fingerprint(cwd);
