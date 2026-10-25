@@ -1,0 +1,1171 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "plan": "docs/PRD-PSTACK-NATIVE-NEXT.md section 7.3",
+    "profiles": "src/agent/profiles.ts"
+  },
+  "contracts": [
+    {
+      "name": "authoring-a-skill",
+      "source": "skills/poteto-mode/playbooks/authoring-a-skill.md",
+      "trigger": "the operator asks for a task that matches authoring-a-skill, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Define the behavior the skill changes and the user phrases/situations that should trigger it. If an existing skill already owns the behavior, edit that skill instead of creating a near-duplicate."
+        },
+        {
+          "order": 2,
+          "text": "Read adjacent skills and repository conventions. Decide which rules belong inline and which large/rare references belong in subfiles."
+        },
+        {
+          "order": 3,
+          "text": "Write frontmatter with a stable name and a concrete description. Use disable-model-invocation: true for explicit-only skills; omit it only when automatic discovery is intentional."
+        },
+        {
+          "order": 4,
+          "text": "Write imperative instructions around decisions, steps, evidence, and failure handling. Replace Cursor-only mechanics with pstack_agents, pstack_workflow, worktrees, Pi sessions, or an explicit unsupported note."
+        },
+        {
+          "order": 5,
+          "text": "Validate referenced files/commands/skills and frontmatter. For structural skills, build a small test or fixture that proves the critical route. For subjective writing/style skills, use representative examples instead of fake unit tests."
+        },
+        {
+          "order": 6,
+          "text": "Run /skill:unslop and a skeptical review. If shipping the skill in a repo, follow Opening a PR."
+        }
+      ],
+      "observe": [
+        "按实际运行环境生成并验证 Skill"
+      ],
+      "mustReject": [
+        "文件存在但无法加载或调用"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autonomous-run",
+      "source": "skills/poteto-mode/playbooks/autonomous-run.md",
+      "trigger": "the operator asks for a task that matches autonomous-run, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Write the exit predicate before the first iteration. It must be observable: repro fixed, test/CI gate green, all N units verified, rendered diff within threshold, etc."
+        },
+        {
+          "order": 2,
+          "text": "Choose the wake mechanism. For work that needs periodic re-checks while Pi is active, use /pstack-loop; for a finite dependency graph, use pstack_workflow instead of polling."
+        },
+        {
+          "order": 3,
+          "text": "At each iteration, inspect current state first, make the smallest evidence-backed change, run the predicate, and keep only changes that advance it. Revert speculative belts-and-suspenders."
+        },
+        {
+          "order": 4,
+          "text": "Own reversible side problems discovered during the run: flaky harness, broken skill, related bug, stale branch. Keep out-of-band fixes isolated so the main predicate remains legible."
+        },
+        {
+          "order": 5,
+          "text": "Log material decisions with /skill:show-me-your-work. Record workflow IDs, commits/artifacts, predicate state, and any recovery after interruption."
+        },
+        {
+          "order": 6,
+          "text": "Stop only when the predicate is met or a genuine blocker remains that no safe experiment can settle. Do not redefine the predicate to manufacture success."
+        }
+      ],
+      "observe": [
+        "在授权范围内持续推进，保留停止条件"
+      ],
+      "mustReject": [
+        "把自治授权扩大为未授权外部动作"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autopilot-full",
+      "source": "skills/poteto-mode/playbooks/autopilot-full.md",
+      "trigger": "the operator asks for a task that matches autopilot-full, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Require an explicit operator go before starting the program. Items the operator reserved remain theirs."
+        },
+        {
+          "order": 2,
+          "text": "Create one durable owner lane per independent change. Each lane owns implementation, first publish, real-surface proof, review-finding fixes, CI follow-up, and final handoff. Use worktrees and stable workflow keys."
+        },
+        {
+          "order": 3,
+          "text": "Open a decision trail early for long lanes. Record child IDs/workflow IDs, meaningful side effects, expected long-running checks, and evidence. Progress means a commit, push, PR/check delta, or verified artifact, not “still working”."
+        },
+        {
+          "order": 4,
+          "text": "Run an audit tick on a real schedule with /pstack-loop when the program spans long waits. On each tick, inspect remote PR/check state before taking action, detect stuck lanes, and recover/replace only after confirming the prior owner is not still making progress."
+        },
+        {
+          "order": 5,
+          "text": "Before a lane is landable, require independent verification of the actual head, concrete review resolution, and green required checks. Re-check after rebases or meaningful patch changes."
+        },
+        {
+          "order": 6,
+          "text": "Merge/land only when the operator has already authorized that action. After landing, verify merged/default-branch state and clean only owned safe worktrees."
+        },
+        {
+          "order": 7,
+          "text": "Finish with program counts, landed/remaining items, verification evidence, and any lane that stopped for a real blocker."
+        }
+      ],
+      "observe": [
+        "每个 PR 有 Owner，代码变更后重新验证"
+      ],
+      "mustReject": [
+        "旧 Head 的审查被新代码复用"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autopilot-stack",
+      "source": "skills/poteto-mode/playbooks/autopilot-stack.md",
+      "trigger": "the operator asks for a task that matches autopilot-stack, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Use the same durable owner-lane model as Autopilot-full: one owner per change, isolated worktree, early publish when authorized, proof, review, and CI follow-up."
+        },
+        {
+          "order": 2,
+          "text": "The root is the sole topology owner. Prepare each branch in a separate worktree on the exact parent head; only the root PR targets trunk. Verify each unit relative to that parent, publish only authorized branch writes, then use pstack-runner stack-plan and stack-open to validate/open the chain. These commands never rebase, force-push, retarget or merge automatically. The autopilot-stack DAG template is local preparation, not delivery of the remote stack. Keep changes independently reviewable. If one lane truly depends on another, model that dependency explicitly and do not hide it as an implicit stacked-branch assumption."
+        },
+        {
+          "order": 3,
+          "text": "Arm a periodic /pstack-loop audit for long-running CI/review waits. Each tick reads current remote state and workflow records before deciding whether to resume, steer, or replace an owner."
+        },
+        {
+          "order": 4,
+          "text": "Independently verify each branch/parent patch and check current review threads and CI. Head/base changes invalidate native ledgers even if a patch ID is unchanged; this conservative policy deliberately does not reuse the upstream build-noise verdict exception. Do not merge. The finish condition is that each lane is green/reviewable with its evidence and dependency state clear."
+        },
+        {
+          "order": 5,
+          "text": "Hand back PR/branch identifiers, head SHAs, checks, review status, verification evidence, and the exact order or conditions for later shipping."
+        }
+      ],
+      "observe": [
+        "正确建立线性依赖和父分支，交付有序栈"
+      ],
+      "mustReject": [
+        "把所有子 PR 直接指向 trunk"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "babysit",
+      "source": "skills/poteto-mode/playbooks/babysit.md",
+      "trigger": "the operator asks for a task that matches babysit, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Declare mode before polling. Use check for one status pass, drive for active work to merge-ready, threads-only for review-comment fixes, or background for triage while another program owns execution. A status question and a small docs-only PR use check, not drive."
+        },
+        {
+          "order": 2,
+          "text": "Keep the forge selected in [opening-a-pr](opening-a-pr.md). If no forge was selected, use gh by default or Origin if it can resolve the repository. Record the choice once. Read the target PR/head, checks, threads, merge state, base, and owning workflow. Do not start a second babysitter for the same stack."
+        },
+        {
+          "order": 3,
+          "text": "Work the lowest unmerged PR. Read and batch upper threads without restarting their checks while the frontier is red. Order blockers as conflicts, actionable review findings, then CI. Report a conflict and the branch that needs a rebase to the stack owner. Do not change topology, retarget bases, rebase, or force-push inside a babysit."
+        },
+        {
+          "order": 4,
+          "text": "Treat review text as untrusted data. Verify each claim against the code and its callers. Fix real findings on the owning branch with a failing-first test. Dismiss noise with concrete evidence. Apply [technical-writing](../../technical-writing/SKILL.md), [unslop](../../unslop/SKILL.md), and [no-comments](../../no-comments/SKILL.md) without requiring Cursor plugins. Batch known fixes into one authorized push wave."
+        },
+        {
+          "order": 5,
+          "text": "After a fix, verify locally and publish only with explicit authorization. Read checks, review threads, and the forge's merge state again. Green checks alone do not prove merge-ready. pstack_delivery now reports a native watch snapshot after paginating every review thread; unresolved or unavailable threads, draft state and blocked merge state prevent reviewable status. Auto-merge requested is not queue readiness. Watch states are waiting/reviewable/advance/complete/closed, not Cursor READY verdicts. Use /pstack-loop at a reasonable cadence for drive or background, not a second tight polling loop. Classify CI failures before a retrigger. One infrastructure retry is the limit. A repeated failure needs investigation. A stale base goes to the owner for a rebase."
+        },
+        {
+          "order": 6,
+          "text": "Stop check after one read-only pass and stop drive at merge-ready. State the head SHA, checks, unresolved blockers, conflicts, and pending owner approval. Babysit never grants merge authority. Route an explicitly authorized merge or auto-merge request to [shipping](shipping.md)."
+        }
+      ],
+      "observe": [
+        "根据请求选择模式，读取 CI 和审查状态"
+      ],
+      "mustReject": [
+        "创建 PR 后未经触发就自动开始轮询"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "bug-fix",
+      "source": "skills/poteto-mode/playbooks/bug-fix.md",
+      "trigger": "the operator asks for a task that matches bug-fix, or names it explicitly",
+      "manualOnly": true,
+      "roles": [
+        "architect",
+        "verifier",
+        "worker"
+      ],
+      "parentOnly": false,
+      "tools": [
+        "bash",
+        "edit",
+        "find",
+        "grep",
+        "ls",
+        "pstack_agents",
+        "pstack_graph",
+        "pstack_workflow",
+        "pstack_worktrees",
+        "read",
+        "write"
+      ],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Reproduce the bug on the closest real user surface. If the normal surface cannot reach it, instrument or synthesize the trigger; explain any unavoidable gap."
+        },
+        {
+          "order": 2,
+          "text": "Use /skill:how to trace the affected runtime path and /skill:why when regression history or a past design decision could explain the shape."
+        },
+        {
+          "order": 3,
+          "text": "List competing hypotheses and eliminate them with runtime evidence. Prefer the experiment that cuts the most remaining uncertainty. Do not edit until one mechanism survives."
+        },
+        {
+          "order": 4,
+          "text": "If the fix crosses an API/function/module ownership boundary, run /skill:architect. Then delegate one bounded implementation worker with exact scope and success criteria."
+        },
+        {
+          "order": 5,
+          "text": "When a cheap stable regression test exists, use /skill:tdd: demonstrate the failing test before the fix and green after. Skip fake or expensive tests and state why."
+        },
+        {
+          "order": 6,
+          "text": "Run a verifier on the worker checkout, then reproduce the original bug on the same surface. Wrong-surface or inconclusive evidence is not a pass."
+        },
+        {
+          "order": 7,
+          "text": "Review the final diff for blast radius and unnecessary workaround code. If publishing, follow Opening a PR."
+        }
+      ],
+      "observe": [
+        "复现、缩小根因、实现、原始场景验证"
+      ],
+      "mustReject": [
+        "错误场景或无法判断的结果被记为修复成功"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "eval",
+      "source": "skills/poteto-mode/playbooks/eval.md",
+      "trigger": "the operator asks for a task that matches eval, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "State the variant under test and write a 3-6 item concrete judging rubric. Keep the rubric from candidates when revealing it would bias behavior."
+        },
+        {
+          "order": 2,
+          "text": "Create equivalent isolated environments for candidates. Seed only context an organic task would normally provide."
+        },
+        {
+          "order": 3,
+          "text": "Write one natural user prompt with no hint about what is being measured."
+        },
+        {
+          "order": 4,
+          "text": "Run N candidates in parallel, ideally across the intended model mix. Keep labels/model identities hidden from the judge when practical."
+        },
+        {
+          "order": 5,
+          "text": "Run a separate read-only judge on sanitized candidate labels and the held-back rubric."
+        },
+        {
+          "order": 6,
+          "text": "Inspect candidate Pi session/workflow evidence yourself: files actually read/changed, commands/checks, and outputs. Do not grade chain-following from a candidate claim that it read something."
+        },
+        {
+          "order": 7,
+          "text": "Read all final outputs and compare with the judge. Disagreement means either bias, ambiguous rubric, or overlooked evidence; resolve it before reporting a winner."
+        },
+        {
+          "order": 8,
+          "text": "Report trial count, model/variant matrix, rubric, failures, variance, and limits. Do not generalize from one lucky run."
+        }
+      ],
+      "observe": [
+        "固定样本和评价规则，保留盲评与失败"
+      ],
+      "mustReject": [
+        "修改规则后继续使用旧分数比较"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "feature",
+      "source": "skills/poteto-mode/playbooks/feature.md",
+      "trigger": "the operator asks for a task that matches feature, or names it explicitly",
+      "manualOnly": true,
+      "roles": [
+        "architect",
+        "verifier",
+        "worker"
+      ],
+      "parentOnly": false,
+      "tools": [
+        "bash",
+        "edit",
+        "find",
+        "grep",
+        "ls",
+        "pstack_agents",
+        "pstack_graph",
+        "pstack_workflow",
+        "pstack_worktrees",
+        "read",
+        "write"
+      ],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Run /skill:how over the affected subsystem. State the user outcome and the existing owner/boundary."
+        },
+        {
+          "order": 2,
+          "text": "Use /skill:architect when the feature crosses a function/module boundary or admits materially different shapes. Settle the data/state model before implementation."
+        },
+        {
+          "order": 3,
+          "text": "Write a throughput checkpoint: blocking prerequisites, independent workstreams, truly shared mutable state, and the smallest safe decomposition. Mark genuine non-applicable dimensions rather than silently dropping them."
+        },
+        {
+          "order": 4,
+          "text": "Delegate implementation to one or more workers with disjoint scopes, explicit files/owners, data shape, and pass/fail criteria. Use /skill:arena if several implementation shapes are genuinely plausible."
+        },
+        {
+          "order": 5,
+          "text": "Verify the real user surface. Pair each worker that needs independent checking with a direct verifier dependency."
+        },
+        {
+          "order": 6,
+          "text": "Review the integrated diff for design drift, comments/slop, blast radius, and unnecessary compatibility code. Run /skill:interrogate when design is contested/high impact."
+        },
+        {
+          "order": 7,
+          "text": "Organize commits/PR units so each is independently verifiable. If publishing, follow Opening a PR."
+        }
+      ],
+      "observe": [
+        "从数据结构和需求建立可运行行为"
+      ],
+      "mustReject": [
+        "仅凭实现者总结认定需求满足"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "hillclimb",
+      "source": "skills/poteto-mode/playbooks/hillclimb.md",
+      "trigger": "the operator asks for a task that matches hillclimb, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Ground the realistic workload with /skill:how. Choose a case that reproduces the complaint and define one metric, direction, target, and minimum attempt count so one lucky run cannot end the search."
+        },
+        {
+          "order": 2,
+          "text": "Build the measurement harness and prove it can distinguish meaningful contrasting workloads. Run /skill:benchmark-checklist; include error/work counts. Freeze the harness once trustworthy."
+        },
+        {
+          "order": 3,
+          "text": "Record baseline distribution and regression gates before changing code. Start a decision trail with one row per attempt."
+        },
+        {
+          "order": 4,
+          "text": "For each attempt, name a mechanism-backed hypothesis tied to the measured limiter. Change one meaningful factor, run the frozen metric and regression gates, then keep or revert. Never leave “might help” changes accumulated."
+        },
+        {
+          "order": 5,
+          "text": "Periodically re-profile because the limiter can move after an improvement. A new limiter requires a new hypothesis, not tuning the old one forever."
+        },
+        {
+          "order": 6,
+          "text": "Stop only when the target and minimum evidence floor are met, or a genuine measured ceiling/dead end is demonstrated. Report baseline, final distribution, kept/reverted attempts, limiter changes, and end-to-end relevance."
+        }
+      ],
+      "observe": [
+        "逐次记录假设、基线、测量和接受决定"
+      ],
+      "mustReject": [
+        "无可比测量就保留所谓优化"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "investigation",
+      "source": "skills/poteto-mode/playbooks/investigation.md",
+      "trigger": "the operator asks for a task that matches investigation, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Route current-behavior questions through /skill:how; add /skill:why when motivation/history matters."
+        },
+        {
+          "order": 2,
+          "text": "Keep the investigation read-only unless the operator explicitly asks to proceed into a fix. Parallelize only independent evidence categories or subsystems."
+        },
+        {
+          "order": 3,
+          "text": "State hypotheses and the evidence that would distinguish them. Gather source/runtime/history facts and eliminate unsupported explanations."
+        },
+        {
+          "order": 4,
+          "text": "For a choice between alternatives, compare trade-offs against the actual project constraints rather than generic best practices."
+        },
+        {
+          "order": 5,
+          "text": "Produce the How-shaped model (overview, concepts, flow, locations, gotchas) or a recommendation with evidence and explicit uncertainty."
+        },
+        {
+          "order": 6,
+          "text": "Run /skill:unslop on the final explanation. End with the most useful next experiment/action if the question remains unresolved."
+        }
+      ],
+      "observe": [
+        "从实际证据回答，保留来源状态"
+      ],
+      "mustReject": [
+        "未经任务授权修改仓库或远端"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "multi-phase-plan",
+      "source": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+      "trigger": "the operator asks for a task that matches multi-phase-plan, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "If the change is tiny and the approach is obvious, say a multi-phase plan is unnecessary and stop."
+        },
+        {
+          "order": 2,
+          "text": "Settle high-impact unknowns with small prototypes or read-only investigation before planning. Ask the operator only for product/preference choices no experiment can resolve."
+        },
+        {
+          "order": 3,
+          "text": "Use read-only scouts to gather entry points, conventions, file owners, verification commands, and migration constraints. Return compact pointers, not dumps."
+        },
+        {
+          "order": 4,
+          "text": "Decompose into independently verifiable phases/PR units. For each unit state: goal, files/owner, dependencies, implementation steps, verification, rollback/cleanup, and done predicate."
+        },
+        {
+          "order": 5,
+          "text": "Name the execution playbook: one bounded run, Orchestrate for a standing multi-unit program, Autopilot-full when authorized to land, or Autopilot-stack when it must stop before merge."
+        },
+        {
+          "order": 6,
+          "text": "Include program-level ordering, integration gates, shared-state strategy, risks, prototypes/alternatives, and final cleanup. Temporary compatibility mechanisms need an explicit deletion phase."
+        },
+        {
+          "order": 7,
+          "text": "For the strict upstream-style program checklist format, use npm run check:plan -- <plan.md>. It validates properly closed backtick/tilde code fences and expects native /pstack-loop 1h markers. Its ten-lane live-proof format is opt-in, not permission to start ten agents or exceed operator budgets. Run /skill:technical-writing and /skill:unslop. Hand back the plan and stop; implementation begins only on explicit go."
+        }
+      ],
+      "observe": [
+        "每阶段有目标、依赖、产物和验收"
+      ],
+      "mustReject": [
+        "前一阶段未验收就把后续阶段标为完成"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "opening-a-pr",
+      "source": "skills/poteto-mode/playbooks/opening-a-pr.md",
+      "trigger": "the operator asks for a task that matches opening-a-pr, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Inspect git status, branch, base, and the full diff in a worktree off trunk. Remove unrelated changes. Keep small, ordered commits that can become independent PRs."
+        },
+        {
+          "order": 2,
+          "text": "Run the required local checks and real-surface verification. Record exact commands, outcomes, and gaps."
+        },
+        {
+          "order": 3,
+          "text": "Read [technical-writing](../../technical-writing/SKILL.md) for titles, bodies, and commit messages. Apply every layer except document-mode selection. Use one word per action, keep articles, and prefer plain verbs. Then apply [unslop](../../unslop/SKILL.md)."
+        },
+        {
+          "order": 4,
+          "text": "Reread the diff before commit and remove accidental code or prose. Use an available cleanup tool, but do not require Cursor-only plugins. Run [no-comments](../../no-comments/SKILL.md) before an independent read-only [interrogate](../../interrogate/SKILL.md) review of non-trivial changes. Review callers, failure paths, retries, shared state, and security. Resolve blockers or dismiss findings with evidence."
+        },
+        {
+          "order": 5,
+          "text": "Write a Conventional Commit title such as fix(pstack): correct the PR base. Keep the body a one-minute briefing with the headings below. Commit bodies do not repeat their subject. Link long logs instead of pasting them."
+        },
+        {
+          "order": 6,
+          "text": "Select the forge once before the first PR operation. Use gh by default. Prefer Origin only if command -v origin succeeds and it resolves this repository. Record a fallback and use the same forge for create, edit, view, checks, watch, and merge. A built-in PR tool takes precedence for operations it owns, as described below."
+        },
+        {
+          "order": 7,
+          "text": "Publish only with explicit authorization. Inspect remote state before retrying a push, creation, or update. Open ready, never as a draft. Confirm the actual base and readiness with the selected forge before reporting the URL."
+        },
+        {
+          "order": 8,
+          "text": "Post the URL, head, base, checks, and gaps. Opening a PR does not start a babysit. Finish the phase or stack, then queue a separate babysit pass when requested. A subagent returns to its parent without polling. An explicitly assigned full-autonomy owner may start its assigned babysit loop after its code-ready report. That exception does not authorize a merge."
+        }
+      ],
+      "observe": [
+        "按目标基线确定 PR 状态、父分支和正文"
+      ],
+      "mustReject": [
+        "在权限或验证不足时声称已创建 PR"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "orchestrate",
+      "source": "skills/poteto-mode/playbooks/orchestrate.md",
+      "trigger": "the operator asks for a task that matches orchestrate, or names it explicitly",
+      "manualOnly": true,
+      "roles": [
+        "verifier",
+        "worker"
+      ],
+      "parentOnly": false,
+      "tools": [
+        "bash",
+        "edit",
+        "find",
+        "grep",
+        "ls",
+        "pstack_agents",
+        "pstack_graph",
+        "pstack_workflow",
+        "pstack_worktrees",
+        "read",
+        "write"
+      ],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Frame a countable done predicate, unit count/shape, rough effort, concurrency cap, wall-clock constraint, and major tracks. If one agent can finish comfortably, use Autonomous run instead."
+        },
+        {
+          "order": 2,
+          "text": "Design unit briefs and verification contracts. Run one representative pilot end-to-end before scale; use it to falsify unit size, brief clarity, and verifier recipe."
+        },
+        {
+          "order": 3,
+          "text": "Create a durable DAG. Each unit has one write-capable worker and, when verification is independent, a verifier depending directly on that worker. Shared integration steps depend on all required units."
+        },
+        {
+          "order": 4,
+          "text": "Scale with a rolling window up to the shared concurrency cap. Refill a slot when a child settles; do not wait for fixed batches. Keep writers separated by worktree/ownership."
+        },
+        {
+          "order": 5,
+          "text": "Drain results continuously. A worker result is a handoff, not proof. Failed verification routes to a bounded rework/retry decision; do not silently mark the unit complete."
+        },
+        {
+          "order": 6,
+          "text": "Persist program decisions and evidence. For long waits, use /pstack-loop audit ticks to detect remote state changes and stuck lanes."
+        },
+        {
+          "order": 7,
+          "text": "Integrate only verified units. Landing/merging remains an explicit authorized action. As deadline/budget approaches, stop spawning and harvest verified work instead of maximizing in-flight count."
+        },
+        {
+          "order": 8,
+          "text": "Finish with unit counts by state, integrated/landed identifiers, evidence, failed/blocked units, and the exact next recovery action."
+        }
+      ],
+      "observe": [
+        "维护长期任务、指令版本和阶段交付"
+      ],
+      "mustReject": [
+        "旧指令下的孤立 Workflow 自动恢复"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "pause-safely",
+      "source": "skills/poteto-mode/playbooks/pause-safely.md",
+      "trigger": "the operator asks for a task that matches pause-safely, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Stop spawning new work. Let the current atomic operation finish when safe, or abort it if continuing could create an unsafe partial side effect."
+        },
+        {
+          "order": 2,
+          "text": "Do not push/open/merge/delete merely to make pausing convenient unless that action was already authorized and is the safe boundary."
+        },
+        {
+          "order": 3,
+          "text": "Persist the state you already own: workflow/agent IDs, branch/worktree path, commits, dirty status, completed verification, and pending dependencies. The native runtime keeps workflow and child session records automatically."
+        },
+        {
+          "order": 4,
+          "text": "If uncommitted edits are valuable, either make a clearly labeled local WIP commit when repository policy permits or leave the owned worktree intact and explicitly record that it is dirty. Never force cleanup."
+        },
+        {
+          "order": 5,
+          "text": "Write a compact resume note containing intent, done predicate, what is complete, what is verified, exact next step, key files, and gotchas. Point at show-me-your-work evidence instead of duplicating logs."
+        },
+        {
+          "order": 6,
+          "text": "On resume, use Session pickup. Do not rerun completed workflow nodes “to be safe”."
+        }
+      ],
+      "observe": [
+        "记录在途动作、产物和恢复条件"
+      ],
+      "mustReject": [
+        "把暂停视为外部副作用已撤销"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "perf-issue",
+      "source": "skills/poteto-mode/playbooks/perf-issue.md",
+      "trigger": "the operator asks for a task that matches perf-issue, or names it explicitly",
+      "manualOnly": true,
+      "roles": [
+        "architect"
+      ],
+      "parentOnly": false,
+      "tools": [
+        "bash",
+        "edit",
+        "find",
+        "grep",
+        "ls",
+        "pstack_agents",
+        "pstack_graph",
+        "pstack_workflow",
+        "pstack_worktrees",
+        "read",
+        "write"
+      ],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Capture a baseline on the matching real workload/surface. Run /skill:benchmark-checklist; if the baseline is invalid, fix the harness before code."
+        },
+        {
+          "order": 2,
+          "text": "Use /skill:how to map the hot path and profile/counters to name the actual limiter. Do not infer a ceiling from source alone."
+        },
+        {
+          "order": 3,
+          "text": "Form mechanism-specific hypotheses ordered by expected impact and cost. If a fix changes APIs/ownership, run /skill:architect first."
+        },
+        {
+          "order": 4,
+          "text": "Delegate one bounded implementation with explicit metric and regression gates. Inspect the diff for behavior changes that could fake a speedup."
+        },
+        {
+          "order": 5,
+          "text": "Rerun the same benchmark protocol and an end-to-end user path. Include errors, work counts, multiple trials, range/variance, and current limiter."
+        },
+        {
+          "order": 6,
+          "text": "Call the result inconclusive if the run cannot explain its number. Cite the measurement/evidence in any PR, then follow Opening a PR if publishing."
+        }
+      ],
+      "observe": [
+        "用相同场景建立基线并解释限制因素"
+      ],
+      "mustReject": [
+        "改变工作量后宣称性能提升"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "prototype",
+      "source": "skills/poteto-mode/playbooks/prototype.md",
+      "trigger": "the operator asks for a task that matches prototype, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "State the decision the prototype must make. If there is no decision, use Feature instead."
+        },
+        {
+          "order": 2,
+          "text": "When direction is open, gather a small amount of prior art or existing repository precedent before building."
+        },
+        {
+          "order": 3,
+          "text": "Build in an isolated scratch directory/worktree with the lightest useful stack. No production abstractions, migrations, or broad tests."
+        },
+        {
+          "order": 4,
+          "text": "If alternatives matter, put 2-3 variants behind one switch/entry point so they can be compared under the same conditions."
+        },
+        {
+          "order": 5,
+          "text": "Observe the thing being decided on the matching surface: interaction/screenshot for UI, printed output/timing for behavior, request/result for service/API. The observation is the prototype test."
+        },
+        {
+          "order": 6,
+          "text": "Present alternatives, trade-offs, recommendation, and the artifact/evidence. Delete or clearly quarantine throwaway code; do not silently ship the prototype as production."
+        },
+        {
+          "order": 7,
+          "text": "Hand the chosen direction to Feature or Architect for the real build."
+        }
+      ],
+      "observe": [
+        "用最小实验回答具体设计分歧"
+      ],
+      "mustReject": [
+        "把试验代码默认为生产实现"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "refactoring",
+      "source": "skills/poteto-mode/playbooks/refactoring.md",
+      "trigger": "the operator asks for a task that matches refactoring, or names it explicitly",
+      "manualOnly": true,
+      "roles": [
+        "architect"
+      ],
+      "parentOnly": false,
+      "tools": [
+        "bash",
+        "edit",
+        "find",
+        "grep",
+        "ls",
+        "pstack_agents",
+        "pstack_graph",
+        "pstack_workflow",
+        "pstack_worktrees",
+        "read",
+        "write"
+      ],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Run /skill:how and pin current behavior with a characterization test, snapshot, equivalence harness, or real-surface script. Typecheck/lint alone is not a behavior pin."
+        },
+        {
+          "order": 2,
+          "text": "Name the missing domain structure and the target call/type/module shape. Use /skill:architect if the reshape crosses ownership/API boundaries."
+        },
+        {
+          "order": 3,
+          "text": "Subtract first: dead code, one-caller wrappers, redundant validators, stale adapters, and orphan references. Do not add a new abstraction beside removable old structure."
+        },
+        {
+          "order": 4,
+          "text": "Move in small behavior-preserving units. After each unit, run the pin. For internal API changes, migrate callers and delete the old path in the same wave rather than leaving indefinite compatibility shims."
+        },
+        {
+          "order": 5,
+          "text": "Delegate mechanical edits only with precise names/files and a fixed behavior contract. Search strings/docs/tests after renames; compiler coverage is not enough."
+        },
+        {
+          "order": 6,
+          "text": "Verify the real artifact and run independent review. The final code should reduce reader load/invalid states, not merely move lines around."
+        },
+        {
+          "order": 7,
+          "text": "If publishing, order commits so each remains understandable and verified, then follow Opening a PR."
+        }
+      ],
+      "observe": [
+        "保留明确的外部行为并运行验证"
+      ],
+      "mustReject": [
+        "结构改动中混入未经授权的需求变更"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "runtime-forensics",
+      "source": "skills/poteto-mode/playbooks/runtime-forensics.md",
+      "trigger": "the operator asks for a task that matches runtime-forensics, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Capture a real signal on the matching surface: CPU profile, heap snapshot, trace, process/thread state, request log, or other runtime artifact."
+        },
+        {
+          "order": 2,
+          "text": "Reduce large artifacts in a read-only child and keep only the smoking gun in the parent: hot function, retainer chain, repeated timer, blocked syscall, or state transition."
+        },
+        {
+          "order": 3,
+          "text": "Prove the mechanism with the cheapest controlled runtime experiment or instrumentation. Avoid broad code edits before the mechanism reproduces."
+        },
+        {
+          "order": 4,
+          "text": "Map the runtime finding back to exact source symbols/files and the ownership boundary that should fix it."
+        },
+        {
+          "order": 5,
+          "text": "Keep this playbook read-only. Hand the proven mechanism to Bug fix, Perf issue, or Refactoring for implementation."
+        },
+        {
+          "order": 6,
+          "text": "Report artifact, reduction method, mechanism, source anchor, confidence, and what would falsify the conclusion."
+        }
+      ],
+      "observe": [
+        "读取运行中证据并确认触发机制"
+      ],
+      "mustReject": [
+        "仅凭静态推测关闭运行时问题"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "session-pickup",
+      "source": "skills/poteto-mode/playbooks/session-pickup.md",
+      "trigger": "the operator asks for a task that matches session-pickup, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Locate the prior trail: active Pi session, pstack workflow/agent records, branch/worktree, commits/diff, PR, and any show-me-your-work log. Stay inside the relevant repository/session; do not crawl unrelated chats."
+        },
+        {
+          "order": 2,
+          "text": "Reconstruct operational state: goal, branch/worktree, completed units, verification already performed, open todos, decisions, and failed/reverted approaches."
+        },
+        {
+          "order": 3,
+          "text": "Compare done versus pending. Durable workflow nodes marked completed are authoritative state; inspect their artifacts rather than rerunning them from scratch."
+        },
+        {
+          "order": 4,
+          "text": "Name one exact resume point and route the remaining work to the matching playbook. Session pickup ends there; the routed playbook owns new execution."
+        },
+        {
+          "order": 5,
+          "text": "Before relying on an inherited success claim, verify it against the original goal/current artifact when cheap. Distinguish stale evidence from still-valid evidence."
+        },
+        {
+          "order": 6,
+          "text": "Report current state, resume point, next playbook, and any uncertainty that could change the next safe action."
+        }
+      ],
+      "observe": [
+        "从当前代码、状态和历史证据恢复任务"
+      ],
+      "mustReject": [
+        "仅依赖旧摘要继续写入"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "shipping",
+      "source": "skills/poteto-mode/playbooks/shipping.md",
+      "trigger": "the operator asks for a task that matches shipping, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Inspect the linear stack produced by stack-plan/stack-open and resolve each target PR/branch and current head/base. Re-run required checks or read authoritative current CI/review state; do not rely on stale screenshots or old head SHAs."
+        },
+        {
+          "order": 2,
+          "text": "Require independent verification of the actual patch for non-trivial changes. A head/base change always invalidates the native verdict. Stack plans record stable patch IDs for audit, but matching patch IDs do not authorize reuse. Re-run verification against the current exact parent."
+        },
+        {
+          "order": 3,
+          "text": "Require the native Frontier review-thread check (all pages); missing thread evidence or unresolved threads block landing even with approved reviews. Auto-merge requested does not prove queue readiness. For dependent work, land only units whose prerequisites are already satisfied and whose own verification is current. Stop at the first unsafe dependency gap."
+        },
+        {
+          "order": 4,
+          "text": "Address conflicts and actionable review findings on the owning branch. Re-run affected checks after any patch change."
+        },
+        {
+          "order": 5,
+          "text": "Merge/land only when the user/program explicitly authorized it. Before retrying after interruption, inspect remote state so a completed merge/push is not repeated."
+        },
+        {
+          "order": 6,
+          "text": "After merge, verify default-branch/production-facing state as appropriate. Remove only owned clean worktrees/branches according to policy; never force-delete unknown user work."
+        },
+        {
+          "order": 7,
+          "text": "Report landed identifiers, final SHAs, verification, skipped/blocked items, and cleanup performed."
+        }
+      ],
+      "observe": [
+        "独立验证，按底部连续已验证区间交付并读回"
+      ],
+      "mustReject": [
+        "CI 绿、排队或启用 auto-merge 被当作已合并"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "trace-forensics",
+      "source": "skills/poteto-mode/playbooks/trace-forensics.md",
+      "trigger": "the operator asks for a task that matches trace-forensics, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Identify the capture format. Use an available parser for a CPU profile, compressed trace, heap snapshot, or spindump. Keep this investigation read-only."
+        },
+        {
+          "order": 2,
+          "text": "Transform large captures into a queryable shape, such as a table of samples, frames, or nodes. Use read-only scouts for large artifacts and retain source pointers."
+        },
+        {
+          "order": 3,
+          "text": "Find the hot call path, heap retainer chain, or blocked thread and wait reason. Report the evidence, not only the largest number."
+        },
+        {
+          "order": 4,
+          "text": "Map the finding to a file, symbol, and line through the artifact's symbols. Resolve missing symbols or state that the capture cannot locate source."
+        },
+        {
+          "order": 5,
+          "text": "If a paired capture exists, compare before and after to confirm. Without one, label the finding as the strongest hypothesis the artifact supports, not a confirmed cause. Do not add live instrumentation in this playbook."
+        },
+        {
+          "order": 6,
+          "text": "Return a cited diagnosis. Do not implement a fix unless asked. Route further work to Bug fix or Perf issue. Use Runtime forensics when the task requires a live capture."
+        },
+        {
+          "order": 7,
+          "text": "Report the artifact path and format, reduced finding, source location, and whether a paired capture confirmed it."
+        }
+      ],
+      "observe": [
+        "分析指定采样材料，标明采集条件和局限"
+      ],
+      "mustReject": [
+        "在材料不支持时推断根因已确认"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "visual-parity",
+      "source": "skills/poteto-mode/playbooks/visual-parity.md",
+      "trigger": "the operator asks for a task that matches visual-parity, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "Define the target image/spec/state and the exact viewport, theme, data, locale, and interaction state. Without matched conditions, a pixel/layout comparison is invalid."
+        },
+        {
+          "order": 2,
+          "text": "Capture the current real render using the project verification/control surface. Do not compare a mock component when the user sees an integrated page."
+        },
+        {
+          "order": 3,
+          "text": "Classify differences: layout/geometry, typography, color/token, asset/content, interaction/state. Ignore antialiasing/noise only when it is demonstrably non-semantic."
+        },
+        {
+          "order": 4,
+          "text": "Fix the smallest source/token/layout owner that explains the difference. Avoid screenshot-specific magic numbers that break other states."
+        },
+        {
+          "order": 5,
+          "text": "Recapture under the same conditions and compare again. Also exercise nearby responsive/interactive states so matching one screenshot does not regress behavior."
+        },
+        {
+          "order": 6,
+          "text": "Report before/after evidence, remaining intentional differences, and the real-surface checks used."
+        }
+      ],
+      "observe": [
+        "在固定视口和状态下对比真实图像"
+      ],
+      "mustReject": [
+        "用组件存在或文字总结证明视觉一致"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "worktree-cleanup",
+      "source": "skills/poteto-mode/playbooks/worktree-cleanup.md",
+      "trigger": "the operator asks for a task that matches worktree-cleanup, or names it explicitly",
+      "manualOnly": true,
+      "roles": [],
+      "parentOnly": true,
+      "tools": [],
+      "requiredSteps": [
+        {
+          "order": 1,
+          "text": "List ~/.pi/agent/pstack-native/worktrees/, agent records, and git worktree list. Match every candidate path to a pstack agent/workflow record. Unknown paths are out of scope."
+        },
+        {
+          "order": 2,
+          "text": "Use the optional worktree-audit CLI with an explicit comparison base when PRs target a parent branch. For each owned worktree, inspect git status --porcelain, branch, the explicitly chosen PR base/ref (not an assumed default), commits ahead of that base, remote/PR state when relevant, and whether a non-terminal workflow/agent still references it."
+        },
+        {
+          "order": 3,
+          "text": "Do not remove dirty worktrees, active workflow worktrees, unpushed/unmerged valuable commits, or anything whose ownership is uncertain."
+        },
+        {
+          "order": 4,
+          "text": "Remove only safe owned worktrees with git worktree remove <path> (no --force unless the user explicitly authorizes destruction after seeing the state)."
+        },
+        {
+          "order": 5,
+          "text": "Prune stale Git worktree metadata only after path-level cleanup. Delete pstack records only when doing so cannot break recovery/audit history."
+        },
+        {
+          "order": 6,
+          "text": "Report removed paths, retained paths with reasons, and disk cleanup if measured."
+        }
+      ],
+      "observe": [
+        "检查归属、改动和合并状态，再执行已授权清理"
+      ],
+      "mustReject": [
+        "强制删除未知或含未保留修改的工作区"
+      ],
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    }
+  ]
+}
