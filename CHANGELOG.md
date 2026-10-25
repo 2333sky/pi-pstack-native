@@ -14,6 +14,7 @@
 - Keep unproven rows explicit: 116 files are marked as not reviewed and every file has `evidence: not_run`.
 - Register `in-your-own-words` and `sharpen`, and port `ketchup-video`, `create-formal-verification-skill` and `maintain-formal-verification-skill` with their platform seams and dependency checks.
 - Make the parity manifest able to say it is short of the pinned target: the pending set and its reasons are checked against the target snapshot, so a gap cannot disappear silently.
+- Add behavior contracts for all 23 playbooks, derived from each playbook's numbered steps and roles, with `evidence: not_run` and a drift check in `npm run check`.
 
 
 ## Earlier releases
