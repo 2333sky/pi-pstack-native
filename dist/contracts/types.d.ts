@@ -101,12 +101,19 @@ export interface Fingerprint {
     files: Record<string, string>;
     dirty: boolean;
 }
+export interface BaselineOwner {
+    briefId: string;
+    briefRevision: number;
+    workflowId?: string;
+    callKey?: string;
+}
 export interface Artifact {
     id: string;
     cwd: string;
     fingerprint: Fingerprint;
     parents: string[];
     producer?: string;
+    owner?: BaselineOwner;
     createdAt: string;
 }
 export interface Evidence {

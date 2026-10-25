@@ -1,3 +1,4 @@
+export const READ_ONLY_TOOL_NAMES = ["read", "grep", "find", "ls"];
 const BASE = `You are a child agent launched by pi-pstack-native. Own only the assigned task. Inspect the repository before changing it. Do not claim success without direct evidence. Return a concise handoff with changed files, commands run, evidence, unresolved risks, and any decisions the parent must make.`;
 export const PROFILES = {
     worker: {
@@ -21,7 +22,7 @@ export const PROFILES = {
     reviewer: {
         name: "reviewer",
         description: "Read-only correctness and maintainability reviewer.",
-        tools: [],
+        tools: [...READ_ONLY_TOOL_NAMES],
         writable: false,
         defaultIsolation: "readonly",
         defaultRole: "reviewer",
@@ -30,7 +31,7 @@ export const PROFILES = {
     scout: {
         name: "scout",
         description: "Read-only repository explorer that returns facts and locations.",
-        tools: [],
+        tools: [...READ_ONLY_TOOL_NAMES],
         writable: false,
         defaultIsolation: "readonly",
         defaultRole: "scout",
@@ -39,7 +40,7 @@ export const PROFILES = {
     verifier: {
         name: "verifier",
         description: "Read-only verifier; inspects test results and source without executing commands that can modify the checkout.",
-        tools: [],
+        tools: [...READ_ONLY_TOOL_NAMES],
         writable: false,
         defaultIsolation: "readonly",
         defaultRole: "verifier",
@@ -57,7 +58,7 @@ export const PROFILES = {
     synthesizer: {
         name: "synthesizer",
         description: "Read-only agent that reconciles worker or reviewer outputs.",
-        tools: [],
+        tools: [...READ_ONLY_TOOL_NAMES],
         writable: false,
         defaultIsolation: "readonly",
         defaultRole: "synthesizer",
@@ -75,16 +76,26 @@ export const PROFILES = {
     "comment-sicko": {
         name: "comment-sicko",
         description: "Read-only comment and workaround-code critic.",
-        tools: [],
+        tools: [...READ_ONLY_TOOL_NAMES],
         writable: false,
         defaultIsolation: "readonly",
         defaultRole: "comment-sicko",
         systemPrompt: `${BASE}\nYou are read-only. Read no-comments/SKILL.md before review. Flag narration, stale comments, workaround justifications and suppressions. Preserve only proven legal headers, public API contracts and unavoidable external constraints. Look up suppressed rules; correctness/safety suppressions require a scoped MUST KILL code-reshape finding. Investigate IMPORTANT/do-not-remove claims on their real code path before deciding. Report exact symbols and evidence; do not delete comments or edit application code yourself.`,
     },
 };
+const READ_ONLY_TOOL_SET = new Set(READ_ONLY_TOOL_NAMES);
+export function assertProfileShape(profile) {
+    if (profile.writable)
+        return profile;
+    const violation = profile.tools.find((tool) => !READ_ONLY_TOOL_SET.has(tool));
+    if (violation !== undefined) {
+        throw new Error(`PROFILE_TOOL_VIOLATION ${profile.name} is read-only but lists tool ${violation}; allowed: ${READ_ONLY_TOOL_NAMES.join(", ")}`);
+    }
+    return profile;
+}
 export function getProfile(name) {
     const profile = PROFILES[name];
     if (!profile)
         throw new Error(`Unknown pstack agent profile: ${name}. Available: ${Object.keys(PROFILES).join(", ")}`);
-    return profile;
+    return assertProfileShape(profile);
 }

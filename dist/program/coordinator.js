@@ -1,4 +1,5 @@
 import { protocol, transact, uid, hash } from "../runtime/protocol.js";
+import { buildDispatch, commitDispatch, materializeDispatch, requireDispatch } from "./dispatch.js";
 export function ordersDrift(program, unit) {
     if (!program.orders || !unit.workflowId)
         return undefined;
@@ -41,11 +42,22 @@ export class ProgramCoordinator {
                 const currentProgram = this.get(id, owner);
                 const orders = currentProgram.orders;
                 this.assertOrdersDigest(currentProgram);
-                const wf = this.workflows.create({ ...unit.spec, nodes: unit.spec.nodes.map(n => ({ ...n, brief: n.brief && orders ? { ...n.brief, id: `${n.brief.id}.${currentProgram.id}.${unit.key}`, revision: 1, standingOrders: orders.instructions } : n.brief })), parentSessionId: owner, contractLevel: 'strict' });
-                transact('unit-dispatched', id, owner, s => { const u = s.programs[id].units.find((x) => x.key === key); u.workflowId = wf.id; u.state = 'running'; if (orders)
-                    u.ordersRevision = orders.revision; return { key, workflowId: wf.id }; });
+                const workflow = this.workflows.build({ ...unit.spec, nodes: unit.spec.nodes.map(n => ({ ...n, brief: n.brief && orders ? { ...n.brief, id: `${n.brief.id}.${currentProgram.id}.${unit.key}`, revision: 1, standingOrders: orders.instructions } : n.brief })), parentSessionId: owner, contractLevel: 'strict' });
+                const dispatch = buildDispatch({ programId: id, unitKey: key, owner, workflow, ordersRevision: orders?.revision });
+                transact('unit-dispatched', id, owner, s => {
+                    const u = s.programs[id].units.find((x) => x.key === key);
+                    if (u.workflowId && u.workflowId !== dispatch.workflowId)
+                        throw new Error('UNIT_ALREADY_DISPATCHED');
+                    u.workflowId = dispatch.workflowId;
+                    u.state = 'running';
+                    if (orders)
+                        u.ordersRevision = orders.revision;
+                    commitDispatch(s, dispatch);
+                    return { key, workflowId: dispatch.workflowId, dispatchId: dispatch.id };
+                });
                 unit = this.get(id, owner).units.find(u => u.key === key);
             }
+            materializeDispatch(requireDispatch(unit.workflowId), (record) => this.workflows.materialize(record));
             const wf = await this.workflows.run(unit.workflowId, ctx);
             transact('unit-completion', id, owner, s => {
                 const program = s.programs[id];
