@@ -10,6 +10,8 @@
 - Bind every baseline receipt to the consuming task. Foreign, stale-revision and ownerless baselines are refused with `BASELINE_NOT_OWNED` instead of being trusted on id and fingerprint alone.
 - Commit a program unit's dispatch record with the unit link in one transaction, then rebuild the workflow file from it. Orphan workflow files and files that drifted from their dispatch are refused before a child starts.
 - Redact evidence through one rule table over the joined buffer before tail truncation, and name the read-only tool allowlist once so a read-only profile cannot list a writing tool.
+- Record the pinned upstream 0.15.32 tree and generate a 200-file inventory from it, with one disposition per file, a reference-closure list and a check that fails on drift.
+- Keep unproven rows explicit: 121 files are marked as not reviewed, every file has `evidence: not_run`, and the six missing skills stay pending.
 
 
 ## Earlier releases
