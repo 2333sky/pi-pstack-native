@@ -32,7 +32,12 @@
       "passed": 149,
       "failed": 0,
       "skipped": 1,
-      "skip": "Real mise discovery is not exercised when selecting TLC through TLA2TOOLS"
+      "skip": "Real mise discovery is not exercised when selecting TLC through TLA2TOOLS",
+      "ciSetupRegression": {
+        "cause": "The async upstream fixture forwards JAVA=java into a scratch cwd; its file check exits before the unbounded wait sees TLC",
+        "fix": "Resolve JAVA to an absolute executable in the native preflight and bound each test to two minutes",
+        "focusedRegression": "passed, original case unmodified"
+      }
     },
     "upstreamToolingTests": {
       "passed": 82,
