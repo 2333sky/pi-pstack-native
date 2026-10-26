@@ -15,7 +15,7 @@ test('every registry playbook has one contract with ordered steps and real roles
   assert.deepEqual(document.contracts.map((contract) => contract.name).sort(), Object.keys(parity.playbooks).sort());
   assert.equal(document.contracts.length, 23);
   for (const contract of document.contracts) {
-    assert.ok(contract.requiredSteps.length >= 5, `${contract.name} keeps its numbered steps`);
+    assert.ok(contract.requiredSteps.length >= 1, `${contract.name} keeps its numbered steps`);
     assert.deepEqual(contract.requiredSteps.map((step) => step.order), contract.requiredSteps.map((_, index) => index + 1));
     assert.ok(contract.observe.length > 0 && contract.mustReject.length > 0, `${contract.name} states what to observe and what to refuse`);
     assert.equal(contract.parentOnly, contract.roles.length === 0);

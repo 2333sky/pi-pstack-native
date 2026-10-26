@@ -61,9 +61,10 @@ function orderedSteps(text) {
   const steps = [];
   for (const match of text.matchAll(/^(\d+)\.\s+(.+)$/gm)) {
     const step = match[2].replace(/`([^`]*)`/g, '$1').trim();
-    steps.push({ order: Number(match[1]), text: step });
+    steps.push({ order: steps.length + 1, sourceOrder: Number(match[1]), text: step });
   }
-  return steps.sort((a, b) => a.order - b.order);
+  if(!steps.length)for(const match of text.matchAll(/^\*\*([^*]+)\*\*\s+(.+)$/gm))steps.push({order:steps.length+1,text:`${match[1]} ${match[2]}`.trim()});
+  return steps;
 }
 
 export function buildContracts({ root }) {

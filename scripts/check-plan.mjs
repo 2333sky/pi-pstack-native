@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Adapted from cursor/plugins pstack 837067b75aa20ab58d7b2a2f6c0531e37118c596 (MIT; see NOTICE.md).
+// Adapted from cursor/plugins pstack 99b609a72323b70204eab407c622f436e858e112 (MIT; see NOTICE.md).
 import fs from "node:fs";
 import process from "node:process";
 
@@ -73,7 +73,7 @@ for (let i = start; i < raw.length; i++) {
 	lines.push({ n, text, code });
 	if (code) continue;
 	const prose = text
-		.replace(/`[^`]*`/g, "`")
+		.replace(/(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)/g, "`")
 		.replace(/!\[[^\]]*\]\([^)]*\)/g, "")
 		.replace(/\]\([^)]*\)/g, "]");
 	if (/[\u2013\u2014]/.test(prose)) fail(n, "long dash");

@@ -1,7 +1,7 @@
 {
-  "upstream": "0.15.17",
-  "upstreamCommit": "978ca6e9c0e012047cd5058b8e829240336e704e",
-  "claim": "semantic-native-port",
+  "upstream": "0.15.32",
+  "upstreamCommit": "99b609a72323b70204eab407c622f436e858e112",
+  "claim": "pinned-source-with-pi-adapter",
   "skills": {
     "architect": "ADAPTED",
     "arena": "ADAPTED",
@@ -53,6 +53,7 @@
     "setup-pstack": "ADAPTED",
     "sharpen": "ADAPTED",
     "show-me-your-work": "ADAPTED",
+    "statechart": "ADAPTED",
     "swarm": "ADAPTED",
     "tdd": "ADAPTED",
     "teach": "ADAPTED",
@@ -102,25 +103,25 @@
   ],
   "pending": [],
   "coverage": {
-    "topLevelSkills": 52,
+    "topLevelSkills": 58,
     "potetoPlaybooks": 23,
-    "countEvidence": "docs/upstream-sync-0.15.17.json",
+    "countEvidence": "docs/upstream-sync-0.15.32.json",
     "countsMean": "observed upstream names, not exercised behavior",
     "behavioralAudit": "not-claimed",
     "ketchupEvidence": "Pi skill loader and structural sections only; chat behavior not exercised (issue #6)",
     "fileLevelAudit": "not-claimed",
-    "auxiliaryFiles": "references/scripts/assets are not vendored or claimed byte-for-byte; required behavior is incorporated into adapted semantic ports where applicable",
+    "auxiliaryFiles": "All latest Skill Markdown/references and statechart scripts are pinned; other scripts, assets and external platform dependencies are not claimed equivalent.",
     "targetSkills": 58,
     "targetPlaybooks": 23,
     "targetInventory": "docs/upstream-target-0.15.32.json",
-    "pendingTargetSkills": [
-      "statechart"
-    ],
-    "pendingTargetReasons": {
-      "statechart": "27 upstream files including a TLA+/TLC toolchain and a 260 KB test fixture; needs its own work package, not a prose port"
-    },
+    "pendingTargetSkills": [],
+    "pendingTargetReasons": {},
     "semanticMapping": "SEMANTICS.json",
     "semanticMappingScope": "11 core workflows; critical rules only; see per-rule evidence boundaries",
     "behavioralParity": "not-claimed"
+  },
+  "previousBaseline": {
+    "version": "0.15.17",
+    "commit": "978ca6e9c0e012047cd5058b8e829240336e704e"
   }
 }

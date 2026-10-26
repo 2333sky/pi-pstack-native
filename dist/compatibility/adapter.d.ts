@@ -35,13 +35,15 @@ export interface Round {
     operatorReserved?: boolean;
     interrupted?: boolean;
     remoteReconciled?: boolean;
+    changeKind?: 'initial' | 'major' | 'minor' | 'rebase' | 'conflict';
+    priorRound?: Round;
     requestedAction: 'verdict' | 'merge';
     skippedSteps?: {
         step: string;
         reason: string;
     }[];
 }
-/** A clean full-autopilot verdict requires all lanes, including live proof and trunk regression. */
+/** Full swarms cover initial/major changes; bounded follow-ups still need fresh independent proof. */
 export declare function evaluateRound(round: Round): {
     clean: boolean;
     blockers: string[];

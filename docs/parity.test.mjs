@@ -20,10 +20,10 @@ test("ketchup loads with valid Pi frontmatter and required sections", () => {
   const result = loadSkillsFromDir({ dir: resolve("skills/ketchup"), source: "path" });
   assert.deepEqual(result.diagnostics, []);
   assert.deepEqual(result.skills.map((skill) => skill.name), ["ketchup"]);
-  for (const section of ["Find the cutoff", "Gather what changed", "Write the reply"]) {
+  for (const section of ["Gather what changed", "Write the reply", "Visuals"]) {
     assert.ok(source.includes(`## ${section}`), `missing ketchup section ${section}`);
   }
-  for (const rule of ["last user-authored message", "Notifications", "subagent completion", "read-only", "only the user", "out of context"]) {
+  for (const rule of ["last message they wrote", "Notifications", "subagent results", "read-only", "only the user can take", "remembers their last message"]) {
     assert.ok(source.includes(rule), `missing ketchup rule ${rule}`);
   }
 });
@@ -33,7 +33,7 @@ test("opening and babysit document ready stacked PRs and deferred handoff", () =
   for (const heading of ["Why", "What changed", "Scope", "Tradeoffs", "Blast Radius", "Verification"]) {
     assert.ok(opening.includes(`## ${heading}`), `missing PR heading ${heading}`);
   }
-  for (const rule of ["ready, never as a draft", "parent branch", "built-in PR tool", "phase or stack", "full-autonomy", "GitHub API", "explicit authorization"]) {
+  for (const rule of ["ready, never as a draft", "parent branch", "built-in PR tool", "phase or stack", "full-autonomy", "operator-reserved items never merge automatically", "Babysit stops before merge"]) {
     assert.ok(opening.includes(rule), `missing opening rule ${rule}`);
   }
   const babysit = read("skills/poteto-mode/playbooks/babysit.md");

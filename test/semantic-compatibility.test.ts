@@ -13,6 +13,7 @@ import { registerSemanticTool } from '../src/compatibility/tool.ts';
 // @ts-ignore ESM verification tooling is shared with the CI CLI.
 import { checkSemantics, drift, digest, units } from '../scripts/semantics/core.mjs';
 const root=process.cwd();
+const snapshotRoot=JSON.parse(readFileSync('SEMANTICS.json','utf8')).snapshot.root;
 const head='a'.repeat(40),base='b'.repeat(40);
 const scenarios=JSON.parse(readFileSync('test/fixtures/semantics/scenarios.json','utf8'));
 function round():Round {
@@ -22,7 +23,7 @@ function round():Round {
 test('semantic source: eleven generated entrypoints retain pinned bodies and bound critical rules',()=>{
   const result=checkSemantics(root);assert.equal(result.workflows,11);assert.ok(result.rules>=25);assert.equal(result.fullBehavioralParity,'not-claimed');
   for(const resource of CORE_RESOURCES) {
-    const source=readFileSync(`vendor/upstream/0.15.17/pstack/skills/${resource}`,'utf8').replace(/^---\n[\s\S]*?\n---\n/,'');
+    const source=readFileSync(`${snapshotRoot}/pstack/skills/${resource}`,'utf8').replace(/^---\n[\s\S]*?\n---\n/,'');
     assert.ok(readFileSync(`skills/${resource}`,'utf8').includes(source),resource);
   }
 });
@@ -67,14 +68,14 @@ test('semantic resources: readonly children can paginate original playbooks refe
   const tool=createResourceTools(join(root,'skills'))[0];
   const source='upstream/skills/poteto-mode/SKILL.md';let offset=1,lines:string[]=[];
   for(;;){const result=await tool.execute('x',{action:'read',resource:source,offset,limit:25});lines.push(...result.details.lines.map((v:any)=>v.text));if(!result.details.hasMore)break;offset=result.details.nextOffset;}
-  assert.equal(lines.join('\n'),readFileSync('vendor/upstream/0.15.17/pstack/skills/poteto-mode/SKILL.md','utf8'));
+  assert.equal(lines.join('\n'),readFileSync(`${snapshotRoot}/pstack/skills/poteto-mode/SKILL.md`,'utf8'));
   for(const resource of ['upstream/skills/architect/references/runner-prompt.md','upstream/skills/poteto-mode/playbooks/shipping.md','poteto-mode/playbooks/shipping.md','pi-adapter.md'])assert.ok((await tool.execute('x',{action:'read',resource})).details.totalLines>1);
   for(const resource of ['upstream/../../etc/passwd','upstream/skills/poteto-mode/scripts/bootstrap.ts'])await assert.rejects(tool.execute('x',{action:'read',resource}),/INVALID_UPSTREAM_RESOURCE/);
 });
 test('semantic drift: edits to rules tests mappings and unreviewed relevant upstream steps require review',()=>{
   const box=mkdtempSync(join(tmpdir(),'semantic-drift-'));
   try {
-    for(const p of ['SEMANTICS.json','UPSTREAM.json','vendor','skills','docs','src','test','scripts'])cpSync(join(root,p),join(box,p),{recursive:true});
+    for(const p of ['SEMANTICS.json','UPSTREAM.json','PARITY.json','vendor','skills','docs','src','test','scripts'])cpSync(join(root,p),join(box,p),{recursive:true});
     const manifest=JSON.parse(readFileSync(join(box,'SEMANTICS.json'),'utf8'));
     const target=join(box,'src/compatibility/adapter.ts'),saved=readFileSync(target,'utf8');
     writeFileSync(target,saved+'\n// drift\n');assert.throws(()=>checkSemantics(box),/SEMANTIC_REVIEW_REQUIRED/);writeFileSync(target,saved);
@@ -82,10 +83,10 @@ test('semantic drift: edits to rules tests mappings and unreviewed relevant upst
     const noOverride=structuredClone(manifest);noOverride.overrides.pop();assert.throws(()=>checkSemantics(box,noOverride),/SEMANTIC_OVERRIDE_COVERAGE/);
     const bad=structuredClone(manifest);bad.workflows[0].units.pop();assert.throws(()=>checkSemantics(box,bad),/SEMANTIC_STEP_DRIFT/);
     const badRule=structuredClone(manifest);badRule.workflows[0].rules[0].tests[0].name=['nonexistent','test','binding'].join('-');assert.throws(()=>checkSemantics(box,badRule),/SEMANTIC_TEST_UNBOUND/);
-    const repo=join(box,'candidate');mkdirSync(repo);cpSync(join(root,'vendor/upstream/0.15.17/pstack'),join(repo,'pstack'),{recursive:true});
+    const repo=join(box,'candidate');mkdirSync(repo);cpSync(join(root,snapshotRoot,'pstack'),join(repo,'pstack'),{recursive:true});
     const git=(...args:string[])=>execFileSync('git',['-C',repo,...args],{encoding:'utf8'}).trim();git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');git('add','.');git('commit','-qm','snapshot');
     const irrelevant=join(repo,'pstack/skills/teach/SKILL.md');writeFileSync(irrelevant,readFileSync(irrelevant,'utf8')+'\nUnrelated change.\n');git('add','.');git('commit','-qm','irrelevant');assert.equal(drift(box,repo,git('rev-parse','HEAD')).status,'reviewed-or-irrelevant');
-    const critical=join(repo,'pstack/skills/poteto-mode/playbooks/autopilot-full.md');writeFileSync(critical,readFileSync(critical,'utf8').replace('No merge without the root\'s clean verdict.','Merge without review.'));git('add','.');git('commit','-qm','critical');
+    const critical=join(repo,'pstack/skills/poteto-mode/playbooks/autopilot-full.md');writeFileSync(critical,readFileSync(critical,'utf8').replace('Green CI alone never authorizes a merge.','Merge without review.'));git('add','.');git('commit','-qm','critical');
     const commit=git('rev-parse','HEAD'),report=drift(box,repo,commit);assert.equal(report.status,'needs-review');const change=report.changes.find((v:any)=>v.relevant);assert.notDeepEqual(change.beforeSteps,change.afterSteps);
     manifest.driftReviews.push({commit,path:change.path,before:change.before,after:change.after,status:'signed-off',reviewer:'fixture maintainer',rationale:'Fixture-only signoff, not a baseline advance',tests:['test/semantic-compatibility.test.ts']});writeFileSync(join(box,'SEMANTICS.json'),JSON.stringify(manifest));assert.equal(drift(box,repo,commit).status,'reviewed-or-irrelevant');
     // Drift remains tied to the committed candidate, even if the checkout is subsequently edited.

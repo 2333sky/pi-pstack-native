@@ -1,6 +1,6 @@
 # Core semantic compatibility
 
-Issue #16 separates behavior source, platform adaptation and exercised evidence. The reviewed baseline remains pstack 0.15.17 at `978ca6e9c0e012047cd5058b8e829240336e704e`. The inventory target 0.15.32 is not an approved behavioral baseline.
+Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and authenticated model evidence remain separate pending records.
 
 ## Implementation and acceptance status
 
@@ -14,15 +14,17 @@ Issue #16 separates behavior source, platform adaptation and exercised evidence.
 | Limited real Pi + real-model probe | `not-run` | No passing real-model receipt is recorded |
 | Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
 
+The latest-source upgrade retains the evidence tiers below and adds [statechart toolchain validation](STATECHART.md). The [upgrade audit](upstream-upgrade-0.15.32.md) records changed source files and mapping decisions. The merged PR/CI links above document the earlier foundation, not a test of every later source change.
+
 The managed environment check on 2026-10-26 found zero configured authorized models through the real Pi SDK. The SDK itself is installed and usable. This is a missing provider-authorization prerequisite, rather than a requirement to run the test on a personal computer. Environment configuration may change; check the SDK's available models again before a new run.
 
 A probe of an unavailable model returned `blocked` with `inference: false`. That verifies the unavailable-model path and supplies no real-model inference evidence. Inventory coverage, mapped rules, exercised SDK behavior and model behavior remain separate claims.
 
 ## Source and adapter
 
-`vendor/upstream/0.15.17/pstack/` contains 107 original Skill/playbook/reference Markdown files and the upstream MIT license. Every file is checked by its original Git blob ID and byte length. Images, scripts, other plugins, cloud infrastructure and private tools are excluded.
+`vendor/upstream/0.15.32/pstack/` contains 141 pinned source artifacts: Skill/playbook/reference Markdown, the complete statechart toolchain, the manifest and upstream MIT license. Every file is checked by its original Git blob ID and byte length. The source provenance report additionally verifies all 200 upstream files. Images, other plugins, Cursor runtime scripts, cloud infrastructure and private tools are outside the executable Pi port. The earlier 0.15.17 snapshot remains historical evidence.
 
-The five core Skills (`poteto-mode`, `architect`, `arena`, `swarm`, `interrogate`) and six core playbooks (`bug-fix`, `feature`, `autopilot-full`, `autopilot-stack`, `babysit`, `shipping`) are generated entrypoints. Their upstream body is retained verbatim. The separate [Pi adapter](PI-SEMANTIC-ADAPTER.md) explains tool substitutions, model selection, paths, worktrees, loop limitations, read-only verification, template choreography differences, authority boundaries and unsupported operations.
+The five core Skills (`poteto-mode`, `architect`, `arena`, `swarm`, `interrogate`) and six core playbooks (`bug-fix`, `feature`, `autopilot-full`, `autopilot-stack`, `babysit`, `shipping`) retain critical-rule mappings. All 57 supported Skills and all 23 playbooks are generated entrypoints whose upstream body is retained verbatim. The separate [Pi adapter](PI-SEMANTIC-ADAPTER.md) explains tool substitutions, model selection, paths, worktrees, loop limitations, read-only verification, template choreography differences, authority boundaries and unsupported operations.
 
 Regenerate after an intentional adapter/source change:
 
@@ -45,11 +47,11 @@ npm run test:semantics
 npm run check:semantics -- --from /path/to/cursor-plugins --commit <40-character-commit>
 ```
 
-The scheduled upstream scan also writes this semantic report beside its inventory report and uploads it as a CI artifact. The last command reads committed Git objects, reports before/after file and numbered-step/section fingerprints and text, and exits 3 for unreviewed relevant changes. Core files, their architect/interrogate/poteto-mode references, and upstream source paths cited by an explicit override are relevant. Other vendored Markdown changes are reported without failing this scoped gate. Newly introduced core reference files are detected. This is not a claim that changes outside the audited scope are safe.
+The scheduled upstream scan also writes this semantic report beside its inventory report and uploads it as a CI artifact. The last command reads committed Git objects, reports before/after file and numbered-step/section fingerprints and text, and exits 3 for unreviewed relevant changes. Core files, their architect/interrogate/poteto-mode references, statechart scripts, and upstream source paths cited by an explicit override are relevant. Other vendored Markdown changes are reported without failing this scoped gate. Newly introduced core reference files are detected. This is not a claim that changes outside the audited scope are safe.
 
 A `driftReviews` receipt must identify `commit`, `path`, exact `before`/`after` Git blob IDs (null for additions/deletions), `status: signed-off`, a named `reviewer`, `rationale`, and bound `tests` file paths. It acknowledges that exact candidate change; it does not update the snapshot or baseline. Changes to local source, adapter, runtime implementations or bound tests fail the local fingerprint gate. After reviewing a local change, update its `reviewedFiles` SHA-256, affected mapping/tests and generated entrypoints together. A hash update alone supplies no semantic approval.
 
-Advancing the baseline requires a new source snapshot and mappings/tests plus explicit maintainer semantic sign-off. No scan, generation, test, inventory command or drift acknowledgement advances UPSTREAM.json. The review state is stored separately in `SEMANTICS.json.review`; it remains `pending-maintainer-signoff` after the implementation merge until a maintainer records their semantic review.
+A source upgrade updates the snapshot, mappings, tests and active metadata together. It does not grant semantic approval. No scan, generation, test, inventory command or drift acknowledgement records maintainer approval. The review state is stored separately in `SEMANTICS.json.review`; it remains `pending-maintainer-signoff` after the implementation merge until a maintainer records their semantic review.
 
 ## Evidence tiers
 
@@ -61,7 +63,7 @@ Advancing the baseline requires a new source snapshot and mappings/tests plus ex
 | Existing real Pi SDK / fake-provider E2E | Actual AgentSession tools, isolated writers, integration, exact artifacts, SIGKILL recovery and stale shipping rejection | External model reasoning or live GitHub parity |
 | Opt-in real Pi + model probe | Source reading, unsupported-capability rejection and status routing through one configured model | Complete workflow, independent review quality, live UI/CLI proof or merge behavior |
 
-CI runs semantic fixtures through `npm test`, the semantic fingerprint gate through `npm run check`, and existing offline/fake-provider E2E through `npm run check:e2e` on Node 22.19 and 24. No network credentials are required for those tiers.
+CI runs semantic fixtures through `npm test`, the semantic fingerprint gate through `npm run check`, and existing offline/fake-provider E2E through `npm run check:e2e` on Node 22.19 and 24 with Pi 1.4.0. A separate Node 24 / Java 21 job runs the pinned upstream statechart suite with TLC 1.7.4. No model credentials are required for those tiers; the statechart job downloads its public toolchain and renderer packages.
 
 ## Limited real-model smoke
 

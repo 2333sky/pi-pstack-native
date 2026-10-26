@@ -8,15 +8,16 @@ disable-model-invocation: true
 
 # Pi adapter for the reviewed pstack source
 
-The behavior source is the immutable `vendor/upstream/0.15.17/pstack/` Markdown snapshot at `978ca6e9c0e012047cd5058b8e829240336e704e`. The generated eleven core entrypoints retain its instructions, with platform adaptations in a separate prelude. Do not summarize away upstream rules. Local changes outside these eleven workflows are not semantically audited by this work.
+The behavior source is the immutable `vendor/upstream/0.15.32/pstack/` Markdown snapshot at `99b609a72323b70204eab407c622f436e858e112`. The generated supported Skill/playbook entrypoints retain its instructions, with platform adaptations in a separate prelude. Do not summarize away upstream rules. The eleven core workflows retain critical-rule mappings; other generated entrypoints preserve the latest source without claiming full behavioral audit.
 
-Apply user instructions and repository authority first. Apply the pinned upstream decision rules next, subject only to the explicit overrides below. Never run a Cursor command literally or assume a missing capability completed. Read referenced source Markdown through `pstack_skill` with `upstream/skills/<skill>/...` resource IDs; consume every page. Original relative links resolve within that snapshot. Other plugin skills, private APIs, scripts, control drivers, cloud resources and manifests are not supplied by the Markdown snapshot. Report unavailable dependencies and their effect on the requested outcome.
+Apply user instructions and repository authority first. Apply the pinned upstream decision rules next, subject only to the explicit overrides below. Never run a Cursor command literally or assume a missing capability completed. Read referenced source Markdown through `pstack_skill` with `upstream/skills/<skill>/...` resource IDs; consume every page. Original relative links resolve within that snapshot. Markdown references are also installed alongside the generated Skills. Statechart scripts are bundled at skills/statechart/scripts; they require real Java/TLC and optional PNG renderer dependencies. Other plugin skills, private APIs, Cursor scripts, control drivers and cloud resources are not supplied. Report unavailable dependencies and their effect on the requested outcome.
 
 ## Platform substitutions
 
-- Pi Skill frontmatter uses the resource directory name in lowercase kebab case (upstream `Poteto Mode` becomes `poteto-mode`). The upstream body and the original snapshot frontmatter remain intact.
+- Pi Skill frontmatter uses the resource directory name in lowercase kebab case. Upstream 0.15.32 already uses `poteto-mode`; bodies and manual invocation flags remain intact.
 
 - Task and cloud workers map to `pstack_agents` and `pstack_workflow` Pi AgentSessions. The parent keeps playbook ownership. Parallel writers require separate Git worktrees; integrated delivery requires an explicit integrator followed by verification of the combined artifact. These are local processes, not cloud VMs.
+- Map upstream reasoning effort to explicit Pi `thinkingLevel` and pick an available `provider/model` for speed. The adapter does not rewrite Cursor `-fast` aliases or silently switch model families. Unsupported effort settings fail in the model router.
 - Resolve model roles through `~/.pi/agent/pstack-native/models.json` (or PSTACK_NATIVE_HOME) and available Pi provider/model selectors. For panels name every seat explicitly. Use `pstack_semantics` panel preflight; no silent provider/model fallback. Unavailable models block the affected seat and must be reported. This deliberately replaces upstream family-default fallback.
 - `~/.cursor/rules/pstack-models.mdc`, `.cursor/skills` and Cursor's plugin paths map to Pi configuration and the bundled snapshot. They are not files the Pi worker should create in a user's repository.
 - Custom Mode maps to sticky `/poteto-mode`. `/loop` maps to `/pstack-loop`, which needs an active Pi host. Cloud-root hourly execution and exact delivery across a crash are unavailable; report this limitation before promising unattended audit coverage.
@@ -24,6 +25,7 @@ Apply user instructions and repository authority first. Apply the pinned upstrea
 
 ## Explicit policy deviations
 
+- For initial or major autopilot changes, require a full swarm. For a minor fix, rebase or conflict resolution, one fresh independent follow-up reviewer can replace a new full swarm only when a clean initial/major round is supplied. Fresh gates and live proof still run at the current head/base. A follow-up without that prior full round is blocked.
 - Any head OR base change invalidates native verification and every round receipt, even when stable patch IDs match. Re-run lanes on the current exact pair. Upstream's build-noise/patch-ID reuse exception is intentionally disabled; the stricter native ledger policy remains in force.
 - Read-only reviewer/verifier sessions inspect confined source and evidence; they cannot run shell commands. Deterministic commands run in the native verification runner or an authorized writable lane. A separate actor inspects the receipts; a writer cannot countersign its own work.
 - The native arena template evaluates each candidate with separate judge nodes rather than one cross-judge that sees all candidates. Use an explicit DAG for the upstream single-cross-judge choreography. Native specialized templates are mechanisms, not automatic completion of a named upstream playbook.
@@ -37,14 +39,14 @@ Apply user instructions and repository authority first. Apply the pinned upstrea
 
 ## Evidence boundary
 
-`SEMANTICS.json` records critical-rule mappings, exact source ranges, deviations, test references and review fingerprints. Inventory counts, mapping coverage, deterministic receipt tests, fake-provider Pi lifecycle tests and real-model runs are separate evidence levels. No mapping asserts complete chat/model equivalence. Updating a fingerprint records review work; it is not semantic approval. The reviewed baseline stays at 0.15.17 until explicit maintainer semantic sign-off. Candidate 0.15.32 remains separate.
+`SEMANTICS.json` records critical-rule mappings, exact source ranges, deviations, test references and review fingerprints. Inventory counts, mapping coverage, deterministic receipt tests, fake-provider Pi lifecycle tests and real-model runs are separate evidence levels. No mapping asserts complete chat/model equivalence. Updating a fingerprint records review work; it is not semantic approval. Advancing a source pin does not grant semantic approval; that still requires explicit maintainer sign-off. The active source is 0.15.32; its implementation audit, maintainer semantic sign-off and real-model evidence remain separate fields in SEMANTICS.json. The previous 0.15.17 snapshot is retained for provenance.
 
 
 ---
 
 ## Pinned upstream instructions
 
-Source: cursor/plugins@978ca6e9c0e012047cd5058b8e829240336e704e, pstack/skills/architect/SKILL.md. The following body is retained verbatim.
+Source: cursor/plugins@99b609a72323b70204eab407c622f436e858e112, pstack/skills/architect/SKILL.md. The following body is retained verbatim.
 
 
 # Architect

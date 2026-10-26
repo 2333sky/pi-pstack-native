@@ -39,7 +39,8 @@ test(`${OFFLINE} reported src defect: read-only child profiles receive no read-o
     const active = [...new Set(model.calls.flatMap((call) => call.tools))].sort();
     assert.deepEqual(active, READ_ONLY, "a read-only child must be able to inspect its own checkout");
     const observed=model.calls.map(c=>toolResultText(c.messages)).join("\n");
-    assert.ok(observed.includes("Trace the real path"));
+    assert.match(observed, /"resource":\s*"how\/SKILL\.md"/);
+    assert.ok(observed.includes("# How"));
     assert.ok(observed.includes("Issue snapshot supplied by parent."));
     assert.ok(observed.includes("escapes child workspace"));
     assert.ok(!observed.includes("PRIVATE_OUTSIDE_DATA"));

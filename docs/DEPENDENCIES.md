@@ -1,42 +1,35 @@
 # Locked dependency review
 
-`package-lock.json` was generated in this worktree with Node `24.21.0` and npm `11.12.1`. Node 24 is an LTS line supported by the package's `>=22.19.0` engine range. The initial `npm install` used the host Node `26.0.0`. The lock was then regenerated with Node 24.
+The active SDK is `@earendil-works/pi-coding-agent` **1.4.0**, the npm `latest` release checked on 2026-10-26. Development uses the exact version and the peer minimum is `^1.4.0`. `package-lock.json` pins the SDK and its dependency graph; `npm ci` reproduces it. The supported Node range stays `>=22.19.0`, matching the SDK.
 
-```bash
-npx --yes --package=node@24 --package=npm@11.12.1 -c 'node --version; npm --version; npm install --package-lock-only'
-npm ci --no-audit --no-fund
-```
-
-The lock resolves these direct runtime and development packages.
-
-| Package | Version | License |
+| Package | Locked version | Declared license |
 |---|---|---|
-| `@earendil-works/pi-coding-agent` | `1.2.0` | MIT |
-| `@earendil-works/pi-agent-core` | `1.2.0` | MIT |
-| `@earendil-works/pi-ai` | `1.2.0` | MIT |
+| `@earendil-works/pi-coding-agent` | `1.4.0` | MIT |
+| `@earendil-works/pi-agent-core` | `1.4.0` | MIT |
+| `@earendil-works/pi-ai` | `1.4.0` | MIT |
 | `@types/node` | `22.20.5` | MIT |
 | `typescript` | `5.9.3` | Apache-2.0 |
 
-The peer range remains `^1.1.0`. The lock fixes this checkout's SDK to `1.2.0`. A downstream consumer can resolve a different compatible SDK version.
-
-The lock moved from `1.1.0` to `1.2.0` because `@earendil-works/pi-coding-agent@1.1.0` declares its `@earendil-works/pi-codemode` dependency with a caret range. A fresh install of the 1.1.0 line therefore resolves `pi-codemode@1.2.0`, which no longer exports `MCP_TYPESCRIPT_PREAMBLE` while the 1.1.0 SDK still imports it, so the installed package fails at import time. The 1.2.0 line installs a consistent pair.
+The upgrade was installed and checked on Node 24.19.0 / npm 11.9.0. CI retains Node 22.19.0 and 24.x. SDK lifecycle, source extension loading, compiled API/CLI and a clean installed tarball are separate checks in `npm run check:release`.
 
 ## License inventory
 
-All 147 dependency entries in the lock declare a license. This count includes optional packages for other platforms. npm audited 123 installed packages including this project.
+The lock contains 120 dependency entries, including optional packages for other platforms.
 
 | Declared license | Locked entries |
 |---|---:|
-| MIT | 86 |
+| 0BSD | 1 |
 | Apache-2.0 | 37 |
 | BSD-3-Clause | 13 |
-| ISC | 7 |
 | BlueOak-1.0.0 | 2 |
-| 0BSD | 1 |
+| ISC | 7 |
+| MIT | 59 |
 | Unlicense | 1 |
 
-These are permissive license declarations. This is a manifest review, not a legal opinion or a source-level license audit. Keep each dependency's license and notices when redistributing its code. No `node_modules` files belong in the commit. Upstream pstack attribution remains in [NOTICE.md](../NOTICE.md) and [PARITY.md](../PARITY.md).
+This inventories package metadata rather than asserting a source-level license audit. Keep upstream notices when redistributing code. No node_modules files are committed.
 
-## CI composition
+Statechart's Java/TLC and optional PNG renderer are external tools, not new runtime dependencies of the Pi extension. Their pinned versions and validation boundary are in [STATECHART.md](STATECHART.md).
 
-Replace `run: npm install --no-audit --no-fund` in `.github/workflows/ci.yml` with `run: npm ci --no-audit --no-fund`. Keep the existing Node `22.19.0` and `24.x` matrix. Add `node --test docs/parity.test.mjs` to the repository check chain, or add a separate CI step if the root does not wire a package script. The lock and manifest must remain in sync.
+## Historical compatibility
+
+The earlier 1.1.0 to 1.2.0 upgrade repaired an SDK/codemode import mismatch. That history does not establish support for SDK versions older than the current `^1.4.0` peer range.

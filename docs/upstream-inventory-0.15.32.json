@@ -7,8 +7,8 @@
     "snapshotDigest": "9b8d702bc57e10594e7cbf739bb61feb286bca8b166756e16080f9e420afdac1"
   },
   "reviewedBaseline": {
-    "commit": "978ca6e9c0e012047cd5058b8e829240336e704e",
-    "version": "0.15.17",
+    "commit": "99b609a72323b70204eab407c622f436e858e112",
+    "version": "0.15.32",
     "registry": "PARITY.json"
   },
   "counts": {
@@ -26,15 +26,13 @@
     "nestedSkills": 3
   },
   "dispositionSummary": {
-    "local": 81,
+    "local": 141,
     "sourceOnly": 2,
     "unsupported": 1,
-    "pending": 116
+    "pending": 56
   },
   "openWork": {
-    "pendingSkills": [
-      "statechart"
-    ],
+    "pendingSkills": [],
     "pendingPlaybooks": [],
     "pendingNestedSkills": [
       "reproduce-and-fix-issues",
@@ -42,33 +40,14 @@
       "triage-issue-reports"
     ],
     "referencedFiles": [
-      "skills/architect/references/design-red-flags.md",
-      "skills/architect/references/rationale-template.md",
-      "skills/architect/references/runner-prompt.md",
-      "skills/create-verification-skill/references/feature-map-example/search.md",
-      "skills/how/references/explorer-prompt.md",
-      "skills/interrogate/references/code-quality-review.md",
-      "skills/interrogate/references/lead-judgment.md",
-      "skills/interrogate/references/reviewer-prompt.md",
-      "skills/interrogate/references/rubric.md",
-      "skills/poteto-help/references/recipes.md",
-      "skills/poteto-mode/references/bugbot-triage.md",
+      "skills/poteto-mode/scripts/check-plan.mjs",
       "skills/poteto-mode/scripts/package.json",
       "skills/poteto-mode/scripts/watch-pr/github.ts",
       "skills/poteto-mode/scripts/watch-pr/policy.ts",
       "skills/poteto-mode/scripts/watch-pr/render.ts",
       "skills/poteto-mode/scripts/watch-pr/watch-pr",
       "skills/poteto-mode/scripts/worktree-audit.sh",
-      "skills/reflect/references/synthesizer.md",
-      "skills/statechart/scripts/render.mjs",
-      "skills/statechart/scripts/snapshot.mjs",
-      "skills/statechart/scripts/statechart.mjs",
-      "skills/typescript-best-practices/references/patterns.md",
-      "skills/why/references/epistemics.md",
-      "skills/why/references/investigator-prompt.md",
-      "skills/why/references/sources/incident-postmortem.md",
-      "skills/why/references/sources/linear.md",
-      "skills/why/references/synthesizer-prompt.md"
+      "skills/show-me-your-work/references/decision-log-template.tsv"
     ]
   },
   "entries": [
@@ -923,8 +902,9 @@
         "category": "other"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "LICENSE",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -995,8 +975,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/architect/references/design-red-flags.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1022,8 +1003,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/architect/references/rationale-template.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1049,8 +1031,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/architect/references/runner-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1284,8 +1267,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/create-verification-skill/references/feature-map-example/create-note.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1299,7 +1283,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -1311,8 +1295,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/create-verification-skill/references/feature-map-example/README.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1338,8 +1323,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/create-verification-skill/references/feature-map-example/search.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1417,8 +1403,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/how/references/explainer-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1432,7 +1419,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -1444,8 +1431,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/how/references/explorer-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1523,8 +1511,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/interrogate/references/code-quality-review.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1550,8 +1539,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/interrogate/references/lead-judgment.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1577,8 +1567,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/interrogate/references/reviewer-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1604,8 +1595,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/interrogate/references/rubric.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1811,8 +1803,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/poteto-help/references/prompting.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1826,7 +1819,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -1838,8 +1831,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/poteto-help/references/recipes.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -2489,8 +2483,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/poteto-mode/references/bugbot-triage.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -2585,7 +2580,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -3759,8 +3754,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/reflect/references/divergent-reviewer.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3774,7 +3770,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -3786,8 +3782,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/reflect/references/judgment-reviewer.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3801,7 +3798,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -3813,8 +3810,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/reflect/references/synthesizer.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3840,8 +3838,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/reflect/references/tooling-reviewer.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3855,7 +3854,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -3960,7 +3959,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4025,8 +4024,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/bug-states.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4040,7 +4040,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4052,8 +4052,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/chart-edges.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4067,7 +4068,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4079,8 +4080,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/chart-parts.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4094,7 +4096,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4106,8 +4108,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/chart-to-tla.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4121,7 +4124,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4133,8 +4136,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/compare-charts.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4148,7 +4152,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4160,8 +4164,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/lib.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4187,8 +4192,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/map-view.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4202,7 +4208,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4214,8 +4220,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/property-loop.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4229,7 +4236,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4241,8 +4248,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/read-check.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4256,7 +4264,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4268,8 +4276,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/regions-chart.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4283,7 +4292,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4295,8 +4304,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/render.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4322,8 +4332,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/rule-book.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4337,7 +4348,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4349,8 +4360,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/second-replay.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4364,7 +4376,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4376,8 +4388,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/snapshot.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4403,8 +4416,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/spec-text.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4418,7 +4432,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4430,8 +4444,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/statechart-help.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4445,7 +4460,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4457,8 +4472,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/statechart.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4484,8 +4500,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/test/band.mmd",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4511,8 +4528,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/test/regions.mmd",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4526,7 +4544,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4538,8 +4556,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/test/statechart.test.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4565,8 +4584,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/test/sync.mmd",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4592,8 +4612,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/test/upload.mmd",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4607,7 +4628,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4619,8 +4640,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/tlc-to-chart-args.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4634,7 +4656,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4646,8 +4668,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/tlc-to-chart.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4661,7 +4684,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4673,8 +4696,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/tlc-tools.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4688,7 +4712,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4700,8 +4724,9 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/statechart/scripts/ways-in.mjs",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4715,7 +4740,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -4727,8 +4752,10 @@
         "category": "skill"
       },
       "port": {
-        "kind": "pending",
-        "reason": "not-in-reviewed-registry"
+        "kind": "local",
+        "path": "skills/statechart/SKILL.md",
+        "reason": "parity-adapted",
+        "parity": "ADAPTED"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4855,8 +4882,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/typescript-best-practices/references/patterns.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4934,8 +4962,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/epistemics.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4961,8 +4990,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/investigator-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4988,8 +5018,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/source-playbook.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5003,7 +5034,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5015,8 +5046,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/code-archaeology.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5030,7 +5062,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5042,8 +5074,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/databricks.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5057,7 +5090,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5069,8 +5102,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/datadog.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5084,7 +5118,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5096,8 +5130,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/incident-postmortem.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5123,8 +5158,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/linear.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5150,8 +5186,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/notion.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5165,7 +5202,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5177,8 +5214,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/sentry.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5192,7 +5230,7 @@
         "refs": []
       },
       "closure": {
-        "referencedByLocalSkill": false
+        "referencedByLocalSkill": true
       }
     },
     {
@@ -5204,8 +5242,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/sources/slack.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5231,8 +5270,9 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "path": "skills/why/references/synthesizer-prompt.md",
+        "reason": "pinned-auxiliary-source"
       },
       "requirements": {
         "status": "not_recorded"

@@ -7,7 +7,9 @@ export const CORE_RESOURCES = [
 ];
 export type CompatibilityStatus = 'equivalent' | 'adapted-with-deviation' | 'unsupported' | 'not-yet-verified';
 export const CAPABILITIES: Record<string, {status: CompatibilityStatus; mapping: string; reason: string}> = {
-  'skill-frontmatter': {status:'adapted-with-deviation', mapping:'Pi kebab-case resource name; upstream body unchanged', reason:'Pi rejects the upstream Poteto Mode display name as a Skill identifier.'},
+  'model-effort-and-speed': {status:'adapted-with-deviation', mapping:'Explicit Pi thinkingLevel and provider/model selectors', reason:'No Cursor family/fast-slug rewriting; unsupported effort fails explicitly in the native model router.'},
+  'statechart-toolchain': {status:'adapted-with-deviation', mapping:'Bundled upstream statechart scripts; external Java/TLC and PNG renderer', reason:'TLA2TOOLS/JAVA select existing tools; Java, TLC and renderer packages are external prerequisites, never mocked as completed.'},
+  'skill-frontmatter': {status:'equivalent', mapping:'Pi kebab-case resource name; upstream body unchanged', reason:'The latest upstream uses valid kebab-case identifiers; the wrapper preserves bodies and invocation flags.'},
   'verifier-command-execution': {status:'adapted-with-deviation', mapping:'native verification runner plus separate read-only reviewer', reason:'Reviewers cannot execute shell; commands run in an authorized writable lane or deterministic runner.'},
   'arena-cross-judge': {status:'adapted-with-deviation', mapping:'explicit DAG for upstream single cross-judge; native template has per-candidate judges', reason:'Template choreography differs; the generated upstream phases remain the coordinator contract.'},
   'swarm-mixed-first-pass-template': {status:'unsupported', mapping:'Use an explicit DAG and selection policy instead', reason:'Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all.'},
@@ -42,25 +44,33 @@ export interface Round {
   receipts: ReviewReceipt[]; requiredLanes: string[];
   checksPassed: boolean; unresolvedFindings: number;
   authorization: boolean; operatorReserved?: boolean; interrupted?: boolean; remoteReconciled?: boolean;
+  changeKind?: 'initial' | 'major' | 'minor' | 'rebase' | 'conflict'; priorRound?: Round;
   requestedAction: 'verdict' | 'merge'; skippedSteps?: {step: string; reason: string}[];
 }
-/** A clean full-autopilot verdict requires all lanes, including live proof and trunk regression. */
+/** Full swarms cover initial/major changes; bounded follow-ups still need fresh independent proof. */
 export function evaluateRound(round: Round): {clean: boolean; blockers: string[]} {
   if (!CORE_PLAYBOOKS.includes(round?.workflow as any)) throw new Error('UNMAPPED_WORKFLOW');
   if (!/^[a-f0-9]{40}$/.test(round.head) || !/^[a-f0-9]{40}$/.test(round.base) || !round.writer || !Array.isArray(round.receipts) || !Array.isArray(round.requiredLanes) || !round.requiredLanes.length || typeof round.checksPassed!=='boolean' || !Number.isInteger(round.unresolvedFindings) || round.unresolvedFindings<0 || typeof round.authorization!=='boolean' || !['verdict','merge'].includes(round.requestedAction)) throw new Error('INVALID_ROUND');
+  if(round.changeKind && !['initial','major','minor','rebase','conflict'].includes(round.changeKind))throw new Error('INVALID_CHANGE_KIND');
+  const autopilot=['autopilot-full','autopilot-stack'].includes(round.workflow);
+  const followup=autopilot && ['minor','rebase','conflict'].includes(round.changeKind ?? 'initial');
   const lanes = new Set(round.requiredLanes);
-  if (['autopilot-full','autopilot-stack'].includes(round.workflow)) for (const lane of ['gates','live','diff-1','diff-2','trunk-regression']) lanes.add(lane);
+  if(autopilot)for(const lane of followup?['gates','live','follow-up-review']:['gates','live','diff-1','diff-2','trunk-regression'])lanes.add(lane);
   if (['shipping','autopilot-stack','bug-fix','feature'].includes(round.workflow)) lanes.add('live');
   const blockers: string[] = [];
+  if(followup) {
+    const previous=round.priorRound;
+    if(!previous || previous.priorRound || previous.workflow!==round.workflow || !['initial','major'].includes(previous.changeKind ?? 'initial') || !evaluateRound(previous).clean)blockers.push('PRIOR_FULL_SWARM_REQUIRED');
+  }
   for (const lane of lanes) {
     const receipts = round.receipts.filter(r => r.lane === lane);
     if (receipts.length !== 1) {blockers.push(`LANE_MISSING_OR_DUPLICATE:${lane}`); continue;}
     const r = receipts[0];
-    if (!r.actor || r.actor === round.writer) blockers.push(`REVIEW_NOT_INDEPENDENT:${lane}`);
+    if (!r.actor || (r.actor === round.writer || followup && r.actor===round.priorRound?.writer)) blockers.push(`REVIEW_NOT_INDEPENDENT:${lane}`);
     if (r.head !== round.head || r.base !== round.base) blockers.push(`STALE_HEAD_OR_BASE:${lane}`);
     if (r.status !== 'passed' || !Array.isArray(r.evidence) || !r.evidence.some(e => typeof e==='string' && e.trim())) blockers.push(`LANE_NOT_PROVEN:${lane}`);
   }
-  if (['autopilot-full','autopilot-stack'].includes(round.workflow)) {
+  if (autopilot && !followup) {
     const a=round.receipts.find(r=>r.lane==='diff-1'), b=round.receipts.find(r=>r.lane==='diff-2');
     if (a && b && a.actor===b.actor) blockers.push('DIFF_REVIEWERS_NOT_DISTINCT');
   }
