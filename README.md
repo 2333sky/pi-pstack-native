@@ -421,3 +421,7 @@ When local mappings change for the same upstream SHA pair, scans now preserve
 the original report and write a fingerprint-suffixed revision. Git blob bytes
 are checked against their SHA. Different upstream evidence under the same ID
 still fails explicitly; historical evidence is never silently overwritten.
+
+### Core upstream semantics
+
+The eleven audited core entrypoints preserve the fixed 0.15.17 source body, with [Pi-specific mappings and deviations](docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.

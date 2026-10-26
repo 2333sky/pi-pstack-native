@@ -23,7 +23,7 @@ test('every registry playbook has one contract with ordered steps and real roles
     assert.deepEqual(contract.evidence.refs, []);
     for (const step of contract.requiredSteps) assert.ok(step.text.length > 10, `${contract.name} step ${step.order} carries text`);
   }
-  assert.equal(document.contracts.find((contract) => contract.name === 'bug-fix').roles.includes('worker'), true);
+  assert.equal(document.contracts.find((contract) => contract.name === 'bug-fix').roles.includes('architect'), true);
   assert.equal(document.contracts.find((contract) => contract.name === 'worktree-cleanup').parentOnly, true);
   assert.equal(document.contracts.every((contract) => contract.manualOnly), true, 'poteto-mode is a manual-entry skill, so its playbooks are too');
 });
@@ -36,9 +36,9 @@ test('the committed contract file matches a fresh build', () => {
 test('contracts follow the playbook text, not a parallel copy', () => {
   const document = readContracts(root);
   const bugFix = document.contracts.find((contract) => contract.name === 'bug-fix');
-  assert.deepEqual(bugFix.roles, ['architect', 'verifier', 'worker']);
+  assert.deepEqual(bugFix.roles, ['architect']);
   assert.deepEqual(bugFix.tools, ['bash', 'edit', 'find', 'grep', 'ls', 'pstack_agents', 'pstack_graph', 'pstack_workflow', 'pstack_worktrees', 'read', 'write']);
-  assert.match(bugFix.requiredSteps[0].text, /Reproduce the bug/);
+  assert.match(bugFix.requiredSteps[0].text, /Reproduce it yourself/);
 });
 
 const rejections = [
