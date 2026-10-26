@@ -2312,9 +2312,9 @@
     "docs/PI-SEMANTIC-ADAPTER.md": "9d66528b13e51f0167ebb0807824373dbb8d4dcca6d39100f451d3e097c6d676",
     "scripts/upstream/cli.mjs": "566a8543b335f8afdbff64eb6fe6cba962d8d323dca81ce50dcb658b5aea893f",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
-    "scripts/semantics/core.mjs": "1ac5e6749b3d8edec4af00adad1f6e70ac07cb6d4dced790fa7c0d08b015f94e",
+    "scripts/semantics/core.mjs": "83a662294200df4e386a038473b5467fc1d8add846efa517ac28f5552d039610",
     "scripts/semantics/generate.mjs": "0371bfe29ae36acf2db50a1eef440a6676ecef019ccf8bfc4b7cdd3995c13794",
-    "test/semantic-compatibility.test.ts": "59d15263d0072011ea0139e5ccb1996bdebade53708e035c1467377cf2015c63",
+    "test/semantic-compatibility.test.ts": "b6604256367822db834a4a1fcff4d7d32c52185a78aca8b3bff76167669556c6",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
     "scripts/semantics/real-pi-smoke.mjs": "4b89e94521017e2bd10bc575ccc507f8e2cad7e03809f83f9bec9fb2405896c3",
     "test/e2e/workflow.test.ts": "9432cd1c4494f28232b475cce8416a5b89f37b36bd27aca6d2731253b7d80b54",
@@ -2331,5 +2331,287 @@
       "reason": "No configured model credentials in the managed environment",
       "procedure": "docs/SEMANTIC-COMPATIBILITY.md"
     }
-  }
+  },
+  "overrides": [
+    {
+      "name": "skill-frontmatter",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/SKILL.md",
+        "start": 2,
+        "end": 2,
+        "quote": "name: Poteto Mode",
+        "hash": "54cb8610a77a1cb62c314ff9ee85e8ffb6c75e7aeffd7ce291cb0cce642b9a48"
+      },
+      "mapping": "Pi kebab-case resource name; upstream body unchanged",
+      "rationale": "Pi rejects the upstream Poteto Mode display name as a Skill identifier.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "verifier-command-execution",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+        "start": 8,
+        "end": 8,
+        "quote": "re-run the gates at that SHA",
+        "hash": "f3a415732d74cc9eb1b740d6303095ebbf5c432cc832156439704070efa88891"
+      },
+      "mapping": "native verification runner plus separate read-only reviewer",
+      "rationale": "Reviewers cannot execute shell; commands run in an authorized writable lane or deterministic runner.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "arena-cross-judge",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/arena/SKILL.md",
+        "start": 28,
+        "end": 28,
+        "quote": "Spawn one readonly judge subagent",
+        "hash": "3beef0b001053c332ac9981947f48997959dd884704e75649cfb97403af996d7"
+      },
+      "mapping": "explicit DAG for upstream single cross-judge; native template has per-candidate judges",
+      "rationale": "Template choreography differs; the generated upstream phases remain the coordinator contract.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "swarm-mixed-first-pass-template",
+      "status": "unsupported",
+      "upstream": {
+        "path": "pstack/skills/swarm/SKILL.md",
+        "start": 23,
+        "end": 23,
+        "quote": "first pass",
+        "hash": "c317ed1af4e5cb5c83e7e51870c2f6578bf711e75b6e311fd9e14d63159510a2"
+      },
+      "mapping": "Use an explicit DAG and selection policy instead",
+      "rationale": "Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "autopilot-template",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+        "start": 6,
+        "end": 6,
+        "quote": "full lifecycle",
+        "hash": "ce96b8756db5ad3c97ad0a992508fd7fb16d7ed18e92293f013933d5d146b002"
+      },
+      "mapping": "local preparation DAG plus coordinator owner lifecycle",
+      "rationale": "Templates alone do not publish, babysit, countersign, propagate stop orders or deliver a remote PR stack.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "Task",
+      "status": "equivalent",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/SKILL.md",
+        "start": 91,
+        "end": 91,
+        "quote": "## Subagents",
+        "hash": "b4d366567488cd08285fcb89fa8b49414ad647f347666f31ec2060752429c911"
+      },
+      "mapping": "pstack_agents; pstack_workflow",
+      "rationale": "Independent Pi AgentSessions with durable DAG dispatch.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "cloud-agent",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/swarm/SKILL.md",
+        "start": 30,
+        "end": 30,
+        "quote": "environment: \"cloud\"",
+        "hash": "ab840a51b0ff9e180940d0b3f25ca2c15e671b702c970bdb3d71cb6a2dddba96"
+      },
+      "mapping": "Pi child with isolated worktree",
+      "rationale": "Local process, not a Cursor cloud VM or OS security boundary.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "models",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/arena/SKILL.md",
+        "start": 17,
+        "end": 17,
+        "quote": "Pick the runners.",
+        "hash": "109034035e255b8b45f052317743550b054dcaada3e858fe1d39f019c357a08a"
+      },
+      "mapping": "models.json explicit provider/model panel",
+      "rationale": "Unavailable models fail explicitly; no silent family/default substitution.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "loop",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+        "start": 10,
+        "end": 10,
+        "quote": "Run an audit tick",
+        "hash": "6569bccfea956ba2163cab2fcb8312dfe9d51b6b4685292eb61683663d83fc8f"
+      },
+      "mapping": "/pstack-loop",
+      "rationale": "Active Pi session only; no persistent cloud scheduler. A missed occurrence may be lost after a crash.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "patch-id-reuse",
+      "status": "adapted-with-deviation",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/shipping.md",
+        "start": 9,
+        "end": 9,
+        "quote": "Re-check that each verdict",
+        "hash": "065b8f8f59f77712b3c53dd36cd93b80ae70b5d899d3a4c7922e892319b04010"
+      },
+      "mapping": "exact head AND base re-verification",
+      "rationale": "Native ledgers invalidate on any head/base change, including a patch-preserving rebase.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "Cursor-private-PR-provenance",
+      "status": "unsupported",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+        "start": 26,
+        "end": 26,
+        "quote": "Built-in PR tool.",
+        "hash": "f2b7704e75038b8c84781ed89f848c1880a1d315035953e341f642129d9a9a61"
+      },
+      "mapping": "none",
+      "rationale": "GitHub CLI/API receipts cannot establish Cursor private-tool provenance.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "Cursor-watch-READY",
+      "status": "unsupported",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/babysit.md",
+        "start": 14,
+        "end": 14,
+        "quote": "READY",
+        "hash": "817f65a8e63a2d6eb62df670676146805174c9892d26c35ac07077891dacc715"
+      },
+      "mapping": "none",
+      "rationale": "Native waiting/reviewable states do not prove Cursor queue verdicts.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "Cursor-cleanup-plugin",
+      "status": "unsupported",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+        "start": 10,
+        "end": 10,
+        "quote": "Simulators and other reclaimers.",
+        "hash": "c3526aeec0374ad3f8a4af36752f0f22a25d1c992bcb1838b1cef97852f86f99"
+      },
+      "mapping": "none",
+      "rationale": "No Cursor simulator/transcript cleanup integration.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    },
+    {
+      "name": "Bugbot-pass-dismissal",
+      "status": "unsupported",
+      "upstream": {
+        "path": "pstack/skills/poteto-mode/playbooks/babysit.md",
+        "start": 22,
+        "end": 22,
+        "quote": "From the third pass on",
+        "hash": "42ed0739a3aa7c29ad233295373b984d77599f0b04867f4825cc2863bc4f2ceb"
+      },
+      "mapping": "none",
+      "rationale": "No upstream pass-based Bugbot dismissal protocol.",
+      "scope": "Explicit Pi platform override; static mapping/negative capability checks only. Runtime choreography and external platform parity are not established by this test.",
+      "tests": [
+        {
+          "file": "test/semantic-compatibility.test.ts",
+          "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        }
+      ]
+    }
+  ]
 }

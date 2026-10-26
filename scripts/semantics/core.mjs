@@ -36,6 +36,17 @@ export function checkSemantics(root, document=JSON.parse(readFileSync(join(root,
   if(!files.has('pstack/LICENSE'))throw new Error('SEMANTIC_LICENSE_MISSING');
   for(const [path,hash] of Object.entries(document.reviewedFiles))if(digest(read(path))!==hash)throw new Error(`SEMANTIC_REVIEW_REQUIRED: ${path}`);
   if(JSON.stringify(document.capabilities)!==JSON.stringify(CAPABILITIES))throw new Error('SEMANTIC_CAPABILITY_DRIFT');
+  if(!Array.isArray(document.overrides) || JSON.stringify(document.overrides.map(o=>o.name).sort())!==JSON.stringify(Object.keys(CAPABILITIES).sort()))throw new Error('SEMANTIC_OVERRIDE_COVERAGE');
+  for(const override of document.overrides) {
+    const capability=CAPABILITIES[override.name];
+    if(override.status!==capability.status || override.mapping!==capability.mapping || override.rationale!==capability.reason || !override.scope || !override.tests?.length)throw new Error('SEMANTIC_OVERRIDE_INVALID');
+    const source=files.get(override.upstream?.path),span=override.upstream;
+    if(!source || !Number.isInteger(span.start) || !Number.isInteger(span.end) || span.start<1 || span.end<span.start)throw new Error('SEMANTIC_OVERRIDE_SOURCE');
+    const slice=source.split('\n').slice(span.start-1,span.end).join('\n');
+    if(!slice.includes(span.quote) || digest(slice)!==span.hash)throw new Error('SEMANTIC_OVERRIDE_SOURCE');
+    for(const test of override.tests)if(!document.reviewedFiles[test.file] || !read(test.file).toString().includes(test.name))throw new Error('SEMANTIC_OVERRIDE_TEST');
+  }
+
   const ids=new Set();
   const statuses=['equivalent','adapted-with-deviation','unsupported','not-yet-verified'];
   for(const workflow of document.workflows) {
@@ -65,7 +76,7 @@ export function drift(root, repository, commit) {
   const git=args=>execFileSync('git',['-C',repository,...args],{encoding:'utf8',maxBuffer:16*1024*1024});
   if(git(['rev-parse',`${commit}^{commit}`]).trim()!==commit)throw new Error('CANDIDATE_COMMIT_MISMATCH');
   const paths=git(['ls-tree','-r','--name-only',commit,'--','pstack/skills']).trim().split('\n');
-  const relevant=p=>document.workflows.some(w=>p===`pstack/skills/${w.resource}`) || /^pstack\/skills\/(architect|interrogate|poteto-mode)\/references\/.*\.md$/.test(p);
+  const relevant=p=>document.overrides.some(o=>o.upstream.path===p) || document.workflows.some(w=>p===`pstack/skills/${w.resource}`) || /^pstack\/skills\/(architect|interrogate|poteto-mode)\/references\/.*\.md$/.test(p);
   const all=new Set([...document.snapshot.files.map(f=>f.path),...paths.filter(p=>p.endsWith('.md'))]);
   const changes=[];
   for(const path of [...all].sort()) {

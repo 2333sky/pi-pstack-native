@@ -21,7 +21,7 @@ Read-only children and the parent can read original Markdown with `pstack_skill`
 
 ## Reviewable drift
 
-`SEMANTICS.json` contains exact source ranges and hashes, per-file/per-step fingerprints, critical-rule mappings, status, Pi mapping, rationale, scope and test names. Status is one of `equivalent`, `adapted-with-deviation`, `unsupported`, `not-yet-verified`. A source-preservation test is explicitly not a model-behavior test. The mappings audit selected critical rules; every sentence has not been behaviorally exercised.
+`SEMANTICS.json` contains exact source ranges and hashes, per-file/per-step fingerprints, critical-rule mappings, status, Pi mapping, rationale, scope and test names. Every platform override also has its own upstream source range, status, mapping, rationale, scope and bound tests. Status is one of `equivalent`, `adapted-with-deviation`, `unsupported`, `not-yet-verified`. A source-preservation test is explicitly not a model-behavior test. The mappings audit selected critical rules; every sentence has not been behaviorally exercised.
 
 ```sh
 npm run check:semantics
@@ -29,7 +29,7 @@ npm run test:semantics
 npm run check:semantics -- --from /path/to/cursor-plugins --commit <40-character-commit>
 ```
 
-The scheduled upstream scan also writes this semantic report beside its inventory report and uploads it as a CI artifact. The last command reads committed Git objects, reports before/after file and numbered-step/section fingerprints and text, and exits 3 for unreviewed relevant changes. Core files and their architect/interrogate/poteto-mode references are relevant. Other vendored Markdown changes are reported without failing this scoped gate. Newly introduced core reference files are detected. This is not a claim that changes outside the audited scope are safe.
+The scheduled upstream scan also writes this semantic report beside its inventory report and uploads it as a CI artifact. The last command reads committed Git objects, reports before/after file and numbered-step/section fingerprints and text, and exits 3 for unreviewed relevant changes. Core files, their architect/interrogate/poteto-mode references, and upstream source paths cited by an explicit override are relevant. Other vendored Markdown changes are reported without failing this scoped gate. Newly introduced core reference files are detected. This is not a claim that changes outside the audited scope are safe.
 
 A `driftReviews` receipt must identify `commit`, `path`, exact `before`/`after` Git blob IDs (null for additions/deletions), `status: signed-off`, a named `reviewer`, `rationale`, and bound `tests` file paths. It acknowledges that exact candidate change; it does not update the snapshot or baseline. Changes to local source, adapter, runtime implementations or bound tests fail the local fingerprint gate. After reviewing a local change, update its `reviewedFiles` SHA-256, affected mapping/tests and generated entrypoints together. A hash update alone supplies no semantic approval.
 

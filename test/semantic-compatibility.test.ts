@@ -79,6 +79,7 @@ test('semantic drift: edits to rules tests mappings and unreviewed relevant upst
     const target=join(box,'src/compatibility/adapter.ts'),saved=readFileSync(target,'utf8');
     writeFileSync(target,saved+'\n// drift\n');assert.throws(()=>checkSemantics(box),/SEMANTIC_REVIEW_REQUIRED/);writeFileSync(target,saved);
     const missing=structuredClone(manifest);delete missing.reviewedFiles['src/compatibility/adapter.ts'];assert.throws(()=>checkSemantics(box,missing),/SEMANTIC_REVIEW_SCOPE_MISMATCH/);
+    const noOverride=structuredClone(manifest);noOverride.overrides.pop();assert.throws(()=>checkSemantics(box,noOverride),/SEMANTIC_OVERRIDE_COVERAGE/);
     const bad=structuredClone(manifest);bad.workflows[0].units.pop();assert.throws(()=>checkSemantics(box,bad),/SEMANTIC_STEP_DRIFT/);
     const badRule=structuredClone(manifest);badRule.workflows[0].rules[0].tests[0].name=['nonexistent','test','binding'].join('-');assert.throws(()=>checkSemantics(box,badRule),/SEMANTIC_TEST_UNBOUND/);
     const repo=join(box,'candidate');mkdirSync(repo);cpSync(join(root,'vendor/upstream/0.15.17/pstack'),join(repo,'pstack'),{recursive:true});
