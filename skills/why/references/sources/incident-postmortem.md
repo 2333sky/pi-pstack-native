@@ -1,3 +1,5 @@
-# Incident cross-check
+# Incident & Postmortem Context
 
-For defensive code, search the authorized evidence packets for incident history: issues, documents, team chat, observability, errors and analytics. Corroborate incident ID, PR, author, deployment date and observed symptom. Treat incidents as a cross-cutting angle, not an extra independent source. A release contains many changes; require a direct link before asserting causation.
+- **Linear**: look for tickets labeled `incident`, `sev-*`, `postmortem-action-item`, `reliability`
+- **Slack**: search `#sev-*` and `#incident-*` channels around the dates the target code was added
+- **Git**: commits with messages like "fix for incident", "add defensive check", "revert" followed by "re-apply with..." are strong signals

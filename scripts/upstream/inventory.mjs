@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { basename, extname, join, sep } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -84,6 +85,15 @@ function disposition(source,parity,localRoot) {
   }
   if(source.category === 'agent') return existsSync(join(localRoot,source.path)) ? {kind:'local',path:source.path,reason:'agent-role-file'} : {kind:'pending',reason:'agent-role-not-ported'};
   if(source.category === 'manifest') return {kind:'source-only',reason:'upstream-manifest-not-vendored'};
+  const vendored = `vendor/upstream/${parity.upstream}/pstack/${source.path}`;
+  const matches = path => {
+    if(!existsSync(join(localRoot,path)))return false;
+    const bytes=readFileSync(join(localRoot,path));
+    return createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex')===source.blob;
+  };
+  if(matches(vendored))return matches(source.path)
+    ? {kind:'local',path:source.path,reason:'pinned-auxiliary-source'}
+    : {kind:'source-only',path:vendored,reason:'pinned-upstream-source'};
   return {kind:'pending',reason:'file-disposition-not-reviewed'};
 }
 

@@ -1,10 +1,10 @@
-# pstack 0.15.17 semantic port
+# pstack 0.15.32 source integration on Pi 1.4
 
-The verified baseline is `cursor/plugins` commit `978ca6e9c0e012047cd5058b8e829240336e704e`. The official tree contains 52 top-level skills and 23 playbooks. [Provenance](docs/upstream-provenance-0.15.17.json) verifies the commit, manifest, and 165 pstack blobs. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. These counts do not prove behavioral parity.
+The active source is `cursor/plugins` commit `99b609a72323b70204eab407c622f436e858e112` (pstack 0.15.32). Pi SDK 1.4.0 is locked and the peer minimum is `^1.4.0`. [Provenance](docs/upstream-provenance-0.15.32.json) verifies all 200 upstream blobs; [source counts](docs/upstream-sync-0.15.32.json) record 58 Skills and 23 playbooks.
 
-The pinned target `0.15.32` (commit `99b609a72323b70204eab407c622f436e858e112`) contains 58 top-level skills and 23 playbooks. This package registers 57 of them. `statechart` stays pending because it needs its own work package: 27 files, a TLA+/TLC toolchain, and a 260 KB test fixture. [The target inventory](docs/upstream-inventory-0.15.32.json) records one disposition per upstream file.
+All upstream names are registered. The 57 supported Skills and all 23 playbooks are generated from unchanged upstream bodies plus a separate Pi adapter. `make-bot-ui` remains unsupported. Statechart includes all 27 upstream files, its CLI and external-tool requirements; see [statechart evidence](docs/STATECHART.md). The file inventory distinguishes local source, vendored source, unsupported operations and remaining platform-only work; name coverage is not full file or behavioral parity.
 
-This package represents upstream intent with Pi-native instructions. It does not claim byte-for-byte, complete auxiliary-file, or Cursor platform parity. A pinned baseline skill Markdown subset is now vendored for the eleven core workflow mappings; scripts, assets and other-plugin capabilities remain outside that snapshot. `make-bot-ui` remains Cursor-only. Private Cursor PR-tool provenance, upstream watcher verdicts, and Cursor-only cleanup plugins remain unsupported. [The wording review](docs/UPSTREAM-0.15.17.md) records retained differences.
+The 0.15.17 snapshot is historical provenance, not the active Skill source. The source upgrade does not grant maintainer semantic approval or fabricate authenticated model evidence. See [the upgrade audit](docs/upstream-upgrade-0.15.32.md) and [current evidence boundary](docs/SEMANTIC-COMPATIBILITY.md).
 
 ## Native additions 0.6.0-preview.1
 
@@ -77,6 +77,7 @@ Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native impl
 | `setup-pstack` | ADAPTED |
 | `sharpen` | ADAPTED |
 | `show-me-your-work` | ADAPTED |
+| `statechart` | ADAPTED |
 | `swarm` | ADAPTED |
 | `tdd` | ADAPTED |
 | `teach` | ADAPTED |
@@ -127,9 +128,9 @@ Brief/Gate/Ledger/Frontier/Program and specialized DAG templates are native impl
 
 Upstream pstack is by Lauren Tan under MIT terms. This port is independent and is not endorsed by Cursor. Preserve upstream copyright and license obligations for derived material. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
 
-## Proposed 0.15.23 ports (not integrated)
+## Historical 0.15.23 candidate (superseded)
 
-The reviewed metadata above remains at 0.15.17. The new restatement Skill,
+This archived candidate predates the active 0.15.32 source integration. The restatement Skill,
 chat catch-up/verification/Poteto rules, safe bundled-resource access,
 external evidence snapshots, linear PR-stack CLI, all-page review-thread
 checks and explicit-base worktree audit are candidate implementations.
@@ -146,10 +147,10 @@ stricter than the upstream patch-ID/noisy-build reuse rule.
 
 ## Core semantic compatibility audit (issue #16)
 
-The eleven core entrypoints now retain the pinned upstream body and an explicit [Pi adapter](docs/PI-SEMANTIC-ADAPTER.md). [SEMANTICS.json](SEMANTICS.json) maps exact source lines and critical rules to test names and reviewed file fingerprints. The source snapshot contains all baseline Skill Markdown and references plus the license, checked against Git blob IDs. This is critical-rule mapping coverage, not a completed audit of every sentence or demonstrated model behavior.
+All supported entrypoints retain the latest pinned upstream body; the eleven core workflows have critical mappings and an explicit [Pi adapter](docs/PI-SEMANTIC-ADAPTER.md). [SEMANTICS.json](SEMANTICS.json) maps exact source lines and critical rules to test names and reviewed file fingerprints. The source snapshot contains all baseline Skill Markdown and references plus the license, checked against Git blob IDs. This is critical-rule mapping coverage, not a completed audit of every sentence or demonstrated model behavior.
 
 `npm run check:semantics` fails on unreviewed local source, adapter, implementation or bound-test drift. `npm run check:semantics -- --from /path/to/cursor-plugins --commit <full-sha>` reports file/step diffs and blocks only unreviewed relevant upstream changes. Explicit per-file, exact-commit sign-off receipts may acknowledge a change without advancing the baseline. Inventory scans cannot advance semantic approval.
 
-See [the evidence tiers and real-model procedure](docs/SEMANTIC-COMPATIBILITY.md). The reviewed baseline remains 0.15.17; the 0.15.32 target stays separate.
+See [the evidence tiers and real-model procedure](docs/SEMANTIC-COMPATIBILITY.md). The active source and inventory target are both 0.15.32. Maintainer semantic sign-off remains separate from that source pin.
 
 [PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) has merged the core implementation. [Its CI](https://github.com/2333sky/pi-pstack-native-2/actions/runs/40299080693) passed on Node 22.19 and 24, including semantic checks and offline/fake-provider Pi SDK tests. This does not change `SEMANTICS.json.evidence.realModel.status = "not-run"` or `review.status = "pending-maintainer-signoff"`. See [the acceptance checklist](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) for the remaining evidence and review record. Neither merging this implementation nor completing its CI advances the reviewed upstream baseline.

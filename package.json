@@ -51,10 +51,15 @@
     "vendor/",
     "SEMANTICS.json",
     "docs/PI-SEMANTIC-ADAPTER.md",
-    "docs/SEMANTIC-COMPATIBILITY.md"
+    "docs/SEMANTIC-COMPATIBILITY.md",
+    "docs/upstream-provenance-0.15.32.json",
+    "docs/upstream-sync-0.15.32.json",
+    "docs/upstream-upgrade-0.15.32.md",
+    "docs/STATECHART.md",
+    "docs/upstream-upgrade-0.15.32.json"
   ],
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "^1.1.0"
+    "@earendil-works/pi-coding-agent": "^1.4.0"
   },
   "pi": {
     "extensions": [
@@ -96,15 +101,16 @@
     "upstream:contracts": "node --experimental-strip-types scripts/check-contracts.mjs --write",
     "check:semantics": "node --experimental-strip-types scripts/check-semantics.mjs",
     "test:semantics": "node --experimental-strip-types --test test/semantic-compatibility.test.ts",
-    "smoke:semantics:real": "node --experimental-strip-types scripts/semantics/real-pi-smoke.mjs"
+    "smoke:semantics:real": "node --experimental-strip-types scripts/semantics/real-pi-smoke.mjs",
+    "test:statechart": "node --test skills/statechart/scripts/test/statechart.test.mjs"
   },
   "engines": {
     "node": ">=22.19.0"
   },
   "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.4.0",
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0",
-    "@earendil-works/pi-coding-agent": "^1.2.0"
+    "typescript": "^5.8.0"
   },
   "bin": {
     "pstack-runner": "./dist/runner/cli.mjs"

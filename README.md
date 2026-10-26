@@ -3,7 +3,7 @@
 > **Experimental Preview — `0.6.0-preview.1`**
 > Pi-native, independently maintained pstack semantic port. **Not affiliated with or endorsed by Cursor or the upstream pstack maintainers.**
 
-**npm package:** `2333` · **Runtime:** Node.js >=22.19.0, Pi Coding Agent SDK `^1.1.0`
+**npm package:** `2333` · **Runtime:** Node.js >=22.19.0, Pi Coding Agent SDK `^1.4.0`
 **Status:** Preview (not a verified stable release). **This GitHub-ready checkout does not imply a GitHub repo or npm release has already been published.**
 
 This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack) workflows to Pi and implements a native multi-agent orchestration runtime. It uses persistent `AgentSession` state, a durable DAG engine, Git worktree isolation, model routing, and recovery. Version `0.6.0-preview.1` adds strict Task Briefs, artifact fingerprints, deterministic verification gates, audit ledgers, PR shipping constraints, dedicated workflow templates, a coordinator, budgets, context summaries, and an optional standalone runner.
@@ -41,7 +41,7 @@ pi install .
 
 If `2333` is separately published to npm, the published package may also be installed with `pi install npm:2333`; GitHub source availability does not itself imply an npm release.
 
-Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.1.0`. The lock resolves SDK `1.2.0`. It was generated with Node `24.21.0` and npm `11.12.1`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
+Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.4.0`. The lock resolves SDK `1.4.0`, installed with Node `24.19.0` and npm `11.9.0`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
 
 ## Start
 
@@ -165,7 +165,7 @@ See `PARITY.json` and `PARITY.md`.
 - `PI_ONLY`: native control/runtime capability added by this port.
 - `PENDING_PORT`: incomplete item inside the listed semantic coverage.
 
-**Reviewed source baseline:** Cursor pstack `0.15.17` at `978ca6e9c0e012047cd5058b8e829240336e704e`. The official pinned tree contains 52 top-level skills and 23 Poteto playbooks. These are observed name counts, not proof of exercised behavior. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. [The wording review](docs/UPSTREAM-0.15.17.md) records intentional differences. `ADAPTED` does not mean behavioral parity was tested. The vendored baseline Skill Markdown is checked byte-for-byte; complete auxiliary-file, Cursor platform and model-behavior parity are not claimed. `make-bot-ui` remains explicitly Cursor-only.
+**Active source pin:** Cursor pstack **0.15.32** at `99b609a72323b70204eab407c622f436e858e112`. Its 58 Skill names and 23 playbooks are registered: 57 Skills and all playbooks retain the latest source body through generated Pi entrypoints; `make-bot-ui` stays Cursor-only. Statechart now ships its complete upstream scripts and references; see [toolchain requirements](docs/STATECHART.md). [Source provenance](docs/upstream-provenance-0.15.32.json) verifies all 200 upstream blobs. These counts and byte checks do not prove model behavior. Maintainer semantic approval and authenticated real-model evidence remain separate, pending records in `SEMANTICS.json`. The previous 0.15.17 source and historical reports are retained.
 
 ## Safety boundaries
 
@@ -315,8 +315,8 @@ credentialed LLM/GitHub E2E and semantic review remain `not_run`; these are not
 inferred from smoke results. Tests execute local candidate code and therefore
 must run in a trusted or externally sandboxed environment.
 
-Maintainers advance a baseline in a separately reviewed metadata change only
-after every task is resolved (including explicit unsupported behavior), required
+Maintainers grant semantic approval in a separately reviewed metadata change only
+after every relevant task is resolved (including explicit unsupported behavior), required
 CI is green and semantic approval is obtained. Point `coverage.countEvidence`
 to the validated pinned report, update both manifests' SHA/version together,
 match names/counts/files, retain `make-bot-ui` and all unsupported declarations,
@@ -326,11 +326,9 @@ merged may the candidate be described as integrated. No CLI provides an
 
 ## Candidate pstack 0.15.23 behavior ports
 
-The reviewed baseline stays **0.15.17**. Candidate 0.15.23 behavior changes are
-implemented or explicitly mapped in
+This historical candidate has been superseded by the active **0.15.32** source pin. Its behavior changes were implemented or explicitly mapped in
 [the per-file candidate receipt](docs/upstream-sync/candidate-0.15.23.json),
-with every upstream diff accounted for. They remain **proposed / pending
-maintainer semantic review**, not integrated or proven Cursor equivalence.
+with every upstream diff accounted for. The archived receipt retains its original **proposed / pending maintainer semantic review** status; it does not describe current source availability or prove Cursor equivalence.
 See [port details and limitations](docs/upstream-sync/PORT-0.15.23.md).
 
 ### Read-only children and external evidence
@@ -424,6 +422,6 @@ still fails explicitly; historical evidence is never silently overwritten.
 
 ### Core upstream semantics
 
-The eleven audited core entrypoints preserve the fixed 0.15.17 source body, with [Pi-specific mappings and deviations](docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
+All supported entrypoints preserve the fixed 0.15.32 source body; the eleven core workflows have critical-rule mappings, with [Pi-specific mappings and deviations](docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
 
-[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged this implementation. Its Node 22.19 / 24 CI passed; the authenticated real-model tier remains `not-run`, and the semantic review record remains `pending-maintainer-signoff`. [The remaining acceptance steps](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.
+[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged the initial 0.15.17 compatibility infrastructure. The [0.15.32 / Pi 1.4 upgrade](docs/upstream-upgrade-0.15.32.md) updates the active source and dependency lock. The foundation PR’s Node 22.19 / 24 CI passed; the authenticated real-model tier remains `not-run`, and the semantic review record remains `pending-maintainer-signoff`. [The remaining acceptance steps](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.

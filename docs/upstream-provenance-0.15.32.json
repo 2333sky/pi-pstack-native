@@ -1,0 +1,11 @@
+{
+  "repository": "cursor/plugins",
+  "version": "0.15.32",
+  "commit": "99b609a72323b70204eab407c622f436e858e112",
+  "verifiedAt": "2026-10-26",
+  "treeTruncated": false,
+  "manifestBlob": "2d5accfaed9959e5a15226df48b17a59a16a4132",
+  "verifiedPstackBlobs": 200,
+  "verification": "Every extracted Git blob was hashed against the pinned target tree; vendored subset has its own SEMANTICS.json blob registry",
+  "previousBaseline": "978ca6e9c0e012047cd5058b8e829240336e704e"
+}

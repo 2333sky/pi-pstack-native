@@ -21,7 +21,9 @@ export function semanticResource(packageRoot, id) {
     if (!entry)
         throw new Error('UNMAPPED_UPSTREAM_RESOURCE');
     let file = root;
-    for (const part of ['vendor', 'upstream', '0.15.17', 'pstack', ...path.split('/')]) {
+    if (!/^vendor\/upstream\/[0-9]+\.[0-9]+\.[0-9]+$/.test(manifest.snapshot.root))
+        throw new Error('INVALID_SNAPSHOT_ROOT');
+    for (const part of [...manifest.snapshot.root.split('/'), 'pstack', ...path.split('/')]) {
         file = join(file, part);
         if (lstatSync(file).isSymbolicLink())
             throw new Error('UPSTREAM_SYMLINK_REFUSED');

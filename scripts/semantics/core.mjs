@@ -3,8 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CORE_RESOURCES, CAPABILITIES } from '../../src/compatibility/adapter.ts';
-import { generateCore } from './generate.mjs';
-export const REVIEWED_FILES = ["src/compatibility/adapter.ts", "src/compatibility/source.ts", "src/compatibility/tool.ts", "src/agent/resources.ts", "src/extension.ts", "src/agent/profiles.ts", "src/agent/host.ts", "src/models/router.ts", "src/templates/build.ts", "src/workflow/engine.ts", "src/workflow/artifacts.ts", "src/verification/runner.ts", "src/delivery/frontier.ts", "docs/PI-SEMANTIC-ADAPTER.md", "scripts/upstream/cli.mjs", "scripts/check-semantics.mjs", "scripts/semantics/core.mjs", "scripts/semantics/generate.mjs", "test/semantic-compatibility.test.ts", "test/fixtures/semantics/scenarios.json", "scripts/semantics/real-pi-smoke.mjs", "test/e2e/workflow.test.ts", "test/e2e/shipping.test.ts", "test/protocol.test.ts", "test/verification.test.ts"];
+import { generateCore, generatedResources } from './generate.mjs';
+export const REVIEWED_FILES = ["src/compatibility/adapter.ts", "src/compatibility/source.ts", "src/compatibility/tool.ts", "src/agent/resources.ts", "src/extension.ts", "src/agent/profiles.ts", "src/agent/host.ts", "src/models/router.ts", "src/templates/build.ts", "src/workflow/engine.ts", "src/workflow/artifacts.ts", "src/verification/runner.ts", "src/delivery/frontier.ts", "docs/PI-SEMANTIC-ADAPTER.md", "scripts/upstream/cli.mjs", "scripts/check-semantics.mjs", "scripts/semantics/core.mjs", "scripts/semantics/generate.mjs", "test/semantic-compatibility.test.ts", "test/fixtures/semantics/scenarios.json", "scripts/semantics/real-pi-smoke.mjs", "test/e2e/workflow.test.ts", "test/e2e/shipping.test.ts", "test/protocol.test.ts", "test/verification.test.ts", "test/latest-upstream.test.ts", "test/statechart.test.ts"];
 export const digest = value => createHash('sha256').update(value).digest('hex');
 export const blob = bytes => createHash('sha1').update(`blob ${Buffer.byteLength(bytes)}\0`).update(bytes).digest('hex');
 export function units(body) {
@@ -65,8 +65,9 @@ export function checkSemantics(root, document=JSON.parse(readFileSync(join(root,
     }
   }
   for(const cap of Object.values(document.capabilities))if(!cap.reason || !cap.mapping || !statuses.includes(cap.status))throw new Error('SEMANTIC_OVERRIDE_INVALID');
+  if(JSON.stringify(document.generatedResources)!==JSON.stringify(generatedResources(root)))throw new Error('SEMANTIC_GENERATED_SCOPE_DRIFT');
   generateCore(root);
-  return {workflows:names.length,rules:ids.size,sourceFiles:files.size,fullBehavioralParity:'not-claimed',realModel:document.evidence.realModel};
+  return {generatedEntrypoints:document.generatedResources.length,workflows:names.length,rules:ids.size,sourceFiles:files.size,fullBehavioralParity:'not-claimed',realModel:document.evidence.realModel};
 }
 /** Candidate contents are read from Git objects, never from a possibly dirty working tree. */
 export function drift(root, repository, commit) {
@@ -76,11 +77,11 @@ export function drift(root, repository, commit) {
   const git=args=>execFileSync('git',['-C',repository,...args],{encoding:'utf8',maxBuffer:16*1024*1024});
   if(git(['rev-parse',`${commit}^{commit}`]).trim()!==commit)throw new Error('CANDIDATE_COMMIT_MISMATCH');
   const paths=git(['ls-tree','-r','--name-only',commit,'--','pstack/skills']).trim().split('\n');
-  const relevant=p=>document.overrides.some(o=>o.upstream.path===p) || document.workflows.some(w=>p===`pstack/skills/${w.resource}`) || /^pstack\/skills\/(architect|interrogate|poteto-mode)\/references\/.*\.md$/.test(p);
-  const all=new Set([...document.snapshot.files.map(f=>f.path),...paths.filter(p=>p.endsWith('.md'))]);
+  const relevant=p=>p.startsWith('pstack/skills/statechart/scripts/') || document.overrides.some(o=>o.upstream.path===p) || document.workflows.some(w=>p===`pstack/skills/${w.resource}`) || /^pstack\/skills\/(architect|interrogate|poteto-mode)\/references\/.*\.md$/.test(p);
+  const all=new Set([...document.snapshot.files.map(f=>f.path),...paths.filter(p=>p.endsWith('.md') || p.startsWith('pstack/skills/statechart/scripts/'))]);
   const changes=[];
   for(const path of [...all].sort()) {
-    if(path==='pstack/LICENSE')continue;
+    if(!path.startsWith('pstack/skills/'))continue;
     const entry=document.snapshot.files.find(f=>f.path===path);
     const after=paths.includes(path)?git(['show',`${commit}:${path}`]):null;
     if(entry?.sha=== (after===null?null:blob(after)))continue;

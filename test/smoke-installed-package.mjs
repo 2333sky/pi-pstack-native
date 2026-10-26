@@ -16,7 +16,8 @@ const extensionPath = resolve(installedDir, installedManifest.pi.extensions[0]);
 // This SDK exposes its root entry only for ESM imports, not CommonJS require().
 const sdkRoot = resolve(process.cwd(), "node_modules/@earendil-works/pi-coding-agent");
 const sdkManifest = JSON.parse(readFileSync(join(sdkRoot, "package.json"), "utf8"));
-assert.match(sdkManifest.version, /^1\.[12]\./, "the installed peer is a supported Pi Coding Agent 1.x package");
+const sdkVersion = sdkManifest.version.split('.').map(Number);
+assert.ok(sdkVersion.length === 3 && sdkVersion.every(Number.isInteger) && sdkVersion[0] === 1 && sdkVersion[1] >= 4, "the installed peer satisfies the Pi 1.4+ / 1.x requirement");
 const sdkEntry = resolve(sdkRoot, sdkManifest.exports["."].import);
 const { createAgentSession, DefaultResourceLoader, SessionManager } = await import(pathToFileURL(sdkEntry).href);
 
@@ -28,6 +29,13 @@ const api = await import(pathToFileURL(distEntry).href);
 for (const name of ["fingerprint", "sameFingerprint", "verify", "buildTemplate", "ProgramCoordinator", "contextSnapshot", "migrate", "runnerOnce"]) {
   assert.equal(typeof api[name], "function", `published API exports ${name}`);
 }
+
+const sourceRead = await api.createResourceTools(join(installedDir, "skills"))[0].execute("installed-source", { action: "read", resource: "upstream/skills/poteto-mode/playbooks/shipping.md" });
+assert.equal(sourceRead.details.resource, "upstream/skills/poteto-mode/playbooks/shipping.md");
+assert.ok(sourceRead.details.lines.some(line => line.text.includes("### Shipping")), "installed upstream snapshot is readable with its verified blob ID");
+const statechartHelp = spawnSync(process.execPath, [join(installedDir, "skills/statechart/scripts/statechart.mjs"), "--help"], { encoding: "utf8" });
+assert.equal(statechartHelp.status, 0, statechartHelp.stderr);
+assert.match(statechartHelp.stdout, /from-spec/);
 
 const testRoot = mkdtempSync(join(process.cwd(), ".installed-package-smoke-"));
 const agentDir = join(testRoot, "pi-agent");
@@ -80,7 +88,7 @@ try {
   session = loaded.session;
   assert.equal(loaded.extensionsResult.errors.length, 0, "installed extension loads without Pi diagnostics");
   assert.ok(loaded.extensionsResult.extensions.some((extension) => extension.path === extensionPath));
-  for (const name of ["pstack_agents", "pstack_workflow", "pstack_graph", "pstack_worktrees", "pstack_verify", "pstack_delivery", "pstack_context", "pstack_program"]) {
+  for (const name of ["pstack_semantics", "pstack_skill", "pstack_agents", "pstack_workflow", "pstack_graph", "pstack_worktrees", "pstack_verify", "pstack_delivery", "pstack_context", "pstack_program"]) {
     assert.ok(session.getAllTools().some((tool) => tool.name === name), `installed package registered ${name}`);
     assert.ok(session.getActiveToolNames().includes(name), `installed package activated ${name}`);
   }

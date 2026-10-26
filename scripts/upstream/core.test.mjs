@@ -62,9 +62,9 @@ test('report parsing rejects tampering, unsafe paths and invalid gate states',t=
 test('AC-11 dynamic parity preserves pending, metadata, count, unsupported and file gates',t=>{
   const dir=mkdtempSync(join(tmpdir(),'parity-test-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
   for(const path of ['UPSTREAM.json','PARITY.json','docs','skills']) cpSync(path,join(dir,path),{recursive:true});
-  assert.deepEqual(checkParity(dir),{skills:57,playbooks:23,pendingTarget:{skills:['statechart'],playbooks:[]}});
+  assert.deepEqual(checkParity(dir),{skills:58,playbooks:23,pendingTarget:{skills:[],playbooks:[]}});
   const original=JSON.parse(readFileSync(join(dir,'PARITY.json'),'utf8'));
-  for(const mutate of [p=>p.upstreamCommit='0'.repeat(40),p=>p.coverage.topLevelSkills++,p=>p.skills.architect='PENDING_PORT',p=>p.coverage.fileLevelAudit='claimed',p=>p.cursorOnly=[],p=>p.coverage.pendingTargetSkills=[],p=>{delete p.coverage.pendingTargetReasons.statechart;},p=>p.skills.invented='ADAPTED',p=>p.coverage.targetSkills--,p=>{delete p.coverage.targetInventory;}]) {
+  for(const mutate of [p=>p.upstreamCommit='0'.repeat(40),p=>p.coverage.topLevelSkills++,p=>p.skills.architect='PENDING_PORT',p=>p.coverage.fileLevelAudit='claimed',p=>p.cursorOnly=[],p=>p.coverage.pendingTargetSkills=['statechart'],p=>{delete p.skills.statechart;},p=>p.skills.invented='ADAPTED',p=>p.coverage.targetSkills--,p=>{delete p.coverage.targetInventory;}]) {
     const p=structuredClone(original);mutate(p);writeFileSync(join(dir,'PARITY.json'),JSON.stringify(p));assert.throws(()=>checkParity(dir));
   }
   rmSync(join(dir,'docs/upstream-target-0.15.32.json'));
