@@ -45,9 +45,6 @@ jobs:
     name: Statechart toolchain
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      XDG_CACHE_HOME: ${{ runner.temp }}/statechart-cache
-      TLA2TOOLS: ${{ runner.temp }}/statechart-tools/tla2tools.jar
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -60,10 +57,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Fetch pinned TLC and verify its checksum
+        env:
+          TLA2TOOLS: ${{ runner.temp }}/statechart-tools/tla2tools.jar
         shell: bash
         run: |
           mkdir -p "$(dirname "$TLA2TOOLS")"
           curl --fail --location --retry 2 https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar --output "$TLA2TOOLS"
           echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  $TLA2TOOLS" | sha256sum --check
       - name: Run upstream statechart regression suite
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/statechart-cache
+          TLA2TOOLS: ${{ runner.temp }}/statechart-tools/tla2tools.jar
         run: npm run test:statechart
