@@ -165,7 +165,7 @@ See `PARITY.json` and `PARITY.md`.
 - `PI_ONLY`: native control/runtime capability added by this port.
 - `PENDING_PORT`: incomplete item inside the listed semantic coverage.
 
-**Verified baseline:** Cursor pstack `0.15.17` at `978ca6e9c0e012047cd5058b8e829240336e704e`. The official pinned tree contains 52 top-level skills and 23 Poteto playbooks. These are observed name counts, not proof of exercised behavior. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. [The wording review](docs/UPSTREAM-0.15.17.md) records intentional differences. `ADAPTED` does not mean behavioral parity was tested. Auxiliary files, Cursor platform parity, and byte-for-byte parity are not claimed. `make-bot-ui` remains explicitly Cursor-only.
+**Reviewed source baseline:** Cursor pstack `0.15.17` at `978ca6e9c0e012047cd5058b8e829240336e704e`. The official pinned tree contains 52 top-level skills and 23 Poteto playbooks. These are observed name counts, not proof of exercised behavior. [The sync report](docs/upstream-sync-0.15.17.json) checks names and runtime seams. [The wording review](docs/UPSTREAM-0.15.17.md) records intentional differences. `ADAPTED` does not mean behavioral parity was tested. The vendored baseline Skill Markdown is checked byte-for-byte; complete auxiliary-file, Cursor platform and model-behavior parity are not claimed. `make-bot-ui` remains explicitly Cursor-only.
 
 ## Safety boundaries
 
@@ -187,7 +187,7 @@ npm pack
 
 The current suite covers graph validation, bounded concurrency, chain dependencies, failed-dependency propagation, process recovery, recovery beyond a concurrency window, terminal wake-up semantics, dead/live locks, writer placement, explicit integration, verifier artifact placement, dirty-worktree refusal, read-only path confinement, loop schedule locking, atomic state/journals, and model/reasoning routing. Static review also checks nested-runtime wiring and the depth cap.
 
-The build sandbox cannot perform a real-provider Pi child-agent smoke test because it has no installed Pi host/model credentials. API contracts are checked against current official Pi source, and `REVIEW.md` records this residual risk instead of claiming it was tested.
+The real Pi SDK is installed and exercised by the lifecycle, fake-provider E2E and installed-package smoke tests. Authenticated real-model inference is a separate tier: the managed environment's recorded model check found no configured authorized models. A Pi provider credential is required before that tier can run here. See [the current acceptance status and cloud-environment procedure](docs/SEMANTIC-COMPATIBILITY.md#implementation-and-acceptance-status).
 
 ## License and provenance
 
@@ -425,3 +425,5 @@ still fails explicitly; historical evidence is never silently overwritten.
 ### Core upstream semantics
 
 The eleven audited core entrypoints preserve the fixed 0.15.17 source body, with [Pi-specific mappings and deviations](docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
+
+[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged this implementation. Its Node 22.19 / 24 CI passed; the authenticated real-model tier remains `not-run`, and the semantic review record remains `pending-maintainer-signoff`. [The remaining acceptance steps](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.

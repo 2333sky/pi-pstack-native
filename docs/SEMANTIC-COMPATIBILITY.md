@@ -2,6 +2,22 @@
 
 Issue #16 separates behavior source, platform adaptation and exercised evidence. The reviewed baseline remains pstack 0.15.17 at `978ca6e9c0e012047cd5058b8e829240336e704e`. The inventory target 0.15.32 is not an approved behavioral baseline.
 
+## Implementation and acceptance status
+
+[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged on 2026-10-26 as commit [`f355eaed`](https://github.com/2333sky/pi-pstack-native-2/commit/f355eaedcabbcee6c1429f8a5341974b6833dd22). Its tested head, `a4e04df4128bf83e60404ef54329bf8814aa6cbc`, passed [CI on Node 22.19 and 24](https://github.com/2333sky/pi-pstack-native-2/actions/runs/40299080693).
+
+| Item | Recorded status | Evidence boundary |
+|---|---|---|
+| Pinned source, Pi adapter, 11 core entrypoints and 35 critical-rule mappings | Merged | Source traceability and declared adaptations |
+| Semantic checks, negative fixtures, typecheck and build | Passed | Deterministic local/CI behavior |
+| Real Pi SDK lifecycle, offline/fake-provider E2E and installed-package smoke | Passed | Actual SDK/session integration with scripted model responses; no authenticated external inference |
+| Limited real Pi + real-model probe | `not-run` | No passing real-model receipt is recorded |
+| Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
+
+The managed environment check on 2026-10-26 found zero configured authorized models through the real Pi SDK. The SDK itself is installed and usable. This is a missing provider-authorization prerequisite, rather than a requirement to run the test on a personal computer. Environment configuration may change; check the SDK's available models again before a new run.
+
+A probe of an unavailable model returned `blocked` with `inference: false`. That verifies the unavailable-model path and supplies no real-model inference evidence. Inventory coverage, mapped rules, exercised SDK behavior and model behavior remain separate claims.
+
 ## Source and adapter
 
 `vendor/upstream/0.15.17/pstack/` contains 107 original Skill/playbook/reference Markdown files and the upstream MIT license. Every file is checked by its original Git blob ID and byte length. Images, scripts, other plugins, cloud infrastructure and private tools are excluded.
@@ -33,7 +49,7 @@ The scheduled upstream scan also writes this semantic report beside its inventor
 
 A `driftReviews` receipt must identify `commit`, `path`, exact `before`/`after` Git blob IDs (null for additions/deletions), `status: signed-off`, a named `reviewer`, `rationale`, and bound `tests` file paths. It acknowledges that exact candidate change; it does not update the snapshot or baseline. Changes to local source, adapter, runtime implementations or bound tests fail the local fingerprint gate. After reviewing a local change, update its `reviewedFiles` SHA-256, affected mapping/tests and generated entrypoints together. A hash update alone supplies no semantic approval.
 
-Advancing the baseline requires a new source snapshot and mappings/tests plus explicit maintainer semantic sign-off. No scan, generation, test, inventory command or drift acknowledgement advances UPSTREAM.json. The initial audit remains `pending-maintainer-signoff`.
+Advancing the baseline requires a new source snapshot and mappings/tests plus explicit maintainer semantic sign-off. No scan, generation, test, inventory command or drift acknowledgement advances UPSTREAM.json. The review state is stored separately in `SEMANTICS.json.review`; it remains `pending-maintainer-signoff` after the implementation merge until a maintainer records their semantic review.
 
 ## Evidence tiers
 
@@ -49,12 +65,41 @@ CI runs semantic fixtures through `npm test`, the semantic fingerprint gate thro
 
 ## Limited real-model smoke
 
-Use existing authorized Pi credentials and an explicit available provider/model. This probe only enables two read-only tools in a temporary checkout. It does not enable shell/write, dispatch workers or contact a forge:
+Use existing authorized Pi credentials and an explicit available provider/model. The command can run in this managed cloud environment once a provider credential is configured, or in another authorized Pi environment. ChatGPT access and GitHub authentication do not by themselves configure a Pi model provider.
+
+For a managed cloud run:
+
+1. Configure a provider credential through the environment's Secrets settings, using the variable supported by that provider, such as `OPENAI_API_KEY` for OpenAI. Ensure the selected model's API endpoint is allowed by the environment's network policy. Keep credential values out of the receipt and repository.
+2. Start the test process after the updated environment configuration is active. Select the exact Pi `provider/model` identifier; `pi --list-models` lists available models when the Pi CLI is installed. An empty available-model list means the prerequisite is still unmet.
+3. Run from the repository root on a clean checkout of the revision being verified. Install dependencies with `npm ci` if needed. Replace `provider/model` below with the selected identifier.
+
+This probe only enables two read-only model tools in a temporary checkout. It does not enable shell/write tools, dispatch workers or contact a forge:
 
 ```sh
-npm run smoke:semantics:real -- --model provider/model
+mkdir -p work/semantic-smoke
+git rev-parse HEAD > work/semantic-smoke/source-commit.txt
+npm run --silent smoke:semantics:real -- --model provider/model > work/semantic-smoke/result.json
 ```
 
-The JSON receipt includes the model, actual inference flag, source-read coverage, unsupported-operation result, routing result and evidence boundary. No raw model output or credentials are persisted. A missing model/auth is `blocked`, exit 2, never a fake-provider success. A failure or incomplete read is exit 1. Archive the receipt with the source commit when a maintainer runs it.
+Inspect the command's exit code and the JSON receipt together:
 
-For this change the authenticated real-model tier is **not run**: the managed environment reports no configured model credentials. Existing real SDK tests use a loopback provider. Do not promote those to real-model parity evidence. Full live-surface implementation/review/merge scenarios still require separately authorized fixtures and evidence.
+| Result | Exit code and receipt | Meaning |
+|---|---|---|
+| Passed | Exit 0; `status: "passed"`, `inference: true`, and all three probe checks true | One model completed the source-read, unsupported-capability and status-routing probe |
+| Blocked | Exit 2; `status: "blocked"`, `inference: false` when the requested model/auth is unavailable | No authenticated model inference was exercised |
+| Failed | Exit 1, a failed/incomplete probe, or a runtime error | Investigate; do not record a passing result |
+
+The three probe checks are `completeSourceRead`, `unsupportedRefused` and `statusRoutedToBabysit`. The JSON receipt includes the model and evidence boundary. The harness does not persist raw model output or credentials. Preserve the receipt together with `source-commit.txt`; after checking the files, archive them in a stable repository evidence path or a linked CI artifact. A result applies to its tested commit and model. It is not proof of complete implementation, review-swarm quality, live UI/CLI behavior or merge safety.
+
+For the merged implementation the authenticated real-model tier remains **not run**. Existing real SDK tests use a loopback provider. CI runs the repeatable offline/fake-provider tiers without provider credentials; it does not automatically run this authenticated probe.
+
+## Completing issue #16
+
+The remaining acceptance work is evidence and a review record. A documentation update alone completes neither item.
+
+1. Run the limited real-model probe successfully and archive the receipt, tested source commit and model. Update `SEMANTICS.json.evidence.realModel` to record the actual result and a stable receipt reference; preserve its procedure link. Set `status: "passed"` only for a passing authenticated run. A blocked attempt leaves real-model verification unexercised.
+2. Have the maintainer review the critical mappings and intentional deviations. Record that conclusion in `SEMANTICS.json.review` with `status: "signed-off"`, the actual `reviewer`, an ISO timestamp in `at`, and a concrete `rationale`, retaining the existing scope. Reference the review or merge decision if it records that conclusion. Do not infer or invent semantic approval solely from the merge event.
+3. Submit the evidence and metadata update, run `npm run check:semantics` and `npm run test:semantics`, and require the normal CI checks on that revision. Review any intervening mapped source/runtime changes before reusing earlier evidence.
+4. Recheck [issue #16](https://github.com/2333sky/pi-pstack-native-2/issues/16)'s acceptance criteria and record what the evidence establishes before closing it as completed. If a criterion is intentionally deferred, track it in a linked follow-up and explicitly agree the revised scope rather than checking it off as passed.
+
+These steps do not require advancing the reviewed upstream baseline or claiming complete Cursor/Pi behavioral equivalence. Full live-surface implementation/review/merge scenarios remain separate evidence work.
