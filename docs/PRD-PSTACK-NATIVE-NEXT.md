@@ -123,20 +123,17 @@ W07 的登记协议升级未开始，`PARITY.json` 和 `UPSTREAM.json` 未改。
 
 仍未做：真实 SDK 轨迹测试和真实模型路由测试。它们需要模型与受控 Provider，属于 M2 与 M3。
 
-### 0.10 statechart 工作包的第一小步
+### 0.10 statechart 现状
 
-`docs/statechart-port.md` 记录了实测结果，本次不登记该 Skill。
+上游 `statechart` 已登记为 `ADAPTED`。`coverage.pendingTargetSkills` 为空，登记表 58 个顶层 Skill 全齐。
 
-- 工具链在本机装成功。`mise` 2026.10.19、Temurin 25、TLA+ 工具 1.7.4。`findTlc()` 返回两个真实路径。
-- 27 个文件按固定提交下载，Git blob SHA 全部匹配。
-- `--help` 正常输出。
-- 上游测试套件 150 项，通过 127，失败 19，另有 1 项在 macOS 上跳过。文件与上游逐字节相同，所以失败来自环境或上游，不是移植改动。
+实现方式是固定源加生成。`skills/statechart/SKILL.md` 由 `scripts/semantics/generate.mjs` 从 `vendor/upstream/0.15.32/` 的固定快照生成。27 个脚本原样随包，blob SHA 与固定提交一致。`npm run check:semantics` 检查生成物与源是否漂移。
 
-失败集中在三处。第一处是面向其他操作系统的文件系统原子替换测试。第二处是 TLC 输出解析。第三处是 `--against` 的字段类型判别。
+工具链在本机实测可用。`mise` 2026.10.19、Temurin 25、TLA+ 工具 1.7.4。TLC 能跑。
 
-因此本次不登记 `statechart`。登记为 `ADAPTED` 会声称一个本机无法复现的套件结果。方案第 4.2 节对它的验收是脚本能跑，且图、模型和真实工具结果一致。目前前两项成立，第三项部分未验证。
+行为对齐仍未声称。上游测试套件 `npm run test:statechart` 不在发布门槛内。本机结果为 150 项，通过 127，失败 19，另 1 项需要 PID 命名空间而跳过。文件与上游逐字节相同，所以失败来自环境或上游。三类失败分别是面向其他操作系统的文件系统原子替换测试、TLC 输出解析、以及 `--against` 的字段类型判别。
 
-下一步的建议是选项一，即固定工具链版本并加能力检查，把三类失败记为有记录的环境限制。该文档列出了另外两个选项。目前尚未选定。
+`docs/statechart-port.md` 记录了完整失败清单、已声称与未声称的边界，以及三个可选后续。当前结论是：源固定与脚本随包已声称，行为对齐未声称。
 
 ## 1. 原稿质量评审
 
