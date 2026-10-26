@@ -48,9 +48,17 @@ try {
       git(repo,['fetch','--no-tags','https://github.com/cursor/plugins.git',options['baseline-ref'] ?? upstream.commit]);
     }
     const report = scan({repo,baselineRef:options['baseline-ref'] ?? upstream.commit,candidateRef,localRoot:root});
+    let semantic;
+    if(existsSync(join(root,'SEMANTICS.json'))) {
+      const {drift}=await import('../semantics/core.mjs');
+      const result=drift(root,repo,report.candidate.sha);
+      semantic={status:result.status,report:`docs/upstream-sync/semantic/${report.syncId}.json`};
+      writeConfined(root,semantic.report,JSON.stringify(result,null,2)+'\n');
+      if(result.status==='needs-review')process.exitCode=3;
+    }
     const path = saveReport(root,report);
     if (options['write-report']) writeConfined(root,safePath(options['write-report']),JSON.stringify(report,null,2)+'\n');
-    console.log(JSON.stringify({status:report.status,syncId:report.syncId,report:path,changes:report.changes.length}));
+    console.log(JSON.stringify({status:report.status,syncId:report.syncId,report:path,changes:report.changes.length,...(semantic?{semantic}: {})}));
     if (report.status === 'blocked') process.exitCode = 3;
   } else {
     const reportPath = safePath(options.report ?? '');

@@ -1,0 +1,18 @@
+{
+  "routes": [
+    {"task":"regression with a reproducible CLI failure","intent":"defect","playbook":"bug-fix"},
+    {"task":"implement a new API behavior","intent":"new-behavior","playbook":"feature"},
+    {"task":"run an authorized independent PR queue","intent":"pr-queue","playbook":"autopilot-full"},
+    {"task":"build a dependent stack for operator review","intent":"stack","playbook":"autopilot-stack"},
+    {"task":"is this PR green","intent":"status","playbook":"babysit"},
+    {"task":"land the verified contiguous frontier","intent":"land","playbook":"shipping"}
+  ],
+  "negativeRounds": [
+    {"name":"patch-preserving rebase still invalidates","change":{"head":"cccccccccccccccccccccccccccccccccccccccc"},"blocker":"STALE_HEAD_OR_BASE:gates"},
+    {"name":"base retarget still invalidates","change":{"base":"cccccccccccccccccccccccccccccccccccccccc"},"blocker":"STALE_HEAD_OR_BASE:gates"},
+    {"name":"a green check list is not review proof","change":{"unresolvedFindings":1},"blocker":"UNRESOLVED_FINDINGS"},
+    {"name":"recovery reads remote before external replay","change":{"interrupted":true},"blocker":"REMOTE_RECONCILIATION_REQUIRED"},
+    {"name":"stack delivery never grants shipping","change":{"workflow":"autopilot-stack","requestedAction":"merge"},"blocker":"WORKFLOW_STOPS_BEFORE_MERGE"},
+    {"name":"babysit never grants shipping","change":{"workflow":"babysit","requestedAction":"merge"},"blocker":"WORKFLOW_STOPS_BEFORE_MERGE"}
+  ]
+}

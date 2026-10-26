@@ -118,6 +118,9 @@
     ],
     "pendingTargetReasons": {
       "statechart": "27 upstream files including a TLA+/TLC toolchain and a 260 KB test fixture; needs its own work package, not a prose port"
-    }
+    },
+    "semanticMapping": "SEMANTICS.json",
+    "semanticMappingScope": "11 core workflows; critical rules only; see per-rule evidence boundaries",
+    "behavioralParity": "not-claimed"
   }
 }

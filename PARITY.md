@@ -4,7 +4,7 @@ The verified baseline is `cursor/plugins` commit `978ca6e9c0e012047cd5058b8e8292
 
 The pinned target `0.15.32` (commit `99b609a72323b70204eab407c622f436e858e112`) contains 58 top-level skills and 23 playbooks. This package registers 57 of them. `statechart` stays pending because it needs its own work package: 27 files, a TLA+/TLC toolchain, and a 260 KB test fixture. [The target inventory](docs/upstream-inventory-0.15.32.json) records one disposition per upstream file.
 
-This package represents upstream intent with Pi-native instructions. It does not claim byte-for-byte, auxiliary-file, or Cursor platform parity. `make-bot-ui` remains Cursor-only. Private Cursor PR-tool provenance, upstream watcher verdicts, and Cursor-only cleanup plugins remain unsupported. [The wording review](docs/UPSTREAM-0.15.17.md) records retained differences.
+This package represents upstream intent with Pi-native instructions. It does not claim byte-for-byte, complete auxiliary-file, or Cursor platform parity. A pinned baseline skill Markdown subset is now vendored for the eleven core workflow mappings; scripts, assets and other-plugin capabilities remain outside that snapshot. `make-bot-ui` remains Cursor-only. Private Cursor PR-tool provenance, upstream watcher verdicts, and Cursor-only cleanup plugins remain unsupported. [The wording review](docs/UPSTREAM-0.15.17.md) records retained differences.
 
 ## Native additions 0.6.0-preview.1
 
@@ -143,3 +143,11 @@ Cursor manifests/cloud/private-tool provenance and Cursor transcript/simulator
 cleanup remain unsupported. Local read-only investigation uses supplied
 snapshots rather than implicit MCP access. Native head/base verification stays
 stricter than the upstream patch-ID/noisy-build reuse rule.
+
+## Core semantic compatibility audit (issue #16)
+
+The eleven core entrypoints now retain the pinned upstream body and an explicit [Pi adapter](docs/PI-SEMANTIC-ADAPTER.md). [SEMANTICS.json](SEMANTICS.json) maps exact source lines and critical rules to test names and reviewed file fingerprints. The source snapshot contains all baseline Skill Markdown and references plus the license, checked against Git blob IDs. This is critical-rule mapping coverage, not a completed audit of every sentence or demonstrated model behavior.
+
+`npm run check:semantics` fails on unreviewed local source, adapter, implementation or bound-test drift. `npm run check:semantics -- --from /path/to/cursor-plugins --commit <full-sha>` reports file/step diffs and blocks only unreviewed relevant upstream changes. Explicit per-file, exact-commit sign-off receipts may acknowledge a change without advancing the baseline. Inventory scans cannot advance semantic approval.
+
+See [the evidence tiers and real-model procedure](docs/SEMANTIC-COMPATIBILITY.md). The reviewed baseline remains 0.15.17; the 0.15.32 target stays separate.

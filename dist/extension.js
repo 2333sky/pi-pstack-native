@@ -1,3 +1,5 @@
+import { registerSemanticTool } from "./compatibility/tool.js";
+import { createResourceTools } from "./agent/resources.js";
 import { upstreamVersion } from "./runtime/upstream.js";
 import { registerProtocolTools } from "./tools/protocol.js";
 import { readFileSync } from "node:fs";
@@ -66,6 +68,8 @@ export default function piPstackNative(pi) {
         }, currentCtx.isIdle() ? { triggerTurn: true } : { triggerTurn: true, deliverAs: "followUp" });
     });
     const loops = new LoopScheduler(pi);
+    registerSemanticTool(pi);
+    pi.registerTool(createResourceTools(SKILLS)[0]);
     registerAgentTool(pi, agents);
     registerWorkflowTool(pi, workflows);
     registerProtocolTools(pi, workflows);
@@ -102,7 +106,7 @@ export default function piPstackNative(pi) {
             "- Prefer pstack_workflow for multi-agent dependency graphs and pstack_agents for one bounded child.",
             "- One writer may use the target checkout. Independent parallel writers use worktrees; multi-writer delivery converges through an integrator. Reviewers are read-only; verifiers follow the directly dependent artifact.",
             "- Workflow state is durable. Do not manually repeat a completed call after resume.",
-            "- Treat Cursor Task/cloud-agent/Custom-Mode/loop wording in upstream-derived skills as semantics; use the Pi-native tools and commands instead.",
+            "- Core pstack entrypoints retain the pinned upstream body. Read pi-adapter.md with pstack_skill for explicit overrides; resolve original references as upstream/skills/<skill>/... . No unavailable capability may silently count as completed. Use pstack_semantics to check model panels and round receipts; native ledger/Frontier gates still apply.",
             "- One simple writer may work in the target checkout. Independent parallel writers use worktrees. If several writer outputs form one deliverable, converge them through an integrator node before final verification.",
             potetoMode ? "- Poteto Mode is sticky for this session. Route non-trivial work through the matching pstack playbook and verify before declaring done." : "",
         ].filter(Boolean).join("\n");
@@ -202,7 +206,7 @@ export default function piPstackNative(pi) {
             const skills = parity.skills ? Object.values(parity.skills) : [];
             const playbooks = parity.playbooks ? Object.values(parity.playbooks) : [];
             const pending = [...skills, ...playbooks].filter((v) => v === "PENDING_PORT").length;
-            ctx.ui.notify(`pstack ${parity.upstream ?? PSTACK_VERSION} semantic parity\nskills: ${skills.length}\nplaybooks: ${playbooks.length}\npending in listed scope: ${pending}\ncursor-only: ${(parity.cursorOnly ?? []).join(", ") || "none"}\nfile-level auxiliary audit: ${parity.coverage?.fileLevelAudit ?? "not-claimed"}`, pending ? "warning" : "info");
+            ctx.ui.notify(`pstack ${parity.upstream ?? PSTACK_VERSION} inventory coverage (not behavioral parity)\nskills: ${skills.length}\nplaybooks: ${playbooks.length}\npending in listed scope: ${pending}\ncursor-only: ${(parity.cursorOnly ?? []).join(", ") || "none"}\nfile-level auxiliary audit: ${parity.coverage?.fileLevelAudit ?? "not-claimed"}`, pending ? "warning" : "info");
         },
     });
     pi.registerCommand("pstack-workflows", {

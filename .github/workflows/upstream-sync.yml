@@ -38,7 +38,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          node scripts/upstream/cli.mjs scan --candidate-ref "$CANDIDATE_REF" > scan-result.json
+          node --experimental-strip-types scripts/upstream/cli.mjs scan --candidate-ref "$CANDIDATE_REF" > scan-result.json
           code=$?
           set -e
           if [ "$code" != 0 ] && [ "$code" != 3 ]; then exit "$code"; fi
@@ -51,6 +51,7 @@ jobs:
             scan-result.json
             docs/upstream-sync/reports/
             docs/upstream-sync/tasks/
+            docs/upstream-sync/semantic/
   notify:
     needs: scan
     # Daily writes require explicit repository configuration; manual writes require checkbox.
