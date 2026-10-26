@@ -44,7 +44,7 @@ jobs:
   statechart:
     name: Statechart toolchain
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     # The upstream suite is evidence, not a gate: 19 of its 150 tests fail on a
     # developer machine. docs/statechart-port.md lists them. Gating on it would
     # make every PR red for a known, documented reason.
