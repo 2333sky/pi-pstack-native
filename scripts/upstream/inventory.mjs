@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { digest, readJSON, safePath } from './core.mjs';
 
 const snapshotPath = 'docs/upstream-target-0.15.32.json';
+const dispositionsPath = 'docs/upstream-dispositions-0.15.32.json';
 const sha = /^[a-f0-9]{40}$/;
 const categoryRules = [
   ['manifest', /^(?:\.cursor-plugin\/)?plugin\.json$/],
@@ -74,7 +75,8 @@ function summarize(entries) {
   for(const list of Object.values(openWork)) list.sort();
   return {counts,dispositionSummary,openWork};
 }
-function disposition(source,parity,localRoot) {
+function disposition(source,parity,localRoot,reviewed = {}) {
+  if(Object.hasOwn(reviewed,source.path)) return {...reviewed[source.path]};
   if(['skill','playbook'].includes(source.category)) {
     const name = nameOf(source), registry = registryOf(source,parity);
     if(!Object.hasOwn(registry ?? {},name)) return {kind:'pending',reason:'not-in-reviewed-registry'};
@@ -95,6 +97,52 @@ function disposition(source,parity,localRoot) {
     ? {kind:'local',path:source.path,reason:'pinned-auxiliary-source'}
     : {kind:'source-only',path:vendored,reason:'pinned-upstream-source'};
   return {kind:'pending',reason:'file-disposition-not-reviewed'};
+}
+
+function parseReviewedJSON(text) {
+  const value = JSON.parse(text), scopes = [];
+  let previous;
+  for(const [token] of text.matchAll(/"(?:\\.|[^"\\])*"|[{}\[\]:,]/g)) {
+    if(token === '{') scopes.push(new Set());
+    else if(token === '[') scopes.push(null);
+    else if(token === '}' || token === ']') scopes.pop();
+    else if(token.startsWith('"') && scopes.at(-1) && ['{',','].includes(previous)) {
+      const key = JSON.parse(token), keys = scopes.at(-1);
+      requireValue(!keys.has(key),`Duplicate override key: ${key}`);
+      keys.add(key);
+    }
+    previous = token;
+  }
+  return value;
+}
+function readDispositions({snapshot,parity,localRoot}) {
+  const reviewed = parseReviewedJSON(readFileSync(join(localRoot,dispositionsPath),'utf8'));
+  const fields = (value,keys) => value !== null && typeof value === 'object' && !Array.isArray(value)
+    && Object.keys(value).length === keys.length && keys.every(key=>Object.hasOwn(value,key));
+  requireValue(fields(reviewed,['schemaVersion','target','reviewedAt','byPath']) && reviewed.schemaVersion === 1,'Invalid override schema');
+  requireValue(fields(reviewed.target,['commit','snapshotDigest']) && reviewed.target.commit === snapshot.commit && reviewed.target.snapshotDigest === snapshot.blobDigest,'Override target mismatch');
+  requireValue(typeof reviewed.reviewedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(reviewed.reviewedAt),'Invalid override review date');
+  requireValue(reviewed.byPath !== null && typeof reviewed.byPath === 'object' && !Array.isArray(reviewed.byPath),'Invalid override byPath');
+  const sources = new Map(snapshot.blobs.map(blob=>[blob.path,{...blob,category:classify(blob.path)}]));
+  for(const [path,port] of Object.entries(reviewed.byPath)) {
+    safePath(path);
+    requireValue(sources.has(path),`Unknown override snapshot path: ${path}`);
+    requireValue(['local','source-only','unsupported'].includes(port?.kind),`Unknown override kind: ${path}`);
+    requireValue(fields(port,port.kind === 'local' ? ['kind','reason','path']:['kind','reason']),`Invalid override fields: ${path}`);
+    requireValue(nonempty(port.reason),`Override requires a reason: ${path}`);
+    const source = sources.get(path);
+    if(port.kind === 'local') confinedFile(localRoot,port.path);
+    if(['skill','playbook'].includes(source.category)) {
+      const registry = registryOf(source,parity), name = nameOf(source);
+      if(port.kind === 'local') requireValue(Object.hasOwn(registry ?? {},name) && registry[name] === 'ADAPTED','Local skill or playbook is not registry-adapted');
+      if(registry?.[name] === 'ADAPTED') requireValue(port.kind === 'local','Override cannot downgrade registry-adapted skill or playbook');
+    }
+  }
+  for(const source of sources.values()) {
+    if(['skill','playbook','agent','manifest'].includes(source.category)) continue;
+    requireValue(Object.hasOwn(reviewed.byPath,source.path),`Missing reviewed disposition: ${source.path}`);
+  }
+  return reviewed.byPath;
 }
 
 export function readSnapshot(root) {
@@ -121,28 +169,32 @@ export function validateSnapshot(snapshot) {
   } catch(error) { throw new Error(`SNAPSHOT_${error.message}`); }
 }
 export function buildInventory({ snapshot, parity, localRoot }) {
-  validateSnapshot(snapshot);
-  const text = skillText(localRoot);
-  const entries = snapshot.blobs.map(blob=>{
-    const source = {path:blob.path,blob:blob.blob,mode:blob.mode,size:blob.size,category:classify(blob.path)};
-    const entry = {source,port:disposition(source,parity,localRoot),requirements:{status:'not_recorded'},contracts:{status:'not_run',ids:[]},evidence:{status:'not_run',refs:[]}};
-    if(closureCategories.has(source.category)) {
-      const needle = closureNeedle(source.path);
-      entry.closure = {referencedByLocalSkill:Boolean(needle) && text.includes(needle)};
-    }
-    return entry;
-  });
-  return {
-    schemaVersion:1,
-    target:{commit:snapshot.commit,version:snapshot.version,snapshot:snapshotPath,snapshotDigest:snapshot.blobDigest},
-    reviewedBaseline:{commit:parity.upstreamCommit,version:parity.upstream,registry:'PARITY.json'},
-    ...summarize(entries),
-    entries,
-  };
+  try {
+    validateSnapshot(snapshot);
+    const reviewed = readDispositions({snapshot,parity,localRoot});
+    const text = skillText(localRoot);
+    const entries = snapshot.blobs.map(blob=>{
+      const source = {path:blob.path,blob:blob.blob,mode:blob.mode,size:blob.size,category:classify(blob.path)};
+      const entry = {source,port:disposition(source,parity,localRoot,reviewed),requirements:{status:'not_recorded'},contracts:{status:'not_run',ids:[]},evidence:{status:'not_run',refs:[]}};
+      if(closureCategories.has(source.category)) {
+        const needle = closureNeedle(source.path);
+        entry.closure = {referencedByLocalSkill:Boolean(needle) && text.includes(needle)};
+      }
+      return entry;
+    });
+    return {
+      schemaVersion:1,
+      target:{commit:snapshot.commit,version:snapshot.version,snapshot:snapshotPath,snapshotDigest:snapshot.blobDigest},
+      reviewedBaseline:{commit:parity.upstreamCommit,version:parity.upstream,registry:'PARITY.json'},
+      ...summarize(entries),
+      entries,
+    };
+  } catch(error) { throw new Error(`INVENTORY_${error.message}`); }
 }
 export function validateInventory(inventory, { snapshot, parity, localRoot }) {
   try {
     validateSnapshot(snapshot);
+    const reviewed = readDispositions({snapshot,parity,localRoot});
     requireValue(inventory?.schemaVersion === 1,'Invalid schema version');
     requireValue(isDeepStrictEqual(inventory.target,{commit:snapshot.commit,version:snapshot.version,snapshot:snapshotPath,snapshotDigest:snapshot.blobDigest}),'Target mismatch');
     requireValue(isDeepStrictEqual(inventory.reviewedBaseline,{commit:parity.upstreamCommit,version:parity.upstream,registry:'PARITY.json'}),'Reviewed baseline mismatch');
@@ -154,6 +206,7 @@ export function validateInventory(inventory, { snapshot, parity, localRoot }) {
       requireValue(source.category === classify(source.path),'Category mismatch');
       requireValue(isDeepStrictEqual(entry.requirements,{status:'not_recorded'}),'Invalid requirements');
       requireValue(Object.hasOwn(dispositionKeys,entry.port?.kind),'Unknown disposition');
+      if(Object.hasOwn(reviewed,source.path)) requireValue(isDeepStrictEqual(entry.port,reviewed[source.path]),'Reviewed disposition mismatch');
       if(entry.port.kind === 'local') {
         confinedFile(localRoot,entry.port.path);
         if(['skill','playbook'].includes(source.category)) {

@@ -26,29 +26,16 @@
     "nestedSkills": 3
   },
   "dispositionSummary": {
-    "local": 141,
-    "sourceOnly": 2,
-    "unsupported": 1,
-    "pending": 56
+    "local": 143,
+    "sourceOnly": 44,
+    "unsupported": 13,
+    "pending": 0
   },
   "openWork": {
     "pendingSkills": [],
     "pendingPlaybooks": [],
-    "pendingNestedSkills": [
-      "reproduce-and-fix-issues",
-      "setup-benny",
-      "triage-issue-reports"
-    ],
-    "referencedFiles": [
-      "skills/poteto-mode/scripts/check-plan.mjs",
-      "skills/poteto-mode/scripts/package.json",
-      "skills/poteto-mode/scripts/watch-pr/github.ts",
-      "skills/poteto-mode/scripts/watch-pr/policy.ts",
-      "skills/poteto-mode/scripts/watch-pr/render.ts",
-      "skills/poteto-mode/scripts/watch-pr/watch-pr",
-      "skills/poteto-mode/scripts/worktree-audit.sh",
-      "skills/show-me-your-work/references/decision-log-template.tsv"
-    ]
+    "pendingNestedSkills": [],
+    "referencedFiles": []
   },
   "entries": [
     {
@@ -60,8 +47,9 @@
         "category": "manifest"
       },
       "port": {
-        "kind": "source-only",
-        "reason": "upstream-manifest-not-vendored"
+        "kind": "local",
+        "reason": "Pinned .cursor-plugin/plugin.json declares upstream version 0.15.32, skill directories and Cursor plugin metadata; the Pi package ships it only as pinned source metadata under vendor/upstream/0.15.32/pstack/.cursor-plugin/plugin.json, not as Pi registration.",
+        "path": "vendor/upstream/0.15.32/pstack/.cursor-plugin/plugin.json"
       },
       "requirements": {
         "status": "not_recorded"
@@ -84,8 +72,8 @@
         "category": "other"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned .gitignore excludes node_modules, .DS_Store and logs for upstream development; the Pi repository owns its own ignore rules."
       },
       "requirements": {
         "status": "not_recorded"
@@ -158,8 +146,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned assets/logo.png is a 512 by 512 PNG branding asset, not a Skill dependency; the Pi README uses text branding without this image."
       },
       "requirements": {
         "status": "not_recorded"
@@ -182,8 +170,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/FOR_AGENTS.md directs setup of two Cursor automations with immutable Slack thread coordinates; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -206,8 +194,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/README.md introduces the dormant Cursor triage and reproduction automation pack; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -230,8 +218,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/reproduce-and-fix-issues/references/control-adapter.md defines UI driving, capture and cleanup capabilities for the Benny reproduction automation; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -254,8 +242,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/reproduce-and-fix-issues/references/feature-map.example.md provides a fictional task-app feature map for the Benny reproduction automation; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -278,8 +266,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/reproduce-and-fix-issues/references/verify-existing-fix.md requires baseline and patched-build checks of an existing fix within the Benny automation; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -302,8 +290,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/reproduce-and-fix-issues/SKILL.md waits for trusted Slack triage markers before two UI reproductions and a bounded draft fix; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -326,8 +314,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/setup-benny/SKILL.md configures the committed pack and hands Cursor automation drafts to the Automations editor; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -350,8 +338,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/triage-issue-reports/references/routing.example.md defines evidence-based routing placeholders for Benny Slack triage; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -374,8 +362,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/skills/triage-issue-reports/SKILL.md triages a triggered Slack report with tracker deduplication and one thread-only verdict; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -398,8 +386,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/templates/configuration.example.yaml configures Slack actions, tracker fields, control adapters, marker identities and automation budgets; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -422,8 +410,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/templates/reproduce-automation-prompt.md templates a Cursor automate draft triggered by Slack report coordinates; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -446,8 +434,8 @@
         "category": "automation"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "unsupported",
+        "reason": "Pinned automations/benny/templates/triage-automation-prompt.md templates a Cursor automate draft for one thread-only Slack triage verdict; Pi has no Cursor automation event source for this pack."
       },
       "requirements": {
         "status": "not_recorded"
@@ -470,8 +458,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/01-setup.md teaches Cursor plugin installation and model setup; README.md and skills/setup-pstack/SKILL.md provide Pi setup."
       },
       "requirements": {
         "status": "not_recorded"
@@ -494,8 +482,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/02-poteto-mode.md explains prompt routing and Cursor Custom Mode; skills/poteto-mode/SKILL.md and docs/REFERENCE.md describe the Pi entrypoint."
       },
       "requirements": {
         "status": "not_recorded"
@@ -518,8 +506,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/03-understand.md introduces how, why, teach, recall and session pickup; the shipped Skills and investigation playbook retain those instructions."
       },
       "requirements": {
         "status": "not_recorded"
@@ -542,8 +530,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/04-design.md explains architect, arena, swarm and interrogate design flows; their shipped Skills retain the working instructions."
       },
       "requirements": {
         "status": "not_recorded"
@@ -566,8 +554,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/05-build-and-clean.md explains build playbooks, TDD and comment cleanup; the shipped playbooks, tdd and no-comments Skills retain those instructions."
       },
       "requirements": {
         "status": "not_recorded"
@@ -590,8 +578,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/06-verify-and-ship.md explains verification skills, statecharts, PR creation and shipping; shipped Skills, docs/STATECHART.md and docs/PR-PROTOCOL.md cover the Pi paths."
       },
       "requirements": {
         "status": "not_recorded"
@@ -614,8 +602,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/07-overnight.md explains autonomous loops, queues and self-starting cloud work; docs/REFERENCE.md and docs/PI-SEMANTIC-ADAPTER.md describe native loops and the missing cloud execution."
       },
       "requirements": {
         "status": "not_recorded"
@@ -638,8 +626,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/08-principles.md summarizes the 24 named principles; shipped principle Skills retain each complete rule."
       },
       "requirements": {
         "status": "not_recorded"
@@ -662,8 +650,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/09-make-it-yours.md explains personal modes, reflection, skill authoring and bot UI; the shipped adaptation Skills cover supported work and docs/PI-SEMANTIC-ADAPTER.md records unavailable dependencies."
       },
       "requirements": {
         "status": "not_recorded"
@@ -686,8 +674,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/10-recipes-and-pitfalls.md collects example prompts and common workflow mistakes; skills/poteto-help/references/recipes.md and prompting.md provide shipped prompt guidance."
       },
       "requirements": {
         "status": "not_recorded"
@@ -710,8 +698,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/design.jpg is a JPEG illustration linked by docs/guide/04-design.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -734,8 +722,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/overnight.jpg is a JPEG illustration linked by docs/guide/07-overnight.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -758,8 +746,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/recipes.jpg is a JPEG illustration linked by docs/guide/10-recipes-and-pitfalls.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -782,8 +770,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/router.jpg is a JPEG illustration linked by docs/guide/02-poteto-mode.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -806,8 +794,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/understanding.jpg is a JPEG illustration linked by docs/guide/03-understand.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -830,8 +818,8 @@
         "category": "asset"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/images/verification.jpg is a JPEG illustration linked by docs/guide/06-verify-and-ship.md, not an executable dependency; Pi ships text guidance instead of that upstream guide."
       },
       "requirements": {
         "status": "not_recorded"
@@ -854,8 +842,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/guide/README.md indexes the ten-page upstream user guide; README.md and docs/README.md index Pi documentation."
       },
       "requirements": {
         "status": "not_recorded"
@@ -878,8 +866,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned docs/harness/claude-code.md maps Cursor tools, models and paths to Claude Code; docs/PI-SEMANTIC-ADAPTER.md supplies the Pi-specific mapping instead."
       },
       "requirements": {
         "status": "not_recorded"
@@ -903,8 +891,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "LICENSE",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned LICENSE contains Lauren Tan's MIT grant and notice, retained verbatim in the shipped root LICENSE.",
+        "path": "LICENSE"
       },
       "requirements": {
         "status": "not_recorded"
@@ -951,8 +939,8 @@
         "category": "docs"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned README.md describes Cursor plugin installation, skill commands and Benny; shipped README.md and README.zh-CN.md describe Pi installation and its limits."
       },
       "requirements": {
         "status": "not_recorded"
@@ -976,8 +964,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/architect/references/design-red-flags.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/architect/references/design-red-flags.md screens candidate designs for shallow modules, leakage and split ownership; the shipped architect Skill retains this dependency at the same local path.",
+        "path": "skills/architect/references/design-red-flags.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1004,8 +992,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/architect/references/rationale-template.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/architect/references/rationale-template.md defines the caller-first design rationale and synthesis sections; the shipped architect Skill retains this dependency at the same local path.",
+        "path": "skills/architect/references/rationale-template.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1032,8 +1020,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/architect/references/runner-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/architect/references/runner-prompt.md instructs architect candidate runners to produce an isolated design package; the shipped architect Skill retains this dependency at the same local path.",
+        "path": "skills/architect/references/runner-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1268,8 +1256,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/create-verification-skill/references/feature-map-example/create-note.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/create-verification-skill/references/feature-map-example/create-note.md demonstrates browser and CLI note-creation journeys for the generated feature map; the shipped create-verification-skill Skill retains this dependency at the same local path.",
+        "path": "skills/create-verification-skill/references/feature-map-example/create-note.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1296,8 +1284,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/create-verification-skill/references/feature-map-example/README.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/create-verification-skill/references/feature-map-example/README.md indexes the example feature map and its baseline, doctor and evidence rules; the shipped create-verification-skill Skill retains this dependency at the same local path.",
+        "path": "skills/create-verification-skill/references/feature-map-example/README.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1324,8 +1312,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/create-verification-skill/references/feature-map-example/search.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/create-verification-skill/references/feature-map-example/search.md demonstrates search-match, empty-result and CLI journeys for the example feature map; the shipped create-verification-skill Skill retains this dependency at the same local path.",
+        "path": "skills/create-verification-skill/references/feature-map-example/search.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1404,8 +1392,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/how/references/explainer-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/how/references/explainer-prompt.md defines the architecture explainer prompt and its output sections; the shipped how Skill retains this dependency at the same local path.",
+        "path": "skills/how/references/explainer-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1432,8 +1420,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/how/references/explorer-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/how/references/explorer-prompt.md defines a bounded explorer's components, flow, boundaries and evidence output; the shipped how Skill retains this dependency at the same local path.",
+        "path": "skills/how/references/explorer-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1512,8 +1500,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/interrogate/references/code-quality-review.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/interrogate/references/code-quality-review.md supplies the structural code-quality lens used alongside the review rubric; the shipped interrogate Skill retains this dependency at the same local path.",
+        "path": "skills/interrogate/references/code-quality-review.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1540,8 +1528,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/interrogate/references/lead-judgment.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/interrogate/references/lead-judgment.md filters review findings for actual defects, missing context and needless abstraction; the shipped interrogate Skill retains this dependency at the same local path.",
+        "path": "skills/interrogate/references/lead-judgment.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1568,8 +1556,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/interrogate/references/reviewer-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/interrogate/references/reviewer-prompt.md templates adversarial review with intent, diff, rubric and quality inputs; the shipped interrogate Skill retains this dependency at the same local path.",
+        "path": "skills/interrogate/references/reviewer-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1596,8 +1584,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/interrogate/references/rubric.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/interrogate/references/rubric.md defines correctness, root-cause, structure, verification, complexity and security review lenses; the shipped interrogate Skill retains this dependency at the same local path.",
+        "path": "skills/interrogate/references/rubric.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1804,8 +1792,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/poteto-help/references/prompting.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/poteto-help/references/prompting.md explains goal-and-proof prompts and one-line steering for a drifting run; the shipped poteto-help Skill retains this dependency at the same local path.",
+        "path": "skills/poteto-help/references/prompting.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -1832,8 +1820,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/poteto-help/references/recipes.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/poteto-help/references/recipes.md provides example prompts for understanding, building, design, review and unattended work; the shipped poteto-help Skill retains this dependency at the same local path.",
+        "path": "skills/poteto-help/references/recipes.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -2484,8 +2472,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/poteto-mode/references/bugbot-triage.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/poteto-mode/references/bugbot-triage.md defines fix, dismiss and ask decisions for review-automation comments; the shipped poteto-mode Skill retains this dependency at the same local path.",
+        "path": "skills/poteto-mode/references/bugbot-triage.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -2511,8 +2499,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/bootstrap.ts hashes package.json and bun.lock before installing Commander with Bun; the Pi package uses its root Node dependency installation instead."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2538,8 +2526,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/bun.lock locks Commander, Bun types and TypeScript for the upstream helper package; the Pi root package-lock.json governs the installed runtime instead."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2565,8 +2553,9 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "local",
+        "reason": "Pinned skills/poteto-mode/scripts/check-plan.mjs validates strict program-plan sections and proof lanes; shipped scripts/check-plan.mjs retains that checker with the Pi /pstack-loop marker.",
+        "path": "scripts/check-plan.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -2592,8 +2581,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/check-plan.test.ts uses bun:test to exercise Markdown fence and plan-validation cases; the Pi plan checker is shipped as scripts/check-plan.mjs with local regression coverage in test/check-plan.test.ts."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2619,8 +2608,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/orch/orch.test.ts tests the upstream TSV store and Commander orch CLI; the Pi program and delivery tests target native state rather than this Bun CLI."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2646,8 +2635,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/orch/orch.ts exposes Commander commands for units, ledger, inbox, gates and frontier; docs/REFERENCE.md describes Pi native coordination instead of this Bun command."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2673,8 +2662,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/orch/store.ts implements TSV units and ledger storage with locking, inbox, gates and forge frontier reads; Pi native program and delivery stores own those records without this TSV implementation."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2700,8 +2689,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/package.json declares the private Bun helper package and Commander dependency; the Pi root package.json owns package dependencies and commands."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2727,8 +2716,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/cli.test.ts tests watcher arguments, rendering and CLI status codes with fake readers; native delivery tests target Pi states rather than this Bun watcher CLI."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2754,8 +2743,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/cli.ts parses Commander watcher options and runs single or queued polling; Pi native delivery tools are separate and Cursor-watch-READY remains explicitly unsupported."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2781,8 +2770,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts builds fake GitHub readers, checks and review threads for upstream watcher tests; native delivery tests use their own fixtures instead."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2808,8 +2797,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/github.test.ts tests GitHub check fallbacks, enum parsing, pagination and stack discovery; native delivery tests target the Pi GitHub adapter instead."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2835,8 +2824,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/github.ts reads gh and GraphQL PR facts, checks, review threads and stack order; native GitHub delivery code supplies separate reads without claiming this watcher's verdict."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2862,8 +2851,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/policy.test.ts tests readiness truth tables, queue cadence and polling deadlines; native delivery tests cover their own gates rather than the upstream readiness policy."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2889,8 +2878,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/policy.ts classifies PR readiness and queued-stack polling decisions; Pi native Frontier and ledger gates are distinct and do not assert Cursor-watch-READY."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2916,8 +2905,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/render.ts formats watcher verdicts as JSON and human status tables; Pi delivery output describes native states rather than this watcher format."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2943,8 +2932,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/tsconfig.json enables strict no-emit checking with Bun types for watcher TypeScript; the Pi root TypeScript configuration checks its own Node implementation."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2970,8 +2959,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/types.compile.ts checks watcher verdict and readiness type constraints at compile time; Pi checks its own native types instead of these unshipped watcher types."
       },
       "requirements": {
         "status": "not_recorded"
@@ -2997,8 +2986,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/types.ts defines branded PR numbers, check states, queue states and watcher verdict unions; Pi native delivery types are separate and do not implement the Cursor watcher verdict contract."
       },
       "requirements": {
         "status": "not_recorded"
@@ -3024,8 +3013,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/watch-pr/watch-pr bootstraps Bun dependencies and invokes the upstream watcher main function; docs/PI-SEMANTIC-ADAPTER.md explicitly excludes Cursor-watch-READY and points to native watch states."
       },
       "requirements": {
         "status": "not_recorded"
@@ -3051,8 +3040,8 @@
         "category": "playbook-script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/poteto-mode/scripts/worktree-audit.sh audits worktree size, merge state, PR state and recent Cursor transcripts without deleting files; pstack_worktrees handles owned Pi worktrees but does not replace this full Cursor transcript audit."
       },
       "requirements": {
         "status": "not_recorded"
@@ -3755,8 +3744,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/reflect/references/divergent-reviewer.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/reflect/references/divergent-reviewer.md instructs a read-only transcript reviewer to find blind spots and alternative lessons; the shipped reflect Skill retains this dependency at the same local path.",
+        "path": "skills/reflect/references/divergent-reviewer.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3783,8 +3772,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/reflect/references/judgment-reviewer.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/reflect/references/judgment-reviewer.md instructs a read-only transcript reviewer to identify durable decision lessons; the shipped reflect Skill retains this dependency at the same local path.",
+        "path": "skills/reflect/references/judgment-reviewer.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3811,8 +3800,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/reflect/references/synthesizer.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/reflect/references/synthesizer.md combines transcript review findings into accepted, rejected and backlog results; the shipped reflect Skill retains this dependency at the same local path.",
+        "path": "skills/reflect/references/synthesizer.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3839,8 +3828,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/reflect/references/tooling-reviewer.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/reflect/references/tooling-reviewer.md instructs a read-only transcript reviewer to extract concrete tool and command lessons; the shipped reflect Skill retains this dependency at the same local path.",
+        "path": "skills/reflect/references/tooling-reviewer.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -3944,8 +3933,8 @@
         "category": "reference"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/show-me-your-work/references/decision-log-template.tsv contains only the six-column TSV header; shipped skills/show-me-your-work/SKILL.md embeds that header and an example row."
       },
       "requirements": {
         "status": "not_recorded"
@@ -3971,8 +3960,8 @@
         "category": "script"
       },
       "port": {
-        "kind": "pending",
-        "reason": "file-disposition-not-reviewed"
+        "kind": "source-only",
+        "reason": "Pinned skills/show-me-your-work/scripts/log.sh appends timestamped, escaped TSV rows and a first-use header; shipped skills/show-me-your-work/SKILL.md allows manual printf with the same cell-safety rules instead of supplying this helper."
       },
       "requirements": {
         "status": "not_recorded"
@@ -4025,8 +4014,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/bug-states.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/bug-states.mjs classifies broken-rule states and reachability for chart coloring; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/bug-states.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4053,8 +4042,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/chart-edges.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/chart-edges.mjs assembles model and replay edges for the chart; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/chart-edges.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4081,8 +4070,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/chart-parts.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/chart-parts.mjs defines edge identifiers, guard labels and chart frontmatter; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/chart-parts.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4109,8 +4098,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/chart-to-tla.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/chart-to-tla.mjs converts Mermaid states and transitions into a TLA+ skeleton; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/chart-to-tla.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4137,8 +4126,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/compare-charts.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/compare-charts.mjs compares expected and actual Mermaid chart structure; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/compare-charts.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4165,8 +4154,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/lib.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/lib.mjs provides shared TLA values, DOT graphs, Mermaid parsing and chart comparison; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/lib.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4193,8 +4182,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/map-view.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/map-view.mjs converts TLA values and tuples into reader-facing map views; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/map-view.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4221,8 +4210,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/property-loop.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/property-loop.mjs reads temporal counterexample loops and names repeated reader states; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/property-loop.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4249,8 +4238,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/read-check.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/read-check.mjs checks which model fields the reader mapping accesses; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/read-check.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4277,8 +4266,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/regions-chart.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/regions-chart.mjs renders concurrent regions and grouped chart edges; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/regions-chart.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4305,8 +4294,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/render.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/render.mjs loads the pinned optional renderer packages and writes PNG output; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/render.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4333,8 +4322,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/rule-book.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/rule-book.mjs extracts source-backed rules and module definitions from TLA+ specifications; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/rule-book.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4361,8 +4350,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/second-replay.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/second-replay.mjs replays paths against a second model and identifies divergence; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/second-replay.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4389,8 +4378,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/snapshot.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/snapshot.mjs copies referenced model and mapping inputs to an isolated snapshot; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/snapshot.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4417,8 +4406,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/spec-text.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/spec-text.mjs creates rule-checking modules and reader-mapping scaffolds; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/spec-text.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4445,8 +4434,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/statechart-help.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/statechart-help.mjs documents CLI commands, evidence rules and external tool requirements; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/statechart-help.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4473,8 +4462,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/statechart.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/statechart.mjs dispatches from-spec and from-chart work and invokes model and rendering helpers; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/statechart.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4501,8 +4490,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/test/band.mmd",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/test/band.mmd defines a composite-group edge fixture used by the statechart tests; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/test/band.mmd"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4529,8 +4518,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/test/regions.mmd",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/test/regions.mmd defines the parcel-and-payment concurrent-region fixture; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/test/regions.mmd"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4557,8 +4546,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/test/statechart.test.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/test/statechart.test.mjs contains the Node test suite for parsing, modeling, TLC and rendering helpers; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/test/statechart.test.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4585,8 +4574,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/test/sync.mmd",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/test/sync.mmd defines a parallel connection-and-sync-badge fixture; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/test/sync.mmd"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4613,8 +4602,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/test/upload.mmd",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/test/upload.mmd defines a grouped upload success-and-failure fixture; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/test/upload.mmd"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4641,8 +4630,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/tlc-to-chart-args.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/tlc-to-chart-args.mjs parses trace, model comparison and chart-view arguments; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/tlc-to-chart-args.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4669,8 +4658,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/tlc-to-chart.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/tlc-to-chart.mjs builds Mermaid charts and summaries from TLC graphs and counterexamples; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/tlc-to-chart.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4697,8 +4686,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/tlc-tools.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/tlc-tools.mjs locates Java and TLC with pinned mise tool identifiers; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/tlc-tools.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4725,8 +4714,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/scripts/ways-in.mjs",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/statechart/scripts/ways-in.mjs describes paths into invariant-breaking states; the shipped statechart script tree retains this file at the same local path.",
+        "path": "skills/statechart/scripts/ways-in.mjs"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4753,9 +4742,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/statechart/SKILL.md",
-        "reason": "parity-adapted",
-        "parity": "ADAPTED"
+        "reason": "Pinned skills/statechart/SKILL.md specifies model-backed chart creation, replay and handoff rules; PARITY.json marks statechart ADAPTED and the shipped entrypoint retains its body with the Pi adapter.",
+        "path": "skills/statechart/SKILL.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4883,8 +4871,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/typescript-best-practices/references/patterns.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/typescript-best-practices/references/patterns.md provides the branded-type, union, narrowing and boundary-validation examples named by the Skill; the shipped typescript-best-practices Skill retains this dependency at the same local path.",
+        "path": "skills/typescript-best-practices/references/patterns.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4963,8 +4951,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/epistemics.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/epistemics.md defines direct, supported, inferred, speculative and unknown confidence tiers; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/epistemics.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -4991,8 +4979,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/investigator-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/investigator-prompt.md templates source-bounded history investigation and evidence output; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/investigator-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5019,8 +5007,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/source-playbook.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/source-playbook.md indexes the source-specific investigation playbooks selected by the why Skill; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/source-playbook.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5047,8 +5035,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/code-archaeology.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/code-archaeology.md provides git and gh history-search recipes for a source-control investigator; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/code-archaeology.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5075,8 +5063,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/databricks.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/databricks.md provides warehouse and product-analytics investigation queries and cautions; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/databricks.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5103,8 +5091,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/datadog.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/datadog.md provides runtime telemetry, alert, trace and log investigation guidance; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/datadog.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5131,8 +5119,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/incident-postmortem.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/incident-postmortem.md adds incident searches across tracker, chat and git for defensive-code investigations; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/incident-postmortem.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5159,8 +5147,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/linear.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/linear.md provides ticket, project and linked-PR investigation recipes; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/linear.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5187,8 +5175,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/notion.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/notion.md provides long-form design-document and meeting-note investigation recipes; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/notion.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5215,8 +5203,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/sentry.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/sentry.md provides error-history, release-window and first-seen investigation recipes; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/sentry.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5243,8 +5231,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/sources/slack.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/sources/slack.md provides chat-history search and authentication cautions for the source-playbook index; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/sources/slack.md"
       },
       "requirements": {
         "status": "not_recorded"
@@ -5271,8 +5259,8 @@
       },
       "port": {
         "kind": "local",
-        "path": "skills/why/references/synthesizer-prompt.md",
-        "reason": "pinned-auxiliary-source"
+        "reason": "Pinned skills/why/references/synthesizer-prompt.md templates confidence-weighted history synthesis with skipped sources and citations; the shipped why Skill retains this dependency at the same local path.",
+        "path": "skills/why/references/synthesizer-prompt.md"
       },
       "requirements": {
         "status": "not_recorded"
