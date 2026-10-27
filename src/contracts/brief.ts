@@ -78,7 +78,13 @@ export function parseReport(text: string): TaskReport {
   return validateReport(JSON.parse(block ? block[1] : text));
 }
 export function briefPrompt(brief: TaskBrief): string {
-  return `\n\nAuthoritative Task Brief (${brief.id} revision ${brief.revision}, orders ${hash(brief.standingOrders)}):\n${JSON.stringify(brief, null, 2)}\nReturn a task-report JSON block with status, artifactRefs, base, head, commandsRun, evidenceRefs, deviations, unresolved, nextActions. Do not claim verification from narrative alone.`;
+  const extra = {
+    evaluation: 'Include evaluation: [{"criterion": "...", "score": 0, "evidence": ["..."], "weaknesses": [], "selectedParts": []}] for every required criterion; scores must be 0 to 10 and evidence must be nonempty.',
+    selection: 'Include selection: {"candidates": ["..."], "selectedParts": []}, naming candidates from the brief.',
+    review: 'Include findings: [{"severity": "low", "location": "...", "description": "...", "evidence": "..."}]; severity is critical, high, medium, or low. Use [] when there are no findings.',
+    coverage: 'Include coverage: {"completed": ["..."], "unresolved": []}, listing completed required slices.',
+  };
+  return `\n\nAuthoritative Task Brief (${brief.id} revision ${brief.revision}, orders ${hash(brief.standingOrders)}):\n${JSON.stringify(brief, null, 2)}\nReturn one fenced JSON task report with all fields: {"status":"completed", "artifactRefs":[], "base":"<starting git commit SHA>", "head":"<current git commit SHA>", "commandsRun":[], "evidenceRefs":[], "deviations":[], "unresolved":[], "nextActions":[]}. status must be exactly one of completed, failed, or blocked (not a synonym). All six array fields are required, even when empty; commandsRun entries are arrays of command arguments. Use the actual starting and current git commit SHAs, not invented values. ${brief.reportRequirements ? extra[brief.reportRequirements.kind] : ''} Do not claim verification from narrative alone.`;
 }
 
 export function validateBudget(budget?: import('./types.ts').Budget): void {

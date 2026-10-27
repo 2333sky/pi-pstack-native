@@ -199,3 +199,22 @@ test(`${FAKE_PROVIDER} a workflow resumes after SIGKILL without replaying comple
     w.restoreEnv(); w.dispose();
   }
 });
+
+test(`${FAKE_PROVIDER} malformed task reports expose diagnostics and stay blocked`, { timeout: 60_000 }, async () => {
+  const w = workspace();
+  const model = await startModelServer(() => ({ text: '```json\n{"status":"success","artifactRefs":[],"base":"x","head":"x","commandsRun":[],"evidenceRefs":[],"deviations":[],"unresolved":[],"nextActions":[]}\n```' }));
+  const parent = await openParentContext({ agentDir: w.agentDir, cwd: w.checkout, modelPort: model.port, sessionDir: w.sessionDir });
+  const engine = new WorkflowEngine(new AgentHost());
+  try {
+    const spec = strictWorkflowSpec(w.checkout, parent.ctx.sessionManager.getSessionId());
+    spec.nodes = [spec.nodes[0]!];
+    const wf = engine.create(spec);
+    const done = await engine.run(wf.id, parent.ctx);
+    const call = done.calls.alpha!;
+    assert.equal(call.reportError, 'TASK_REPORT_INCOMPLETE');
+    assert.equal(new AgentHost().get(call.agentId!)?.reportError, 'TASK_REPORT_INCOMPLETE');
+    assert.equal(call.verification?.status, 'blocked');
+    assert.equal(engine.acceptedWorkflow(done), false);
+    assert.match(lastUserText(model.calls[0]!), /status must be exactly one of completed, failed, or blocked/);
+  } finally { parent.dispose(); await model.close(); w.restoreEnv(); w.dispose(); }
+});

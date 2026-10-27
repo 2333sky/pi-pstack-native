@@ -18,7 +18,7 @@ test("state lock prevents lost read-modify-write between independent OS processe
   try {
     const file = join(root, "counter.json");
     writeFileSync(file, JSON.stringify({ id: "one", value: 0, revision: 0 }));
-    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).pathname;
+    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).href;
     const worker = `import { updateRecord } from ${JSON.stringify(tx)};\n` +
       `const file=process.argv[1]; for(let i=0;i<35;i++) updateRecord('workflow','one',file,(r)=>{r.value++;});`;
     await Promise.all(Array.from({length:4}, () => run(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", worker, file],
@@ -40,7 +40,7 @@ test("a contended state lock retries to its budget instead of failing a legitima
   try {
     const file = join(root, "counter.json");
     writeFileSync(file, JSON.stringify({ id: "one", value: 0, revision: 0 }));
-    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).pathname;
+    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).href;
     const worker = `import { updateRecord } from ${JSON.stringify(tx)};\n` +
       `const file=process.argv[1]; for(let i=0;i<35;i++) updateRecord('workflow','one',file,(r)=>{r.value++;});`;
     const holder = new FileLock(lockPath("state-workflow-one"));
@@ -71,7 +71,7 @@ test("independent processes update one durable workflow record without stale sta
     const engine = new WorkflowEngine({} as never);
     const workflow = engine.create({ cwd: process.cwd(), nodes: [{ key: "a", task: "cross-process state" }] });
     const file = workflowPath(workflow.id);
-    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).pathname;
+    const tx = new URL("../src/runtime/transaction.ts", import.meta.url).href;
     const worker = `import { updateRecord } from ${JSON.stringify(tx)};\n` +
       `const file=process.argv[1], id=process.argv[2]; for(let i=0;i<25;i++) updateRecord('workflow',id,file,(r)=>{r.state='running';r.calls.a.attempt++;});`;
     await Promise.all(Array.from({ length: 4 }, () => run(process.execPath,

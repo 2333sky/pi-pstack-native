@@ -247,6 +247,8 @@ npm run benchmark -- --agent-dir /absolute/path/to/pi-agent --model provider/mod
 
 `benchmark:smoke` does **not** measure real tasks. Model-driven benchmarks require separately configured credentials, run in dedicated local repositories, and have not been used to justify performance claims.
 
+The live benchmark defaults to 20 cases, up to 200,000 tokens and 600 seconds per case. This can incur substantial model charges. Use `--limit 1` for an initial run and `--max-tokens N` to set a lower per-case token budget; unknown options are rejected.
+
 ## Continuous upstream sync (M1–M4)
 
 Detection ≠ porting ≠ semantic review ≠ integration. The reviewed baseline in

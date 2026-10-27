@@ -12,6 +12,10 @@ test("parser defaults the output path and rejects missing required flags", () =>
   assert.throws(() => parseArgs(["--agent-dir", "/tmp/agent"]));
   assert.throws(() => parseArgs(["--model", "provider/model"]));
   assert.throws(() => parseArgs([]));
+  assert.equal(parseArgs(["--agent-dir", "a", "--model", "p/m", "--limit", "3", "--max-tokens", "1000"]).limit, 3);
+  assert.throws(() => parseArgs(["--agent-dir", "a", "--model", "p/m", "--limit", "0"]), /Invalid --limit/);
+  assert.throws(() => parseArgs(["--agent-dir", "a", "--model", "p/m", "--limt", "3"]), /Unknown/);
+  assert.throws(() => parseArgs(["--agent-dir", "a", "--model", "p/m", "--limit"]), /missing/i);
 });
 
 test("exit policy fails closed", () => {

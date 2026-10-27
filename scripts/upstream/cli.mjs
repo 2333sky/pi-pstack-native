@@ -74,7 +74,10 @@ try {
       const head = snapshot.commitSha;
       const tree = git(root,['status','--porcelain','--untracked-files=all']);
       const results = gates.map(name => {
-        const r = spawnSync('npm',['run',name],{cwd:root,encoding:'utf8',timeout:600000,maxBuffer:32*1024*1024});
+        const npm = process.env.npm_execpath;
+        const executable = npm ? process.execPath : process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : 'npm';
+        const args = npm ? [npm,'run',name] : process.platform === 'win32' ? ['/d','/s','/c',`npm.cmd run ${name}`] : ['run',name];
+        const r = spawnSync(executable,args,{cwd:root,encoding:'utf8',timeout:600000,maxBuffer:32*1024*1024});
         // Do not persist arbitrary provider/agent output or credentials. Only exit evidence.
         return {command:`npm run ${name}`,status:r.status === 0 ? 'passed':'failed',exitCode:r.status,signal:r.signal ?? null};
       });

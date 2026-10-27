@@ -39,7 +39,7 @@ const tiers = {
       },
       {
         file: 'test/e2e/workflow.test.ts',
-        tests: ['[fake-provider] a strict workflow runs two worktrees, an integrator and deterministic verification', '[fake-provider] a workflow resumes after SIGKILL without replaying completed calls or external effects'].map((name) => ({ name, state: 'pass' })),
+        tests: ['[fake-provider] a strict workflow runs two worktrees, an integrator and deterministic verification', '[fake-provider] a workflow resumes after SIGKILL without replaying completed calls or external effects', '[fake-provider] malformed task reports expose diagnostics and stay blocked'].map((name) => ({ name, state: 'pass' })),
       },
     ],
   },

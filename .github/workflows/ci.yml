@@ -51,7 +51,9 @@ jobs:
         with:
           node-version: '24.x'
       - run: npm ci --no-audit --no-fund
-      - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts
+      - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts test/transaction.test.ts
+      - run: npm run build
+      - run: node scripts/check-windows-build.mjs
 
   statechart:
     name: Statechart toolchain
