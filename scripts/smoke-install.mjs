@@ -21,7 +21,7 @@ const consumer = join(scratch, 'consumer');
 mkdirSync(packed);
 mkdirSync(consumer);
 try {
-  const checked = ['dist/api.js', 'dist/runner/cli.mjs', 'src/extension.ts', 'test/smoke-installed-package.mjs'];
+  const checked = ['dist/api.js', 'dist/runner/cli.mjs', 'src/extension.ts', 'test/smoke-installed-package.mjs', 'skills/ml-development/SKILL.md', 'skills/ml-development/playbooks/02-data.md', 'skills/ml-development/references/run-record.md'];
   const listed = new Set(JSON.parse(npmRun(['pack', '--dry-run', '--json', '--ignore-scripts'], root))[0].files.map((entry) => entry.path));
   for (const path of checked) if (!listed.has(path)) throw new Error(`SMOKE_INSTALL_PUBLISHED_FILE_MISSING: ${path} is not in the tarball for ${manifest.name}@${manifest.version}`);
   npmRun(['pack', '--ignore-scripts', '--dry-run=false', '--pack-destination', packed], root);

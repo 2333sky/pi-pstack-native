@@ -48,6 +48,10 @@ Both model aliases, `inherit-parent` and `auto`, use the parent session's model.
 
 Poteto Mode remains active for the current session until `/poteto-mode off`. You can ask Pi naturally to use child agents for exploration, implementation, or review. Whether agents are launched depends on the request and model's tool calls.
 
+## ML algorithm development
+
+Explicitly invoke `/skill:ml-development <task>` for a workflow covering data splits, baselines, experiments, evaluation, and reproducibility; ordinary ML prompts do not activate this Skill automatically. It reuses existing agent roles and project tools, without provisioning training resources or enforcing GPU budgets. When using Poteto Mode, explicitly request this Skill as well. See the [Chinese workflow guide and open-source survey](docs/ML-WORKFLOWS.zh-CN.md).
+
 ## Inspect work
 
 | Command | Purpose |

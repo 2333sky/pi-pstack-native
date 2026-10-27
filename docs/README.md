@@ -8,6 +8,7 @@
 | --- | --- |
 | [Chinese user guide](../README.zh-CN.md) | Installation, model setup, commands, workflows, and troubleshooting. |
 | [Runtime and maintainer reference](REFERENCE.md) | Agent and workflow behavior, recovery, scheduling, verification, benchmark, and upstream sync. |
+| [AI algorithm workflow](ML-WORKFLOWS.zh-CN.md) | Chinese guide to the ML Skill, experiment stages, and open-source tools. |
 | [Examples](../examples/README.md) | Strict briefs, policy, templates, CLI, and benchmark examples. |
 | [PR protocol](PR-PROTOCOL.md) | Evidence, stack preparation, and authorized delivery. |
 | [Statechart](STATECHART.md) | Statechart toolchain and external dependencies. |
