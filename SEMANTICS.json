@@ -2431,7 +2431,7 @@
     "docs/PI-SEMANTIC-ADAPTER.md": "4c67a30a50000731f6da85cce016e5f23d920f3a77a4be49bcc8e2cc0880ed56",
     "scripts/upstream/cli.mjs": "566a8543b335f8afdbff64eb6fe6cba962d8d323dca81ce50dcb658b5aea893f",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
-    "scripts/semantics/core.mjs": "b4fd7acc4c33b979035838ead81751d14552dfea9542947d2e945e6c796ab2f4",
+    "scripts/semantics/core.mjs": "ca441aa1d6c71cdbde63b39cab22de5d5b1ef1139d89a34c027b7c44860a2912",
     "scripts/semantics/generate.mjs": "7089f8ea820dca7dc1c6c0e1fed4815677eeeb2bad2e76d7ab7dc3c435bd5700",
     "test/semantic-compatibility.test.ts": "4dbc881099c04a0cc63ad51c8025f4eec420f3ac32772a85b895dce212e979fa",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
@@ -2441,7 +2441,8 @@
     "test/protocol.test.ts": "a0d1089288a11e4da975cad695d7c3edf831ee6a5b442b912df906908eba6d8b",
     "test/verification.test.ts": "0b5490574f15768e72b15e08113960416ea7ef9b730bd4d373515b36a6bc0882",
     "test/latest-upstream.test.ts": "0d0d4bd8f5b2c91c348f16968ec8ed91cf01e38ea3281839911a2351afeda0c6",
-    "test/statechart.test.ts": "3cf9230db9f65624097c644248f925e89931bbe2c3c62178dbb12b08f18c9080"
+    "test/statechart.test.ts": "3cf9230db9f65624097c644248f925e89931bbe2c3c62178dbb12b08f18c9080",
+    "scripts/check-statechart.mjs": "c02f3ebe704e2db53b489721e8b31756c8c227d1504136afca15129fe66024d7"
   },
   "driftReviews": [],
   "evidence": {

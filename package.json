@@ -102,7 +102,7 @@
     "check:semantics": "node --experimental-strip-types scripts/check-semantics.mjs",
     "test:semantics": "node --experimental-strip-types --test test/semantic-compatibility.test.ts",
     "smoke:semantics:real": "node --experimental-strip-types scripts/semantics/real-pi-smoke.mjs",
-    "test:statechart": "node --test skills/statechart/scripts/test/statechart.test.mjs"
+    "test:statechart": "node scripts/check-statechart.mjs"
   },
   "engines": {
     "node": ">=22.19.0"
