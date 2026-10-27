@@ -2429,7 +2429,7 @@
     "src/verification/runner.ts": "0964e916c075f82a1eaa4b74f94cca811a15066a94b85be84379e498b01b9b10",
     "src/delivery/frontier.ts": "3eb79a830b1433d5bf2ba5dfd9e459430cce41df99c666f12005ece4f1f88dde",
     "docs/PI-SEMANTIC-ADAPTER.md": "4c67a30a50000731f6da85cce016e5f23d920f3a77a4be49bcc8e2cc0880ed56",
-    "scripts/upstream/cli.mjs": "88bc4e9eb811ea844f16025d2ed95bbaf9f01cb32b619297595d12e88f88313c",
+    "scripts/upstream/cli.mjs": "566a8543b335f8afdbff64eb6fe6cba962d8d323dca81ce50dcb658b5aea893f",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
     "scripts/semantics/core.mjs": "9e24670f5e97286d0bcc47507369da51946bc034a13867bda4a3d8882692ff7a",
     "scripts/semantics/generate.mjs": "d2dd3d8e1439e6b8db86d3e58ab6d57937d04a7f1dc6c323be360165db5f79c9",
