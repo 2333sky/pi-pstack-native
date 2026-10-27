@@ -57,7 +57,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 
 ## AI 算法研发
 
-运行 `/skill:ml-development <任务>`，可按数据切分、基线、实验、评测和复现组织机器学习研发；例如 `/skill:ml-development 检查当前模型的数据泄漏并建立可复现基线`。计算资源、数据和训练框架由项目提供。使用 `/poteto-mode` 时需明确同时要求该 Skill。
+显式运行 `/skill:ml-development <任务>`，可按数据切分、基线、实验、评测和复现组织机器学习研发；例如 `/skill:ml-development 检查当前模型的数据泄漏并建立可复现基线`。普通的 ML 请求不会自动启用此 Skill。它复用已有 Agent 角色；计算资源、数据和训练框架由项目提供，不负责 GPU 预算的强制执行。使用 `/poteto-mode` 时需明确同时要求该 Skill。
 
 详见 [AI 算法研发工作流与开源实践调研](docs/ML-WORKFLOWS.zh-CN.md)。
 
