@@ -116,7 +116,7 @@ try {
       const body = `## Why\nTrack and propose upstream ${report.candidate.sha}.\n\n## What changed\nCandidate semantic port; see task package ${taskStem}.\n\n## Scope\nPending maintainer semantic review. Baseline remains unchanged.\n\n## Blast Radius\nHigh-risk seams and unresolved behavior are listed in the task package.\n\n## Verification\nRequired local gates passed. Live LLM/GitHub E2E: not_run. Semantic review: not_run. CI must independently pass.\n\n${taskMarkdown(report)}`;
       if(!options['allow-remote-write']) { console.log(JSON.stringify({status:'proposed',dryRun:true,branch,body,integrated:false})); }
       else {
-        if(options.repo !== '2333sky/pi-pstack-native') throw new Error('Explicit approved target repository required');
+        if(options.repo !== '2333sky/pi-pstack-native-2') throw new Error('Explicit approved target repository required');
         writeConfined(root,bodyPath,body);
         const gh = args => {try {return execFileSync('gh',args,{encoding:'utf8',timeout:30000,stdio:['ignore','pipe','pipe']});} catch {throw new Error('GitHub operation failed; inspect remote state before retry');}};
         const existing = JSON.parse(gh(['pr','list','--repo',options.repo,'--head',branch,'--state','all','--json','url']));
