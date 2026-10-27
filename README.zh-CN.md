@@ -6,7 +6,7 @@ pi-pstack-native 是将 [pstack](https://github.com/cursor/plugins/tree/main/pst
 
 本文提供中文使用说明；扩展的命令名、部分界面选项和错误信息目前仍为英文。
 
-当前版本是 **0.6.0-preview.1 实验预览版**，由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.32；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
+项目由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.32；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
 
 ## 项目亮点
 
@@ -26,12 +26,7 @@ pi-pstack-native 是将 [pstack](https://github.com/cursor/plugins/tree/main/pst
 pi install git:github.com/2333sky/pi-pstack-native
 ```
 
-安装后启动或重启 Pi。若之前使用旧仓库名安装，先删除旧来源，再安装新来源：
-
-```bash
-pi remove git:github.com/2333sky/pi-pstack-native-2
-pi install git:github.com/2333sky/pi-pstack-native
-```
+安装后启动或重启 Pi。
 
 更新和卸载：
 
@@ -118,5 +113,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 - **更新 Pi 后遇到旧模块加载错误**：先重启 Pi，让当前进程重新加载已安装的模块。
 
 worktree、文件锁和只读工具不构成操作系统安全沙箱；不可信仓库或指令需要额外的系统隔离。打开、推送或合并远程 PR 等操作需要明确授权。真实模型验证与离线测试、模拟提供商测试是不同证据；当前仓库的维护者语义签署仍待完成。
+
+Windows 用户已使用真实模型完成一组实测，最终 benchmark 为 20/20；被测目录没有记录提交 ID，因此结果不能直接绑定到仓库的某个提交。环境、场景和边界见 [Windows 真实模型测试记录](docs/WINDOWS-MODEL-TEST.zh-CN.md)。
 
 更多使用和维护资料见[文档目录](docs/README.md)。

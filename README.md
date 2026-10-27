@@ -4,7 +4,7 @@
 
 A Pi Coding Agent extension for coordinated development with pstack-inspired Skills, persistent child sessions, and evidence-based workflow verification.
 
-> **Experimental preview · 0.6.0-preview.1** — Independently maintained; not affiliated with or endorsed by Cursor or the upstream pstack maintainers. Requires Node.js **22.19+** and Pi Coding Agent **^1.4.0**.
+> Independently maintained; not affiliated with or endorsed by Cursor or the upstream pstack maintainers. Requires Node.js **22.19+** and Pi Coding Agent **^1.4.0**.
 
 ## Why use it?
 
@@ -31,7 +31,7 @@ pi update git:github.com/2333sky/pi-pstack-native
 pi remove git:github.com/2333sky/pi-pstack-native
 ```
 
-If you installed the old `pi-pstack-native-2` source, remove it with `pi remove git:github.com/2333sky/pi-pstack-native-2` and install the new source. Add `--local` to install for one trusted project. An unpinned Git source follows the default branch on update; append a tag or commit with `@` to pin it.
+Add `--local` to install for one trusted project. An unpinned Git source follows the default branch on update; append a tag or commit with `@` to pin it.
 
 The npm package name is `pi-pstack-native`, but it has not been published to npm. For source development, clone the repository, run `npm ci` and `npm run build`, then run `pi install .` from the checkout.
 
@@ -65,7 +65,7 @@ Workflow state defaults to `~/.pi/agent/pstack-native/`; set `PSTACK_NATIVE_HOME
 
 The active source snapshot is Cursor pstack **0.15.32** at `99b609a72323b70204eab407c622f436e858e112`; the SDK lock is **1.4.0**. Inventory coverage, source provenance, deterministic tests, fake-provider tests, authenticated model runs, and maintainer semantic sign-off are different forms of evidence. Current records do not claim full behavioral parity or maintainer sign-off. See [upstream provenance](docs/upstream-provenance-0.15.32.json) and [semantic compatibility](docs/SEMANTIC-COMPATIBILITY.md).
 
-The GitHub workflow runs Node 22/24 checks and focused Windows state/build tests. For local development:
+The GitHub workflow runs Node 22/24 checks and focused Windows state/build tests. A user also reported real-model Windows testing, including 20/20 benchmark cases after local fixes; that checkout had no recorded commit, so the results are not tied to a specific repository revision. See the [Windows test record](docs/WINDOWS-MODEL-TEST.zh-CN.md). For local development:
 
 ```bash
 npm ci

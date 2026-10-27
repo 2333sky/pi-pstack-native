@@ -11,7 +11,7 @@
 | [Examples](../examples/README.md) | Strict briefs, policy, templates, CLI, and benchmark examples. |
 | [PR protocol](PR-PROTOCOL.md) | Evidence, stack preparation, and authorized delivery. |
 | [Statechart](STATECHART.md) | Statechart toolchain and external dependencies. |
-| [Live test plan](LIVE-TEST-PLAN.zh-CN.md) | Chinese procedure for model and delivery testing. |
+| [Live test plan](LIVE-TEST-PLAN.zh-CN.md) · [Windows test record](WINDOWS-MODEL-TEST.zh-CN.md) | Procedure and user-reported Windows model results. |
 
 ## Maintain and review
 

@@ -1,6 +1,6 @@
 # Contributing
 
-This is an experimental Pi-native port of pstack. Please open an issue describing the problem, a minimal reproduction, expected behavior, and the Pi SDK/Node versions before large changes.
+This is a Pi-native adaptation of pstack. Please open an issue describing the problem, a minimal reproduction, expected behavior, and the Pi SDK/Node versions before large changes.
 
 ## Local development
 
