@@ -1,5 +1,7 @@
 # pi-pstack-native
 
+[中文说明](README.zh-CN.md)
+
 > **Experimental Preview — `0.6.0-preview.1`**
 > Pi-native, independently maintained pstack semantic port. **Not affiliated with or endorsed by Cursor or the upstream pstack maintainers.**
 
