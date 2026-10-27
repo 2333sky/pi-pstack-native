@@ -372,8 +372,12 @@ export class AgentHost {
                     if (latest.brief?.contractLevel === "strict") {
                         try {
                             latest.report = parseReport(outcome.result ?? "");
+                            delete latest.reportError;
                         }
-                        catch { /* Execution completed; acceptance remains blocked in WorkflowEngine. */ }
+                        catch (error) {
+                            delete latest.report;
+                            latest.reportError = error instanceof SyntaxError ? "TASK_REPORT_INVALID_JSON" : "TASK_REPORT_INCOMPLETE";
+                        }
                     }
                     delete latest.error;
                 }

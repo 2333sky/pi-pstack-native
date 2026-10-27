@@ -18,6 +18,7 @@ export interface AgentRecord {
   brief?: TaskBrief;
   baseline?: Fingerprint;
   report?: TaskReport;
+  reportError?: string;
   usage?: Usage;
   thinkingLevel?: ThinkingLevelName;
   budget?: Budget;
@@ -55,6 +56,7 @@ export interface WorkflowCall {
   verification?: { status: GateStatus; ledgerId?: string; reason?: string };
   artifactId?: string;
   report?: TaskReport;
+  reportError?: string;
   usage?: Usage;
   key: string;
   profile: AgentProfileName | string;

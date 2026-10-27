@@ -33,7 +33,10 @@ export class FileLock {
             fd = openSync(this.path, "wx", 0o600);
         }
         catch (error) {
-            if (error.code === "EEXIST")
+            const code = error.code;
+            // Windows can report EPERM while another process's deleted lock is still pending removal.
+            // Treat it as contention; callers already impose a bounded retry or return busy.
+            if (code === "EEXIST" || (process.platform === "win32" && code === "EPERM"))
                 return false;
             throw error;
         }

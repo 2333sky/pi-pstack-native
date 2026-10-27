@@ -210,7 +210,7 @@ export class WorkflowEngine {
       const clear = (target: WorkflowCall) => {
         target.state = "pending";
         delete target.error; delete target.result; delete target.agentId;
-        delete target.startedAt; delete target.finishedAt; delete target.verification; delete target.artifactId; delete target.report;
+        delete target.startedAt; delete target.finishedAt; delete target.verification; delete target.artifactId; delete target.report; delete target.reportError;
       };
       clear(call);
       for (const downstream of downstreamKeys(record.calls, key)) {
@@ -290,7 +290,7 @@ export class WorkflowEngine {
             const node = current.calls[key];
             if (!node || node.agentId !== agent.id || node.state !== "running") return;
             node.finishedAt = now(); node.cwd = agent.worktree ?? agent.cwd;
-            node.model = agent.model ?? node.model; node.report = agent.report; node.usage = agent.usage;
+            node.model = agent.model ?? node.model; node.report = agent.report; node.reportError = agent.reportError; node.usage = agent.usage;
             if (current.state === "cancelling") {
               node.state = "cancelled";
             } else if (agent.state === "completed") {
@@ -447,6 +447,10 @@ export class WorkflowEngine {
       let reason: string|undefined;
       if (call.brief.contractLevel === "strict") {
         if (!report || report.status!=="completed" || !reportSatisfies(call.brief, report) || report.unresolved.length || report.deviations.length || report.head!==ledger.fingerprint.commitSha || !agent.baseline || report.base!==agent.baseline.commitSha) reason="TASK_REPORT_INCOMPLETE_OR_MISMATCH";
+      }
+      if (!reason && ledger.status === "blocked") {
+        const evidence = protocol().evidence;
+        reason = ledger.evidenceRefs.map(id => evidence[id]).find(e => e?.status === "blocked")?.reason;
       }
       this.change(id,"verification-settled",w=>{
         const c=w.calls[key]; c.artifactId=ledger.artifactId;
