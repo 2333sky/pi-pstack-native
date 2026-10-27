@@ -29,10 +29,12 @@ To use an existing installation, set `TLA2TOOLS` to the absolute JAR path and `J
 npm run test:statechart
 ```
 
+The native runner resolves Java to an absolute executable and normalizes an explicitly supplied JAR path before invoking the unchanged upstream suite. This matters because an upstream async fixture forwards JAVA into a scratch working directory, where a bare `java` fails the upstream file-existence check. Each test has a two-minute timeout, so an early child exit cannot leave a fixture polling forever.
+
 With Java 21, the checksummed TLC 1.7.4 and an isolated renderer cache on Linux/Node 24.19.0, the unchanged upstream suite reported **150 tests: 149 passed, zero failed, one skipped**. It exercised real TLC state graphs, spec/chart conversion, bug/fix comparisons, PNG rendering, filesystem recovery and concurrent runs.
 
 The skipped test is `statechart.mjs finds TLC with the real mise when an untrusted mise.toml is next to the spec and above TMPDIR`: it requires TLC resolved by mise, whereas this run explicitly selected the checked JAR through `TLA2TOOLS`. The explicit-JAR path and the simulated installer/error cases were exercised. This is not a claim to have tested real mise provisioning or every operating system.
 
-CI includes a separate Node 24 / Java 21 statechart job that fetches TLC 1.7.4, verifies the same checksum and runs the upstream suite. Default offline tests also check CLI availability and composite-state transition behavior without fetching Java or renderer packages.
+CI initially exposed that bare-Java fixture setup problem and hit its job timeout; the native preflight fixes the setup without modifying or skipping an upstream assertion. CI includes a separate Node 24 / Java 21 statechart job that fetches TLC 1.7.4, verifies the same checksum and runs the upstream suite. Default offline tests also check CLI availability and composite-state transition behavior without fetching Java or renderer packages.
 
 These results establish the toolchain's behavior for its tested fixtures. They do not prove an agent-generated model is faithful to arbitrary application code. The Skill still requires tying model actions to real code, replaying reported bugs on the real surface and reporting what the model leaves out. Real-model orchestration remains a separate evidence tier.

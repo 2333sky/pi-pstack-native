@@ -56,6 +56,12 @@ mise discovery:
 - statechart.mjs finds TLC with the real mise when an untrusted mise.toml is next to the spec and above TMPDIR
 - statechart.mjs shows why java cannot start TLC
 
+## Linux verification and test preflight
+
+The macOS result above is environment-specific. A separate Linux / Node 24.19 / Java 21 run with the pinned TLC 1.7.4 reported 149 passed, zero failed and one real-mise-only discovery case skipped. See [the Linux toolchain evidence](STATECHART.md); those results do not erase the macOS failures.
+
+The native `test:statechart` runner now resolves Java to an absolute executable and bounds each test to two minutes. CI exposed an upstream async fixture that forwarded bare `JAVA=java` into a scratch cwd, failed its file check and polled forever. The same fixture passes with the preflight; its upstream assertions and the vendored source remain unchanged. This does not change the macOS portability limits or turn the evidence job into a parity claim.
+
 ## What is claimed and what is not
 
 Claimed: the source is pinned, the entrypoint is generated from it, the scripts are vendored unchanged, and drift fails CI. The core flows work here. `from-chart` checks an agreed chart and draws it back unchanged, `from-spec` charts TLC's state graph, and PNG rendering runs.

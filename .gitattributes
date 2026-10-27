@@ -4,3 +4,6 @@
 *.mjs text eol=lf
 *.json text eol=lf
 *.md text eol=lf
+
+# Pinned upstream snapshots retain original bytes, including whitespace.
+vendor/upstream/** -whitespace
