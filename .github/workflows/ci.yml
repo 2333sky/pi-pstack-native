@@ -51,7 +51,7 @@ jobs:
         with:
           node-version: '24.x'
       - run: npm ci --no-audit --no-fund
-      - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts test/transaction.test.ts
+      - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts test/transaction.test.ts test/ml-development.test.ts
       - name: Repeat cross-process lock contention on Windows
         run: |
           for ($i = 0; $i -lt 5; $i++) {
