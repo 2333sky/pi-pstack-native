@@ -17,9 +17,15 @@ export function readJson<T>(path: string, fallback: T): T {
 export function writeJsonAtomic(path: string, value: unknown): void {
   mkdirSync(dirname(path), { recursive: true });
   const temp = `${path}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
-  writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
-  const fd=openSync(temp,"r");try {fsyncSync(fd);}finally{closeSync(fd);}
-  renameSync(temp, path);
+  try {
+    writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+    const fd = openSync(temp, "r+");
+    try { fsyncSync(fd); } finally { closeSync(fd); }
+    renameSync(temp, path);
+  } catch (error) {
+    try { rmSync(temp, { force: true }); } catch { /* Preserve the original write error. */ }
+    throw error;
+  }
   // Persist the rename on filesystems supporting directory fsync.
   try {const dirFd=openSync(dirname(path),"r");try {fsyncSync(dirFd);}finally{closeSync(dirFd);}} catch(error) {if(!["EINVAL","ENOTSUP","EBADF","EPERM"].includes((error as NodeJS.ErrnoException).code ?? ""))throw error;}
 }
