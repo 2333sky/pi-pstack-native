@@ -52,7 +52,7 @@ Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within
 
 `/setup-pstack` asks for one model selector per role and one global child reasoning level. The reasoning level can be `inherit-parent`, `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`. An explicit level that the resolved model cannot support fails closed instead of silently downgrading.
 
-The selectors describe their choices: both model aliases use the parent session's model, while reasoning `inherit-parent` uses its reasoning level. Pi's command uses a single reasoning setting rather than Cursor's four budget presets. Existing panel and workflow configuration is preserved. Cancel any prompt to leave the file unchanged. For Skill questions, Pi can use ordinary chat answers, including multiple selections, when a Cursor-specific question tool is unavailable.
+The selectors describe their choices: both model aliases use the parent session's model, while reasoning `inherit-parent` uses its reasoning level. Pi's command uses a single reasoning setting rather than Cursor's four budget presets. When an explicit level is selected, setup checks each selected role model and asks again if it is unsupported. Existing panel and workflow configuration is preserved; model overrides in those configurations are checked when used. Cancel any prompt to leave the file unchanged. If a manually edited `models.json` contains an invalid reasoning level, edit it to one of the supported values before running setup. For Skill questions, Pi can use ordinary chat answers, including multiple selections, when a Cursor-specific question tool is unavailable.
 
 Useful status commands:
 
