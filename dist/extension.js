@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { AgentHost } from "./agent/host.js";
 import { LoopScheduler } from "./loop/scheduler.js";
 import { formatInterval, parseInterval } from "./loop/store.js";
-import { availableModelSelectors } from "./models/router.js";
+import { availableModelSelectors, resolveModelSelector, supportsThinking } from "./models/router.js";
 import { loadConfig, loadModels, saveConfig, saveModels } from "./runtime/config.js";
 import { ensureHome } from "./runtime/store.js";
 import { registerAgentTool } from "./tools/agents.js";
@@ -144,7 +144,14 @@ export default function piPstackNative(pi) {
                 { value: "auto", label: "auto — use the parent session's model" },
                 ...available.map((value) => ({ value, label: `${value} — use this available model` })),
             ];
-            const config = loadModels();
+            let config;
+            try {
+                config = loadModels();
+            }
+            catch (error) {
+                ctx.ui.notify(error instanceof Error ? error.message : String(error), "error");
+                return;
+            }
             const roles = {
                 worker: "implementation", architect: "design and implementation", reviewer: "read-only review",
                 scout: "read-only exploration", verifier: "read-only verification", synthesizer: "reconcile results",
@@ -173,17 +180,38 @@ export default function piPstackNative(pi) {
             const next = { ...config, roles: { ...config.roles }, thinkingLevel };
             for (const [role, description] of Object.entries(roles)) {
                 const current = next.roles[role] ?? "inherit-parent";
-                const selected = await ctx.ui.select(`${role} — ${description} (current: ${current})`, choices.map((choice) => choice.label));
-                if (selected === undefined) {
-                    ctx.ui.notify("Setup cancelled; nothing was written.", "info");
-                    return;
+                for (;;) {
+                    const selected = await ctx.ui.select(`${role} — ${description} (current: ${current})`, choices.map((choice) => choice.label));
+                    if (selected === undefined) {
+                        ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                        return;
+                    }
+                    const value = choices.find((choice) => choice.label === selected)?.value;
+                    if (!value) {
+                        ctx.ui.notify("Invalid model selection; nothing was written.", "error");
+                        return;
+                    }
+                    if (thinkingLevel !== "inherit-parent") {
+                        let model;
+                        try {
+                            model = resolveModelSelector(ctx, role, value);
+                        }
+                        catch (error) {
+                            ctx.ui.notify(error instanceof Error ? error.message : String(error), "error");
+                            continue;
+                        }
+                        if (!model) {
+                            ctx.ui.notify(`No parent model available for ${role}; select an available model or cancel and choose inherit-parent reasoning.`, "error");
+                            continue;
+                        }
+                        if (!supportsThinking(model, thinkingLevel)) {
+                            ctx.ui.notify(`${value} does not support ${thinkingLevel} reasoning for ${role}; choose another model or cancel and select another reasoning level.`, "error");
+                            continue;
+                        }
+                    }
+                    next.roles[role] = value;
+                    break;
                 }
-                const value = choices.find((choice) => choice.label === selected)?.value;
-                if (!value) {
-                    ctx.ui.notify("Invalid model selection; nothing was written.", "error");
-                    return;
-                }
-                next.roles[role] = value;
             }
             saveModels(next);
             ctx.ui.notify("Saved pstack-native model roles to ~/.pi/agent/pstack-native/models.json.", "info");

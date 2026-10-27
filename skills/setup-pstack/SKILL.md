@@ -43,7 +43,7 @@ Apply user instructions and repository authority first. Apply the pinned upstrea
 
 ## Pi setup interaction
 
-Use the native `/setup-pstack` command for Pi setup. It offers one child reasoning level and one available model per role, with descriptions, and preserves existing panel and workflow configuration. It does not implement Cursor budget presets, model-slug rewriting, or the upstream verification-skill offers. Do not claim those steps ran.
+Use the native `/setup-pstack` command for Pi setup. It offers one child reasoning level and one available model per role, with descriptions, and preserves existing panel and workflow configuration. It does not implement Cursor budget presets, model-slug rewriting, or the upstream verification-skill offers. Do not claim those steps ran. The native roles are worker, architect, reviewer, scout, verifier, synthesizer, integrator, poteto-agent, and comment-sicko.
 
 ---
 

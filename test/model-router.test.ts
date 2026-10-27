@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { saveModels } from "../src/runtime/config.ts";
+import { loadModels, saveModels } from "../src/runtime/config.ts";
 import { resolveRoleModel } from "../src/models/router.ts";
 
 async function withHome(fn: () => void | Promise<void>) {
@@ -61,4 +61,15 @@ test("inherit-parent reasoning delegates model-specific clamping to Pi instead o
   const resolved = resolveRoleModel(ctx(parent, [parent, cheap], "high"), "worker");
   assert.equal(resolved.model, cheap);
   assert.equal(resolved.thinkingLevel, "high");
+}));
+
+test("invalid configured reasoning fails before model routing, while absent values keep the default", async () => withHome(() => {
+  const file = join(process.env.PSTACK_NATIVE_HOME!, "models.json");
+  for (const value of ["ultra", "", null, 42, false]) {
+    writeFileSync(file, JSON.stringify({ version: 1, roles: {}, thinkingLevel: value }));
+    assert.throws(() => loadModels(), /Invalid thinkingLevel.*edit it/);
+    assert.throws(() => resolveRoleModel(ctx({ provider: "test", id: "reasoner", reasoning: true }), "worker"), /Invalid thinkingLevel/);
+  }
+  writeFileSync(file, JSON.stringify({ version: 1, roles: {} }));
+  assert.equal(loadModels().thinkingLevel, "inherit-parent");
 }));

@@ -37,6 +37,10 @@ export function loadConfig(): RuntimeConfig {
 export function saveConfig(config: RuntimeConfig): void { writeJsonAtomic(configPath(), config); }
 export function loadModels(): ModelConfig {
   const raw = readJson<Partial<ModelConfig>>(modelConfigPath(), DEFAULT_MODELS);
-  return { panels: raw.panels, workflows: raw.workflows, version: 1, roles: { ...DEFAULT_MODELS.roles, ...(raw.roles ?? {}) }, thinkingLevel: raw.thinkingLevel ?? DEFAULT_MODELS.thinkingLevel };
+  const level = raw.thinkingLevel === undefined ? DEFAULT_MODELS.thinkingLevel : raw.thinkingLevel;
+  if (typeof level !== "string" || !["inherit-parent", "off", "minimal", "low", "medium", "high", "xhigh", "max"].includes(level)) {
+    throw new Error(`Invalid thinkingLevel in ${modelConfigPath()}; edit it to inherit-parent, off, minimal, low, medium, high, xhigh, or max.`);
+  }
+  return { panels: raw.panels, workflows: raw.workflows, version: 1, roles: { ...DEFAULT_MODELS.roles, ...(raw.roles ?? {}) }, thinkingLevel: level as ModelConfig["thinkingLevel"] };
 }
 export function saveModels(config: ModelConfig): void { writeJsonAtomic(modelConfigPath(), config); }

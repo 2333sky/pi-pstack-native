@@ -5,7 +5,7 @@ function parseSelector(selector) {
         return undefined;
     return { provider: selector.slice(0, slash), id: selector.slice(slash + 1) };
 }
-function supportsThinking(model, level) {
+export function supportsThinking(model, level) {
     if (!model)
         return false;
     if (level === "off")
@@ -20,9 +20,7 @@ function supportsThinking(model, level) {
         return false;
     return true;
 }
-export function resolveRoleModel(ctx, role, explicit, taskThinking) {
-    const config = loadModels();
-    const selector = explicit?.trim() || config.roles[role] || "inherit-parent";
+export function resolveModelSelector(ctx, role, selector) {
     let model;
     if (selector === "inherit-parent" || selector === "auto")
         model = ctx.model;
@@ -34,6 +32,12 @@ export function resolveRoleModel(ctx, role, explicit, taskThinking) {
         if (!model)
             throw new Error(`Model for ${role} is not available in this Pi session: ${selector}`);
     }
+    return model;
+}
+export function resolveRoleModel(ctx, role, explicit, taskThinking) {
+    const config = loadModels();
+    const selector = explicit?.trim() || config.roles[role] || "inherit-parent";
+    const model = resolveModelSelector(ctx, role, selector);
     const configuredThinking = taskThinking ?? config.thinkingLevel;
     const thinkingLevel = configuredThinking === "inherit-parent" ? ctx.thinkingLevel : configuredThinking;
     // Explicit pstack reasoning choices fail closed. `inherit-parent` intentionally delegates

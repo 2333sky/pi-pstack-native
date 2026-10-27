@@ -14,7 +14,7 @@ function parseSelector(selector: string): { provider: string; id: string } | und
   return { provider: selector.slice(0, slash), id: selector.slice(slash + 1) };
 }
 
-function supportsThinking(model: ExtensionContext["model"], level: ThinkingLevelName): boolean {
+export function supportsThinking(model: ExtensionContext["model"], level: ThinkingLevelName): boolean {
   if (!model) return false;
   if (level === "off") return true;
   const candidate = model as unknown as { reasoning?: boolean; thinkingLevelMap?: Record<string, string | null | undefined> };
@@ -25,9 +25,7 @@ function supportsThinking(model: ExtensionContext["model"], level: ThinkingLevel
   return true;
 }
 
-export function resolveRoleModel(ctx: ExtensionContext, role: string, explicit?: string, taskThinking?: ThinkingLevelName): ResolvedModel {
-  const config = loadModels();
-  const selector = explicit?.trim() || config.roles[role] || "inherit-parent";
+export function resolveModelSelector(ctx: ExtensionContext, role: string, selector: string): ExtensionContext["model"] {
   let model: ExtensionContext["model"];
   if (selector === "inherit-parent" || selector === "auto") model = ctx.model;
   else {
@@ -37,6 +35,13 @@ export function resolveRoleModel(ctx: ExtensionContext, role: string, explicit?:
     if (!model) throw new Error(`Model for ${role} is not available in this Pi session: ${selector}`);
   }
 
+  return model;
+}
+
+export function resolveRoleModel(ctx: ExtensionContext, role: string, explicit?: string, taskThinking?: ThinkingLevelName): ResolvedModel {
+  const config = loadModels();
+  const selector = explicit?.trim() || config.roles[role] || "inherit-parent";
+  const model = resolveModelSelector(ctx, role, selector);
   const configuredThinking = taskThinking ?? config.thinkingLevel;
   const thinkingLevel = configuredThinking === "inherit-parent" ? ctx.thinkingLevel : configuredThinking;
   // Explicit pstack reasoning choices fail closed. `inherit-parent` intentionally delegates
