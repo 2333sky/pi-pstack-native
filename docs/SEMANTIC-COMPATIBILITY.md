@@ -1,6 +1,6 @@
 # Core semantic compatibility
 
-Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and a commit-bound authenticated model receipt remain separate pending records. A user reported a Windows real-model run without a recorded commit; see [the test record](WINDOWS-MODEL-TEST.zh-CN.md).
+Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and a commit-bound authenticated model receipt remain separate pending records. A user reported Windows real-model runs, including an independent rerun at commit `4d75ea0b`; see [the test record](WINDOWS-MODEL-TEST.zh-CN.md).
 
 ## Implementation and acceptance status
 
@@ -11,7 +11,7 @@ Issue #16 separates behavior source, platform adaptation and exercised evidence.
 | Pinned source, Pi adapter, 11 core entrypoints and 35 critical-rule mappings | Merged | Source traceability and declared adaptations |
 | Semantic checks, negative fixtures, typecheck and build | Passed | Deterministic local/CI behavior |
 | Real Pi SDK lifecycle, offline/fake-provider E2E and installed-package smoke | Passed | Actual SDK/session integration with scripted model responses; no authenticated external inference |
-| User-reported Windows real-model run | Reported: 20/20 benchmark cases after local fixes | No source commit was recorded, so the run cannot be tied to a specific repository revision; see the [Windows record](WINDOWS-MODEL-TEST.zh-CN.md) |
+| User-reported Windows real-model runs | Reported: 13/20 workflow acceptance and 20/20 independent tests at `4d75ea0b` | Full original result files have not been attached to the repository; see the [Windows record](WINDOWS-MODEL-TEST.zh-CN.md) |
 | Limited real Pi + real-model probe | `not-run` | No passing real-model receipt is recorded |
 | Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
 
@@ -94,7 +94,7 @@ Inspect the command's exit code and the JSON receipt together:
 
 The three probe checks are `completeSourceRead`, `unsupportedRefused` and `statusRoutedToBabysit`. The JSON receipt includes the model and evidence boundary. The harness does not persist raw model output or credentials. Preserve the receipt together with `source-commit.txt`; after checking the files, archive them in a stable repository evidence path or a linked CI artifact. A result applies to its tested commit and model. It is not proof of complete implementation, review-swarm quality, live UI/CLI behavior or merge safety.
 
-The repository’s commit-bound authenticated real-model receipt remains **not run**. The separate user-reported Windows real-model run is recorded [here](WINDOWS-MODEL-TEST.zh-CN.md), without a source commit to bind it to a specific revision. Existing real SDK tests use a loopback provider. CI runs the repeatable offline/fake-provider tiers without provider credentials; it does not automatically run this authenticated probe.
+The repository’s commit-bound authenticated real-model receipt remains **not run**. The separate user-reported Windows real-model runs, including a rerun at commit `4d75ea0b`, are recorded [here](WINDOWS-MODEL-TEST.zh-CN.md); full original result files are not recorded in this repository. Existing real SDK tests use a loopback provider. CI runs the repeatable offline/fake-provider tiers without provider credentials; it does not automatically run this authenticated probe.
 
 ## Completing issue #16
 

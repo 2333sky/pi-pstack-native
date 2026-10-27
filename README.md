@@ -65,7 +65,7 @@ Workflow state defaults to `~/.pi/agent/pstack-native/`; set `PSTACK_NATIVE_HOME
 
 The active source snapshot is Cursor pstack **0.15.32** at `99b609a72323b70204eab407c622f436e858e112`; the SDK lock is **1.4.0**. Inventory coverage, source provenance, deterministic tests, fake-provider tests, authenticated model runs, and maintainer semantic sign-off are different forms of evidence. Current records do not claim full behavioral parity or maintainer sign-off. See [upstream provenance](docs/upstream-provenance-0.15.32.json) and [semantic compatibility](docs/SEMANTIC-COMPATIBILITY.md).
 
-The GitHub workflow runs Node 22/24 checks and focused Windows state/build tests. A user also reported real-model Windows testing, including 20/20 benchmark cases after local fixes; that checkout had no recorded commit, so the results are not tied to a specific repository revision. See the [Windows test record](docs/WINDOWS-MODEL-TEST.zh-CN.md). For local development:
+The GitHub workflow runs Node 22/24 checks and focused Windows state/build tests. A user reported real-model Windows testing at commit `4d75ea0b`: 20/20 cases passed an independent test rerun, while workflow acceptance was 13/20. These measure different outcomes. See the [Windows test record](docs/WINDOWS-MODEL-TEST.zh-CN.md). For local development:
 
 ```bash
 npm ci

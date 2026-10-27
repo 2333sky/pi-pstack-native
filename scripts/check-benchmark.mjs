@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 const root = resolve(process.env.PSTACK_BENCHMARK_ROOT ?? resolve(dirname(fileURLToPath(import.meta.url)), '..'));
 const benchmark = readFileSync(resolve(root, 'scripts/benchmark.mjs'), 'utf8');
 const imports = [...benchmark.matchAll(/from ['"](\.\.\/dist\/[^'"\s]+)['"]/g)].map(m => m[1]);
-if (imports.length !== 4) throw new Error(`Expected 4 compiled runtime imports, received ${imports.length}`);
+if (imports.length !== 5) throw new Error(`Expected 5 compiled runtime imports, received ${imports.length}`);
 for (const specifier of imports) {
   if (!specifier.endsWith('.js')) throw new Error(`Not a compiled JS import: ${specifier}`);
   const filepath = resolve(root, 'scripts', specifier);

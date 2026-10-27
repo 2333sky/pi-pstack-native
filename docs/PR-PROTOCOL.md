@@ -1,5 +1,7 @@
 # PR protocol checks
 
+Strict task reports may include `unresolved` and `deviations` entries as `{ "severity": "advisory", "description": "..." }` for non-blocking information or `blocking` for unresolved acceptance issues. Legacy string entries remain blocking. Advisory notes are retained in the report, but cannot substitute for passing gates or current artifact evidence. `base` and `head` must be full commit IDs.
+
 ## Sample stack
 
 The root branch `feature/validation-api` adds a small validation API. Its ready PR targets `main`. The child branch `feature/validation-cli` starts at the root branch's exact tip. Its ready PR targets `feature/validation-api`, not `main`. Independent work branches from `main` instead.

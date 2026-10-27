@@ -48,6 +48,10 @@ interface BriefFields {
         slices?: string[];
     };
 }
+export type ReportNote = string | {
+    severity: 'blocking' | 'advisory';
+    description: string;
+};
 export interface TaskReport {
     status: 'completed' | 'blocked' | 'failed';
     artifactRefs: string[];
@@ -55,8 +59,8 @@ export interface TaskReport {
     head: string;
     commandsRun: string[][];
     evidenceRefs: string[];
-    deviations: string[];
-    unresolved: string[];
+    deviations: ReportNote[];
+    unresolved: ReportNote[];
     nextActions: string[];
     evaluation?: {
         criterion: string;

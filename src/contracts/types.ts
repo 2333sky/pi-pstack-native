@@ -19,10 +19,11 @@ interface BriefFields {
   standingOrders: string[]; reportFormat: 'task-report-v1';
   reportRequirements?: {kind:'evaluation'|'selection'|'review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
 }
+export type ReportNote = string | { severity: 'blocking' | 'advisory'; description: string };
 export interface TaskReport {
   status: 'completed' | 'blocked' | 'failed'; artifactRefs: string[];
   base: string; head: string; commandsRun: string[][]; evidenceRefs: string[];
-  deviations: string[]; unresolved: string[]; nextActions: string[];
+  deviations: ReportNote[]; unresolved: ReportNote[]; nextActions: string[];
   evaluation?: {criterion:string;score:number;evidence:string[];weaknesses:string[];selectedParts:string[]}[];
   selection?: {candidates:string[];selectedParts:string[]};
   findings?: {severity:'critical'|'high'|'medium'|'low';location:string;description:string;evidence:string}[];

@@ -9,6 +9,8 @@ export declare function saveBrief(brief: TaskBrief, actor: string, reason: strin
 export declare function changedPaths(before: Fingerprint, after: Fingerprint, cwd: string): string[];
 export declare function scopeViolations(brief: TaskBrief, paths: string[]): string[];
 export declare function validateReport(value: unknown): TaskReport;
+/** Legacy strings and malformed notes remain blocking; only explicit advisory notes pass. */
+export declare function hasBlockingReportNotes(report: TaskReport): boolean;
 export declare function parseReport(text: string): TaskReport;
 export declare function briefPrompt(brief: TaskBrief): string;
 export declare function validateBudget(budget?: import('./types.js').Budget): void;

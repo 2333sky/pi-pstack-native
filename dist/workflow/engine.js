@@ -1,7 +1,7 @@
 import { upstreamVersion } from "../runtime/upstream.js";
 import { validateEvidencePackets } from "../agent/resources.js";
 import { loadModels } from "../runtime/config.js";
-import { validateBrief, saveBrief, validateBudget, reportSatisfies } from "../contracts/brief.js";
+import { validateBrief, saveBrief, validateBudget, reportSatisfies, hasBlockingReportNotes } from "../contracts/brief.js";
 import { verify, ledgerCurrent } from "../verification/runner.js";
 import { fingerprint, ownerOf } from "../artifacts/fingerprint.js";
 import { protocol, hash, transact } from "../runtime/protocol.js";
@@ -512,7 +512,7 @@ export class WorkflowEngine {
             const report = agent.report;
             let reason;
             if (call.brief.contractLevel === "strict") {
-                if (!report || report.status !== "completed" || !reportSatisfies(call.brief, report) || report.unresolved.length || report.deviations.length || report.head !== ledger.fingerprint.commitSha || !agent.baseline || report.base !== agent.baseline.commitSha)
+                if (!report || report.status !== "completed" || !reportSatisfies(call.brief, report) || hasBlockingReportNotes(report) || report.head !== ledger.fingerprint.commitSha || !agent.baseline || report.base !== agent.baseline.commitSha)
                     reason = "TASK_REPORT_INCOMPLETE_OR_MISMATCH";
             }
             if (!reason && ledger.status === "blocked") {
