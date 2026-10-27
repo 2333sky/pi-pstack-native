@@ -35,17 +35,17 @@ This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack)
 Install the extension and its bundled Skills directly from GitHub:
 
 ```bash
-pi install git:github.com/2333sky/pi-pstack-native-2
+pi install git:github.com/2333sky/pi-pstack-native
 ```
 
 Start or restart Pi, then run `/setup-pstack`. To update or remove the package later:
 
 ```bash
-pi update git:github.com/2333sky/pi-pstack-native-2
-pi remove git:github.com/2333sky/pi-pstack-native-2
+pi update git:github.com/2333sky/pi-pstack-native
+pi remove git:github.com/2333sky/pi-pstack-native
 ```
 
-The GitHub repository rename to `pi-pstack-native` is pending. After it is renamed, remove the old source and install `git:github.com/2333sky/pi-pstack-native` so Pi tracks the new address.
+If you installed the former `pi-pstack-native-2` Git source, remove it with `pi remove git:github.com/2333sky/pi-pstack-native-2` and install the new source above so Pi tracks the new address.
 
 For a project-only installation, add `--local` to `pi install`; Pi loads it after the project is trusted. An unpinned Git source follows the repository's default branch on update. For a reproducible installation, append a Git tag or commit with `@` and update the pin deliberately.
 
@@ -308,7 +308,7 @@ npm run upstream:verify -- --report docs/upstream-sync/reports/<sync_id>.json
 # Commit ONLY generated verification evidence after a clean committed candidate was verified.
 npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json
 # Optional remote write, requires separately configured Git/gh credentials and explicit flag:
-npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json --repo 2333sky/pi-pstack-native-2 --allow-remote-write
+npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json --repo 2333sky/pi-pstack-native --allow-remote-write
 ```
 
 M4 exports a constrained Agent prompt; it does not select a provider/model or
