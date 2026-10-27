@@ -2431,7 +2431,7 @@
     "docs/PI-SEMANTIC-ADAPTER.md": "4c67a30a50000731f6da85cce016e5f23d920f3a77a4be49bcc8e2cc0880ed56",
     "scripts/upstream/cli.mjs": "32f8d80da18c5ae4d0f32f614611c1ebbd98af5d8eaf196c13d4230e5d0a29cf",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
-    "scripts/semantics/core.mjs": "1dac00227d0a5dc5b39d7911e5a3a55b50bbe22b6fb4508678c918755d6b7002",
+    "scripts/semantics/core.mjs": "685c60b659080a287805b893404573807336f8db90b92202b6d3b6d32f2ad919",
     "scripts/semantics/generate.mjs": "d2dd3d8e1439e6b8db86d3e58ab6d57937d04a7f1dc6c323be360165db5f79c9",
     "test/semantic-compatibility.test.ts": "4dbc881099c04a0cc63ad51c8025f4eec420f3ac32772a85b895dce212e979fa",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
@@ -2447,7 +2447,9 @@
     "test/model-router.test.ts": "c6c6142a651a5725bf0fd03af897d77ea6088933b21da814e5d9f57bfca4575c",
     "test/setup-command.test.ts": "5cb54347f40463337e2087e241e43a105918f2703fa12b56e38b5c271b8994e6",
     "src/contracts/brief.ts": "260f5ab17516094b1b110d60af413472a51c89affe1bfe73e1c9255cce4e3d68",
-    "src/runtime/types.ts": "804148a269ff6b1226c54f48d14688f6d1ff200e255731f2d750d98fa2fafe4b"
+    "src/runtime/types.ts": "804148a269ff6b1226c54f48d14688f6d1ff200e255731f2d750d98fa2fafe4b",
+    "src/runtime/lock.ts": "f7b68acb71d1e46d208f1720716143102ac2373beaee05c4ed8e2899c9e5af83",
+    "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e"
   },
   "driftReviews": [],
   "evidence": {

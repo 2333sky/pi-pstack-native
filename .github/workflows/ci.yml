@@ -52,6 +52,12 @@ jobs:
           node-version: '24.x'
       - run: npm ci --no-audit --no-fund
       - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts test/transaction.test.ts
+      - name: Repeat cross-process lock contention on Windows
+        run: |
+          for ($i = 0; $i -lt 5; $i++) {
+            node --experimental-strip-types --test test/transaction.test.ts
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
       - run: npm run build
       - run: node scripts/check-windows-build.mjs
 

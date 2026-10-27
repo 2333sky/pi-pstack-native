@@ -28,7 +28,10 @@ export class FileLock {
     let fd: number;
     try { fd = openSync(this.path, "wx", 0o600); }
     catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "EEXIST") return false;
+      const code = (error as NodeJS.ErrnoException).code;
+      // Windows can report EPERM while another process's deleted lock is still pending removal.
+      // Treat it as contention; callers already impose a bounded retry or return busy.
+      if (code === "EEXIST" || (process.platform === "win32" && code === "EPERM")) return false;
       throw error;
     }
     const owner = randomUUID();
