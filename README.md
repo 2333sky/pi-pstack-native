@@ -4,7 +4,7 @@
 > Pi-native, independently maintained pstack semantic port. **Not affiliated with or endorsed by Cursor or the upstream pstack maintainers.**
 
 **npm package:** `2333` · **Runtime:** Node.js >=22.19.0, Pi Coding Agent SDK `^1.4.0`
-**Status:** Preview (not a verified stable release). **This GitHub-ready checkout does not imply a GitHub repo or npm release has already been published.**
+**Status:** Preview (not a verified stable release). The project is available from GitHub as a Pi package; an npm release is not currently available.
 
 This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack) workflows to Pi and implements a native multi-agent orchestration runtime. It uses persistent `AgentSession` state, a durable DAG engine, Git worktree isolation, model routing, and recovery. Version `0.6.0-preview.1` adds strict Task Briefs, artifact fingerprints, deterministic verification gates, audit ledgers, PR shipping constraints, dedicated workflow templates, a coordinator, budgets, context summaries, and an optional standalone runner.
 
@@ -32,14 +32,22 @@ This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack)
 
 ## Install
 
+Install the extension and its bundled Skills directly from GitHub:
+
 ```bash
-# From the checked-out repository (recommended for this Preview):
-npm ci
-npm run build
-pi install .
+pi install git:github.com/2333sky/pi-pstack-native-2
 ```
 
-If `2333` is separately published to npm, the published package may also be installed with `pi install npm:2333`; GitHub source availability does not itself imply an npm release.
+Start or restart Pi, then run `/setup-pstack`. To update or remove the package later:
+
+```bash
+pi update git:github.com/2333sky/pi-pstack-native-2
+pi remove git:github.com/2333sky/pi-pstack-native-2
+```
+
+For a project-only installation, add `--local` to `pi install`; Pi loads it after the project is trusted. An unpinned Git source follows the repository's default branch on update. For a reproducible installation, append a Git tag or commit with `@` and update the pin deliberately.
+
+For development, clone the repository, run `npm ci` and `npm run build`, then use `pi install .` from the checkout. If `2333` is published to npm in the future, `pi install npm:2333` will be another option.
 
 Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.4.0`. The lock resolves SDK `1.4.0`, installed with Node `24.19.0` and npm `11.9.0`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
 
