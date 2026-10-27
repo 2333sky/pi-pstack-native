@@ -50,7 +50,7 @@ Poteto Mode remains active for the current session until `/poteto-mode off`. You
 
 ## ML algorithm development
 
-Use `/skill:ml-development <task>` for a practical workflow covering data splits, baselines, experiments, evaluation, and reproducibility. It works with existing project tools and does not provision training resources. When using Poteto Mode, explicitly request this Skill as well. See the [Chinese workflow guide and open-source survey](docs/ML-WORKFLOWS.zh-CN.md).
+Explicitly invoke `/skill:ml-development <task>` for a workflow covering data splits, baselines, experiments, evaluation, and reproducibility; ordinary ML prompts do not activate this Skill automatically. It reuses existing agent roles and project tools, without provisioning training resources or enforcing GPU budgets. When using Poteto Mode, explicitly request this Skill as well. See the [Chinese workflow guide and open-source survey](docs/ML-WORKFLOWS.zh-CN.md).
 
 ## Inspect work
 
