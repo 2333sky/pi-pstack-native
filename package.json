@@ -46,6 +46,7 @@
     "docs/VALIDATION.md",
     "docs/PR-PROTOCOL.md",
     "docs/LIVE-TEST-PLAN.zh-CN.md",
+    "docs/WINDOWS-MODEL-TEST.zh-CN.md",
     "docs/UPSTREAM-0.15.17.md",
     "docs/parity.test.mjs",
     "docs/stacked-pr-body.md",

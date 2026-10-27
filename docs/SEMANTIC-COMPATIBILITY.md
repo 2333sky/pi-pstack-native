@@ -1,16 +1,17 @@
 # Core semantic compatibility
 
-Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and authenticated model evidence remain separate pending records.
+Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and a commit-bound authenticated model receipt remain separate pending records. A user reported a Windows real-model run without a recorded commit; see [the test record](WINDOWS-MODEL-TEST.zh-CN.md).
 
 ## Implementation and acceptance status
 
-[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged on 2026-10-26 as commit [`f355eaed`](https://github.com/2333sky/pi-pstack-native-2/commit/f355eaedcabbcee6c1429f8a5341974b6833dd22). Its tested head, `a4e04df4128bf83e60404ef54329bf8814aa6cbc`, passed [CI on Node 22.19 and 24](https://github.com/2333sky/pi-pstack-native-2/actions/runs/40299080693).
+[PR #17](https://github.com/2333sky/pi-pstack-native/pull/17) merged on 2026-10-26 as commit [`f355eaed`](https://github.com/2333sky/pi-pstack-native/commit/f355eaedcabbcee6c1429f8a5341974b6833dd22). Its tested head, `a4e04df4128bf83e60404ef54329bf8814aa6cbc`, passed [CI on Node 22.19 and 24](https://github.com/2333sky/pi-pstack-native/actions/runs/40299080693).
 
 | Item | Recorded status | Evidence boundary |
 |---|---|---|
 | Pinned source, Pi adapter, 11 core entrypoints and 35 critical-rule mappings | Merged | Source traceability and declared adaptations |
 | Semantic checks, negative fixtures, typecheck and build | Passed | Deterministic local/CI behavior |
 | Real Pi SDK lifecycle, offline/fake-provider E2E and installed-package smoke | Passed | Actual SDK/session integration with scripted model responses; no authenticated external inference |
+| User-reported Windows real-model run | Reported: 20/20 benchmark cases after local fixes | No source commit was recorded, so the run cannot be tied to a specific repository revision; see the [Windows record](WINDOWS-MODEL-TEST.zh-CN.md) |
 | Limited real Pi + real-model probe | `not-run` | No passing real-model receipt is recorded |
 | Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
 
@@ -93,7 +94,7 @@ Inspect the command's exit code and the JSON receipt together:
 
 The three probe checks are `completeSourceRead`, `unsupportedRefused` and `statusRoutedToBabysit`. The JSON receipt includes the model and evidence boundary. The harness does not persist raw model output or credentials. Preserve the receipt together with `source-commit.txt`; after checking the files, archive them in a stable repository evidence path or a linked CI artifact. A result applies to its tested commit and model. It is not proof of complete implementation, review-swarm quality, live UI/CLI behavior or merge safety.
 
-For the merged implementation the authenticated real-model tier remains **not run**. Existing real SDK tests use a loopback provider. CI runs the repeatable offline/fake-provider tiers without provider credentials; it does not automatically run this authenticated probe.
+The repository’s commit-bound authenticated real-model receipt remains **not run**. The separate user-reported Windows real-model run is recorded [here](WINDOWS-MODEL-TEST.zh-CN.md), without a source commit to bind it to a specific revision. Existing real SDK tests use a loopback provider. CI runs the repeatable offline/fake-provider tiers without provider credentials; it does not automatically run this authenticated probe.
 
 ## Completing issue #16
 
@@ -102,6 +103,6 @@ The remaining acceptance work is evidence and a review record. A documentation u
 1. Run the limited real-model probe successfully and archive the receipt, tested source commit and model. Update `SEMANTICS.json.evidence.realModel` to record the actual result and a stable receipt reference; preserve its procedure link. Set `status: "passed"` only for a passing authenticated run. A blocked attempt leaves real-model verification unexercised.
 2. Have the maintainer review the critical mappings and intentional deviations. Record that conclusion in `SEMANTICS.json.review` with `status: "signed-off"`, the actual `reviewer`, an ISO timestamp in `at`, and a concrete `rationale`, retaining the existing scope. Reference the review or merge decision if it records that conclusion. Do not infer or invent semantic approval solely from the merge event.
 3. Submit the evidence and metadata update, run `npm run check:semantics` and `npm run test:semantics`, and require the normal CI checks on that revision. Review any intervening mapped source/runtime changes before reusing earlier evidence.
-4. Recheck [issue #16](https://github.com/2333sky/pi-pstack-native-2/issues/16)'s acceptance criteria and record what the evidence establishes before closing it as completed. If a criterion is intentionally deferred, track it in a linked follow-up and explicitly agree the revised scope rather than checking it off as passed.
+4. Recheck [issue #16](https://github.com/2333sky/pi-pstack-native/issues/16)'s acceptance criteria and record what the evidence establishes before closing it as completed. If a criterion is intentionally deferred, track it in a linked follow-up and explicitly agree the revised scope rather than checking it off as passed.
 
 These steps do not require advancing the reviewed upstream baseline or claiming complete Cursor/Pi behavioral equivalence. Full live-surface implementation/review/merge scenarios remain separate evidence work.

@@ -19,7 +19,7 @@ The release chain includes source and semantic checks, tests, typecheck, build, 
 
 1. Review the version, changelog, package contents, license notices, dependency inventory, and [security policy](../SECURITY.md).
 2. Inspect CI and any external-model or GitHub test results separately; preserve unresolved issues and do not infer semantic sign-off from a green build.
-3. Choose whether a GitHub release or npm publication is appropriate. Preview packages should remain clearly identified as previews.
+3. Choose whether a GitHub release or npm publication is appropriate and accurately describe the version and validation evidence.
 4. Create a tag, GitHub release, or npm publication only when the maintainer explicitly authorizes that external action. Registry ownership and availability must be checked at publication time.
 
 Earlier installation and release results are historical records: [installation check](../INSTALLATION-CHECK.md) and [release validation](VALIDATION.md).

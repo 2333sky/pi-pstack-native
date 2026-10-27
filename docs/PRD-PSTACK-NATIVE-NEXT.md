@@ -852,13 +852,13 @@ curl --fail --silent --show-error 'https://api.github.com/repos/cursor/plugins/g
 
 - [S01：官方插件版本](https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/plugin.json)。
 - [S02：官方完整 Git tree](https://api.github.com/repos/cursor/plugins/git/trees/99b609a72323b70204eab407c622f436e858e112?recursive=1)。统计过滤 `pstack/` 下的 blob；Skill 过滤 `pstack/skills/<name>/SKILL.md`；Playbook 过滤 `pstack/skills/poteto-mode/playbooks/<name>.md`。本次返回 `truncated=false`。
-- [S03：Native 2 已审核基线](https://github.com/2333sky/pi-pstack-native-2/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/UPSTREAM.json)及[当前兼容登记](https://github.com/2333sky/pi-pstack-native-2/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/PARITY.json)。
+- [S03：Native 2 已审核基线](https://github.com/2333sky/pi-pstack-native/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/UPSTREAM.json)及[当前兼容登记](https://github.com/2333sky/pi-pstack-native/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/PARITY.json)。
 - [S04：Michael 上游组件配置](https://github.com/michael-denyer/pstack-claude/blob/main/tools/upstream.json)。该链接为动态参考，不作为 Native 2 规范基线。
-- [S05：Issue #2，只读工具与脱敏](https://github.com/2333sky/pi-pstack-native-2/issues/2)。
-- [S06：Issue #3，孤立 Workflow 恢复](https://github.com/2333sky/pi-pstack-native-2/issues/3)。
-- [S07：Issue #5，Baseline 归属](https://github.com/2333sky/pi-pstack-native-2/issues/5)。
-- [S08：Issue #7，过期 PR 与 CI](https://github.com/2333sky/pi-pstack-native-2/issues/7)。
-- [S09：已有同步验证记录](https://github.com/2333sky/pi-pstack-native-2/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/docs/upstream-sync/VALIDATION.md)。
+- [S05：Issue #2，只读工具与脱敏](https://github.com/2333sky/pi-pstack-native/issues/2)。
+- [S06：Issue #3，孤立 Workflow 恢复](https://github.com/2333sky/pi-pstack-native/issues/3)。
+- [S07：Issue #5，Baseline 归属](https://github.com/2333sky/pi-pstack-native/issues/5)。
+- [S08：Issue #7，过期 PR 与 CI](https://github.com/2333sky/pi-pstack-native/issues/7)。
+- [S09：已有同步验证记录](https://github.com/2333sky/pi-pstack-native/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/docs/upstream-sync/VALIDATION.md)。
 - [S10：in-your-own-words](https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/in-your-own-words/SKILL.md)。
 - [S11：sharpen](https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/sharpen/SKILL.md)。
 - [S12：ketchup-video](https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/ketchup-video/SKILL.md)。
@@ -875,13 +875,13 @@ curl --fail --silent --show-error 'https://api.github.com/repos/cursor/plugins/g
 
 [S01]: https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/plugin.json
 [S02]: https://api.github.com/repos/cursor/plugins/git/trees/99b609a72323b70204eab407c622f436e858e112?recursive=1
-[S03]: https://github.com/2333sky/pi-pstack-native-2/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/UPSTREAM.json
+[S03]: https://github.com/2333sky/pi-pstack-native/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/UPSTREAM.json
 [S04]: https://github.com/michael-denyer/pstack-claude/blob/main/tools/upstream.json
-[S05]: https://github.com/2333sky/pi-pstack-native-2/issues/2
-[S06]: https://github.com/2333sky/pi-pstack-native-2/issues/3
-[S07]: https://github.com/2333sky/pi-pstack-native-2/issues/5
-[S08]: https://github.com/2333sky/pi-pstack-native-2/issues/7
-[S09]: https://github.com/2333sky/pi-pstack-native-2/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/docs/upstream-sync/VALIDATION.md
+[S05]: https://github.com/2333sky/pi-pstack-native/issues/2
+[S06]: https://github.com/2333sky/pi-pstack-native/issues/3
+[S07]: https://github.com/2333sky/pi-pstack-native/issues/5
+[S08]: https://github.com/2333sky/pi-pstack-native/issues/7
+[S09]: https://github.com/2333sky/pi-pstack-native/blob/ee8acfe5f65a44545a1334eae7e3a4de7f14c75b/docs/upstream-sync/VALIDATION.md
 [S10]: https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/in-your-own-words/SKILL.md
 [S11]: https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/sharpen/SKILL.md
 [S12]: https://github.com/cursor/plugins/blob/99b609a72323b70204eab407c622f436e858e112/pstack/skills/ketchup-video/SKILL.md
