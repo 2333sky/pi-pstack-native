@@ -19,7 +19,7 @@ const sdkManifest = JSON.parse(readFileSync(join(sdkRoot, "package.json"), "utf8
 const sdkVersion = sdkManifest.version.split('.').map(Number);
 assert.ok(sdkVersion.length === 3 && sdkVersion.every(Number.isInteger) && sdkVersion[0] === 1 && sdkVersion[1] >= 4, "the installed peer satisfies the Pi 1.4+ / 1.x requirement");
 const sdkEntry = resolve(sdkRoot, sdkManifest.exports["."].import);
-const { createAgentSession, DefaultResourceLoader, SessionManager } = await import(pathToFileURL(sdkEntry).href);
+const { createAgentSession, DefaultResourceLoader, SessionManager, loadSkillsFromDir } = await import(pathToFileURL(sdkEntry).href);
 
 const distEntry = resolve(installedDir, installedManifest.exports["."].import);
 const cliEntry = resolve(installedDir, installedManifest.bin["pstack-runner"]);
@@ -33,6 +33,12 @@ for (const name of ["fingerprint", "sameFingerprint", "verify", "buildTemplate",
 const sourceRead = await api.createResourceTools(join(installedDir, "skills"))[0].execute("installed-source", { action: "read", resource: "upstream/skills/poteto-mode/playbooks/shipping.md" });
 assert.equal(sourceRead.details.resource, "upstream/skills/poteto-mode/playbooks/shipping.md");
 assert.ok(sourceRead.details.lines.some(line => line.text.includes("### Shipping")), "installed upstream snapshot is readable with its verified blob ID");
+const installedSkills = loadSkillsFromDir({ dir: join(installedDir, "skills"), source: "path" });
+assert.deepEqual(installedSkills.diagnostics, [], "installed skills load without diagnostics");
+assert.equal(installedSkills.skills.filter(skill => skill.name === "ml-development").length, 1, "installed ML skill can be discovered by Pi");
+assert.match(readFileSync(join(installedDir, "skills/ml-development/SKILL.md"), "utf8"), /^disable-model-invocation: true$/m, "ML skill is explicitly invoked");
+const mlRead = await api.createResourceTools(join(installedDir, "skills"))[0].execute("installed-ml", { action: "read", resource: "ml-development/playbooks/02-data.md" });
+assert.ok(mlRead.details.lines.some(line => line.text.includes("leakage")), "installed ML playbook is accessible to children");
 const statechartHelp = spawnSync(process.execPath, [join(installedDir, "skills/statechart/scripts/statechart.mjs"), "--help"], { encoding: "utf8" });
 assert.equal(statechartHelp.status, 0, statechartHelp.stderr);
 assert.match(statechartHelp.stdout, /from-spec/);
