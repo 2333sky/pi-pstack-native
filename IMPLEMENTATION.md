@@ -1,5 +1,7 @@
 # 2333 0.6.0-preview.1：方案与实现边界
 
+> **历史记录：** 本文件记录早期方案和实现边界；当前实现及兼容状态以 [运行时参考](docs/REFERENCE.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md) 为准。
+
 本包基于用户上传的 0.3.4 源码，参照 2026-10-10 的增强 PRD。沿用 Pi AgentSession 与原 DAG 引擎，不另建调度器。版本使用 Preview：本地行为测试不能替代真实供应商和真实 GitHub 的交付验收。
 
 ## 相比 PRD 的改进

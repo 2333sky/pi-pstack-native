@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Rename the repository and package to `pi-pstack-native` and document direct Pi Git installation.
+- Retain the pstack 0.15.32 source snapshot and Pi 1.4.0 SDK baseline; keep maintainer semantic approval and authenticated model evidence separate.
+- Preserve panel and workflow configuration during setup and validate role-model reasoning selections.
+- Fix Windows atomic state writes, build paths, and lock contention; improve task-report diagnostics and benchmark controls.
+
+Earlier entries below describe their original snapshots and may retain historical package names or validation boundaries.
+
 ## 0.6.0-preview.1 — Preview
 
 - Add strict Brief, scope/report checks, Artifact, supervised Gate and immutable Ledger.
