@@ -139,24 +139,51 @@ export default function piPstackNative(pi) {
                 return;
             }
             const available = availableModelSelectors(ctx);
-            const choices = ["inherit-parent", "auto", ...available];
+            const choices = [
+                { value: "inherit-parent", label: "inherit-parent — use the parent session's model" },
+                { value: "auto", label: "auto — use the parent session's model" },
+                ...available.map((value) => ({ value, label: `${value} — use this available model` })),
+            ];
             const config = loadModels();
-            const roles = ["worker", "architect", "reviewer", "scout", "verifier", "synthesizer", "integrator", "poteto-agent", "comment-sicko"];
-            const thinkingChoices = ["inherit-parent", "off", "minimal", "low", "medium", "high", "xhigh", "max"];
-            const thinkingLevel = await ctx.ui.select(`child reasoning level (current: ${config.thinkingLevel})`, thinkingChoices);
-            if (thinkingLevel === undefined) {
+            const roles = {
+                worker: "implementation", architect: "design and implementation", reviewer: "read-only review",
+                scout: "read-only exploration", verifier: "read-only verification", synthesizer: "reconcile results",
+                integrator: "combine work", "poteto-agent": "delegated Poteto task", "comment-sicko": "comment and workaround review",
+            };
+            const thinkingChoices = [
+                { value: "inherit-parent", label: "inherit-parent — use the parent session's reasoning level" },
+                { value: "off", label: "off — disable reasoning" },
+                { value: "minimal", label: "minimal — least reasoning effort, if supported" },
+                { value: "low", label: "low — lower reasoning effort, if supported" },
+                { value: "medium", label: "medium — moderate reasoning effort, if supported" },
+                { value: "high", label: "high — more reasoning effort, if supported" },
+                { value: "xhigh", label: "xhigh — extra reasoning effort, if supported" },
+                { value: "max", label: "max — maximum reasoning effort, if supported" },
+            ];
+            const thinkingLabel = await ctx.ui.select(`child reasoning level (current: ${config.thinkingLevel})`, thinkingChoices.map((choice) => choice.label));
+            if (thinkingLabel === undefined) {
                 ctx.ui.notify("Setup cancelled; nothing was written.", "info");
                 return;
             }
-            const next = { version: 1, roles: { ...config.roles }, thinkingLevel: thinkingLevel };
-            for (const role of roles) {
+            const thinkingLevel = thinkingChoices.find((choice) => choice.label === thinkingLabel)?.value;
+            if (!thinkingLevel) {
+                ctx.ui.notify("Invalid reasoning selection; nothing was written.", "error");
+                return;
+            }
+            const next = { ...config, roles: { ...config.roles }, thinkingLevel };
+            for (const [role, description] of Object.entries(roles)) {
                 const current = next.roles[role] ?? "inherit-parent";
-                const selected = await ctx.ui.select(`${role} model (current: ${current})`, choices);
+                const selected = await ctx.ui.select(`${role} — ${description} (current: ${current})`, choices.map((choice) => choice.label));
                 if (selected === undefined) {
                     ctx.ui.notify("Setup cancelled; nothing was written.", "info");
                     return;
                 }
-                next.roles[role] = selected;
+                const value = choices.find((choice) => choice.label === selected)?.value;
+                if (!value) {
+                    ctx.ui.notify("Invalid model selection; nothing was written.", "error");
+                    return;
+                }
+                next.roles[role] = value;
             }
             saveModels(next);
             ctx.ui.notify("Saved pstack-native model roles to ~/.pi/agent/pstack-native/models.json.", "info");

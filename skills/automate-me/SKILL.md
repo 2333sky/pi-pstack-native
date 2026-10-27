@@ -42,6 +42,10 @@ Apply user instructions and repository authority first. Apply the pinned upstrea
 `SEMANTICS.json` records critical-rule mappings, exact source ranges, deviations, test references and review fingerprints. Inventory counts, mapping coverage, deterministic receipt tests, fake-provider Pi lifecycle tests and real-model runs are separate evidence levels. No mapping asserts complete chat/model equivalence. Updating a fingerprint records review work; it is not semantic approval. Advancing a source pin does not grant semantic approval; that still requires explicit maintainer sign-off. The active source is 0.15.32; its implementation audit, maintainer semantic sign-off and real-model evidence remain separate fields in SEMANTICS.json. The previous 0.15.17 snapshot is retained for provenance.
 
 
+## Pi question interaction
+
+Cursor `AskQuestion` is not a Pi tool supplied by this package. Ask in chat using clearly described options and let the user reply in their own words. For multiple selections, explicitly invite any combination; do not claim a multi-select UI was shown. Preserve the user’s answers before proceeding.
+
 ---
 
 ## Pinned upstream instructions
