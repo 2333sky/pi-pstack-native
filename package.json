@@ -1,10 +1,10 @@
 {
-  "name": "2333",
+  "name": "pi-pstack-native",
   "version": "0.6.0-preview.1",
   "description": "pi-pstack-native: pstack semantics rebuilt on Pi's official AgentSession APIs with native durable workflows, worktree isolation, model routing, and scheduling.",
   "type": "module",
   "license": "MIT",
-  "author": "2333",
+  "author": "2333sky",
   "private": false,
   "keywords": [
     "pi-package",

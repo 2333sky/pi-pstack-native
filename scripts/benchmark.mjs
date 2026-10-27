@@ -27,7 +27,7 @@ for(const c of cases) {
   const wf=engine.create({cwd,parentSessionId:`benchmark-${c.id}`,contractLevel:'strict',budget:{maxTimeSeconds:180,maxTokens:20000},nodes:[{key:'fix',profile:'worker',task:c.goal,model,brief}]});
   runnerResults.push(...await runnerOnce({agentDir:resolve(agentDir),model,workflowIds:[wf.id]}));
   const result=engine.get(wf.id);rows.push({caseId:c.id,workflowId:wf.id,execution:result.state,verified:engine.acceptedWorkflow(result),usage:result.calls.fix.usage ?? null,error:result.error ?? null});
-  writeFileSync(join(root,'results.json'),JSON.stringify({platform:'2333 Pi native',model,rows},null,2));
+  writeFileSync(join(root,'results.json'),JSON.stringify({platform:'pi-pstack-native',model,rows},null,2));
 }
 console.log(JSON.stringify({cases:rows.length,verified:rows.filter(r=>r.verified).length,results:join(root,'results.json')},null,2));
 return {rows,runnerResults};

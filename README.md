@@ -3,7 +3,7 @@
 > **Experimental Preview — `0.6.0-preview.1`**
 > Pi-native, independently maintained pstack semantic port. **Not affiliated with or endorsed by Cursor or the upstream pstack maintainers.**
 
-**npm package:** `2333` · **Runtime:** Node.js >=22.19.0, Pi Coding Agent SDK `^1.4.0`
+**npm package:** `pi-pstack-native` · **Runtime:** Node.js >=22.19.0, Pi Coding Agent SDK `^1.4.0`
 **Status:** Preview (not a verified stable release). The project is available from GitHub as a Pi package; an npm release is not currently available.
 
 This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack) workflows to Pi and implements a native multi-agent orchestration runtime. It uses persistent `AgentSession` state, a durable DAG engine, Git worktree isolation, model routing, and recovery. Version `0.6.0-preview.1` adds strict Task Briefs, artifact fingerprints, deterministic verification gates, audit ledgers, PR shipping constraints, dedicated workflow templates, a coordinator, budgets, context summaries, and an optional standalone runner.
@@ -35,19 +35,26 @@ This project adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack)
 Install the extension and its bundled Skills directly from GitHub:
 
 ```bash
-pi install git:github.com/2333sky/pi-pstack-native-2
+pi install git:github.com/2333sky/pi-pstack-native
 ```
 
 Start or restart Pi, then run `/setup-pstack`. To update or remove the package later:
 
 ```bash
-pi update git:github.com/2333sky/pi-pstack-native-2
+pi update git:github.com/2333sky/pi-pstack-native
+pi remove git:github.com/2333sky/pi-pstack-native
+```
+
+If you installed the former `pi-pstack-native-2` Git source, remove that source and install the new one so Pi tracks the new repository name:
+
+```bash
 pi remove git:github.com/2333sky/pi-pstack-native-2
+pi install git:github.com/2333sky/pi-pstack-native
 ```
 
 For a project-only installation, add `--local` to `pi install`; Pi loads it after the project is trusted. An unpinned Git source follows the repository's default branch on update. For a reproducible installation, append a Git tag or commit with `@` and update the pin deliberately.
 
-For development, clone the repository, run `npm ci` and `npm run build`, then use `pi install .` from the checkout. If `2333` is published to npm in the future, `pi install npm:2333` will be another option.
+For development, clone the repository, run `npm ci` and `npm run build`, then use `pi install .` from the checkout. If `pi-pstack-native` is published to npm in the future, `pi install npm:pi-pstack-native` will be another option.
 
 Requires Node.js **22.19 or newer** and `@earendil-works/pi-coding-agent` within the declared peer range `^1.4.0`. The lock resolves SDK `1.4.0`, installed with Node `24.19.0` and npm `11.9.0`. See [dependency review](docs/DEPENDENCIES.md) for licenses.
 
@@ -306,7 +313,7 @@ npm run upstream:verify -- --report docs/upstream-sync/reports/<sync_id>.json
 # Commit ONLY generated verification evidence after a clean committed candidate was verified.
 npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json
 # Optional remote write, requires separately configured Git/gh credentials and explicit flag:
-npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json --repo 2333sky/pi-pstack-native-2 --allow-remote-write
+npm run upstream:propose -- --report docs/upstream-sync/reports/<sync_id>.json --repo 2333sky/pi-pstack-native --allow-remote-write
 ```
 
 M4 exports a constrained Agent prompt; it does not select a provider/model or
@@ -434,4 +441,4 @@ still fails explicitly; historical evidence is never silently overwritten.
 
 All supported entrypoints preserve the fixed 0.15.32 source body; the eleven core workflows have critical-rule mappings, with [Pi-specific mappings and deviations](docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
 
-[PR #17](https://github.com/2333sky/pi-pstack-native-2/pull/17) merged the initial 0.15.17 compatibility infrastructure. The [0.15.32 / Pi 1.4 upgrade](docs/upstream-upgrade-0.15.32.md) updates the active source and dependency lock. The foundation PR’s Node 22.19 / 24 CI passed; the authenticated real-model tier remains `not-run`, and the semantic review record remains `pending-maintainer-signoff`. [The remaining acceptance steps](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.
+[PR #17](https://github.com/2333sky/pi-pstack-native/pull/17) merged the initial 0.15.17 compatibility infrastructure. The [0.15.32 / Pi 1.4 upgrade](docs/upstream-upgrade-0.15.32.md) updates the active source and dependency lock. The foundation PR’s Node 22.19 / 24 CI passed; the authenticated real-model tier remains `not-run`, and the semantic review record remains `pending-maintainer-signoff`. [The remaining acceptance steps](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.
