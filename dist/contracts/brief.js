@@ -110,7 +110,13 @@ export function validateReport(value) {
     const r = value;
     if (!r || !['completed', 'failed', 'blocked'].includes(r.status) || !r.base || !r.head || !['artifactRefs', 'commandsRun', 'evidenceRefs', 'deviations', 'unresolved', 'nextActions'].every(k => Array.isArray(r[k])))
         throw new Error('TASK_REPORT_INCOMPLETE');
+    if (![...r.unresolved, ...r.deviations].every(note => typeof note === 'string' || (note && typeof note === 'object' && ['blocking', 'advisory'].includes(note.severity) && typeof note.description === 'string' && Boolean(note.description.trim()))))
+        throw new Error('TASK_REPORT_INCOMPLETE');
     return r;
+}
+/** Legacy strings and malformed notes remain blocking; only explicit advisory notes pass. */
+export function hasBlockingReportNotes(report) {
+    return !Array.isArray(report.unresolved) || !Array.isArray(report.deviations) || [...report.unresolved, ...report.deviations].some(note => typeof note !== 'object' || note === null || note.severity !== 'advisory' || typeof note.description !== 'string' || !note.description.trim());
 }
 export function parseReport(text) {
     const block = text.match(/```(?:task-report|json)\s*\n([\s\S]*?)```/);
@@ -123,7 +129,7 @@ export function briefPrompt(brief) {
         review: 'Include findings: [{"severity": "low", "location": "...", "description": "...", "evidence": "..."}]; severity is critical, high, medium, or low. Use [] when there are no findings.',
         coverage: 'Include coverage: {"completed": ["..."], "unresolved": []}, listing completed required slices.',
     };
-    return `\n\nAuthoritative Task Brief (${brief.id} revision ${brief.revision}, orders ${hash(brief.standingOrders)}):\n${JSON.stringify(brief, null, 2)}\nReturn one fenced JSON task report with all fields: {"status":"completed", "artifactRefs":[], "base":"<starting git commit SHA>", "head":"<current git commit SHA>", "commandsRun":[], "evidenceRefs":[], "deviations":[], "unresolved":[], "nextActions":[]}. status must be exactly one of completed, failed, or blocked (not a synonym). All six array fields are required, even when empty; commandsRun entries are arrays of command arguments. Use the actual starting and current git commit SHAs, not invented values. ${brief.reportRequirements ? extra[brief.reportRequirements.kind] : ''} Do not claim verification from narrative alone.`;
+    return `\n\nAuthoritative Task Brief (${brief.id} revision ${brief.revision}, orders ${hash(brief.standingOrders)}):\n${JSON.stringify(brief, null, 2)}\nReturn one fenced JSON task report with all fields: {"status":"completed", "artifactRefs":[], "base":"<starting full git commit SHA>", "head":"<current full git commit SHA>", "commandsRun":[], "evidenceRefs":[], "deviations":[], "unresolved":[], "nextActions":[]}. status must be exactly one of completed, failed, or blocked (not a synonym). All six array fields are required, even when empty; commandsRun entries are arrays of command arguments. Use full commit SHAs from git rev-parse (40 hex characters for SHA-1 or 64 for SHA-256), not abbreviations or invented values. For each unresolved item or deviation, use {"severity":"advisory","description":"..."} or {"severity":"blocking","description":"..."}; use blocking when it affects acceptance or its impact is uncertain, and advisory only for non-blocking information supported by evidence. Legacy plain strings are blocking. ${brief.reportRequirements ? extra[brief.reportRequirements.kind] : ''} Do not claim verification from narrative alone.`;
 }
 export function validateBudget(budget) {
     if (!budget)

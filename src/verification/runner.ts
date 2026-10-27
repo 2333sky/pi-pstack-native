@@ -7,7 +7,7 @@ import { FileLock } from '../runtime/lock.ts';
 import { hash, uid, transact, protocol } from '../runtime/protocol.ts';
 import { redactSecrets, redactLogTail } from '../runtime/redact.ts';
 import { fingerprint, capture, ownerOf, resolveBaseline, sameFingerprint, git } from '../artifacts/fingerprint.ts';
-import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies } from '../contracts/brief.ts';
+import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies, hasBlockingReportNotes } from '../contracts/brief.ts';
 import type { GateSpec, GateStatus, TaskBrief, Evidence, Ledger, Fingerprint, TaskReport, BaselineOwner } from '../contracts/types.ts';
 export interface RunnerPolicy { commands: string[][]; environment?: Record<string,string>; allowLocal?: boolean; allowRemote?: boolean; maxOutputBytes?: number; maxTimeoutSeconds?: number }
 export function loadRunnerPolicy(): RunnerPolicy {
@@ -140,7 +140,7 @@ export async function verify(cwd: string, brief: TaskBrief, options: {policy?:Ru
     try {if(!sameFingerprint(artifact.fingerprint,fingerprint(cwd,options.pr?'committed':'working')))status='stale';} catch {status='stale';}
     const categories=brief.verification.filter(g=>(g.required!==false || requiredIds.has(g.id)) && ['command','test-report'].includes(g.kind)).map(g=>g.category);
     const r=options.report;
-    const contractAccepted=!baselineError && (brief.contractLevel==='minimal' || Boolean(r && r.status==='completed' && reportSatisfies(brief,r) && r.head===artifact.fingerprint.commitSha && r.base===(diffBase?.commitSha ?? artifact.fingerprint.commitSha) && !r.deviations.length && !r.unresolved.length));
+    const contractAccepted=!baselineError && (brief.contractLevel==='minimal' || Boolean(r && r.status==='completed' && reportSatisfies(brief,r) && r.head===artifact.fingerprint.commitSha && r.base===(diffBase?.commitSha ?? artifact.fingerprint.commitSha) && !hasBlockingReportNotes(r)));
     const ledger:Ledger={contractAccepted,id:uid('ver'),artifactId:artifact.id,fingerprint:artifact.fingerprint,evidenceRefs:required.map(e=>e.id),gateIds:required.map(e=>e.gateId),gateDefinitionHash:hash(brief),status,verdict:status==='passed'?(categories.includes('behavior')?'unit-test-verified':'type-check-only'):status==='failed'?'verifier-failed':status==='blocked'?'verifier-blocked':'not-verified',verifiedAt:new Date().toISOString(),verifiedBy:actor,executionNonce:nonce,diffBase,pr:options.pr};
     transact('verification-recorded',ledger.id,actor,s=>{s.ledgers[ledger.id]=ledger;return ledger;});return ledger;
   } catch(error) {transact('verification-rejected',brief.id,actor,()=>({reason:String(error)}));throw error;}

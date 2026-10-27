@@ -4,7 +4,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writ
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { exitCode, parseArgs } from "../scripts/benchmark.mjs";
+import { caseEvidence, exitCode, parseArgs } from "../scripts/benchmark.mjs";
 
 test("parser defaults the output path and rejects missing required flags", () => {
   assert.deepEqual(parseArgs(["--agent-dir", "/tmp/agent", "--model", "provider/model"]), { agentDir: "/tmp/agent", model: "provider/model", output: "benchmark-output" });
@@ -24,6 +24,13 @@ test("exit policy fails closed", () => {
   assert.equal(exitCode([{ verified: false }], [{ status: "blocked", reason: "AUTHENTICATION_UNAVAILABLE" }]), 1);
   assert.equal(exitCode([{ verified: true }, { verified: true }], [{ status: "blocked", reason: "AUTHENTICATION_UNAVAILABLE" }]), 1);
   assert.equal(exitCode([], []), 1);
+});
+
+test("benchmark distinguishes passing test evidence from a rejected task report", () => {
+  const call = { verification: { ledgerId: "ledger", reason: "TASK_REPORT_INCOMPLETE_OR_MISMATCH" }, reportError: "TASK_REPORT_INCOMPLETE" };
+  const state = { ledgers: { ledger: { evidenceRefs: ["other", "test"], contractAccepted: false } }, evidence: { other: { gateId: "other", status: "passed" }, test: { gateId: "tests", status: "passed" } } };
+  assert.deepEqual(caseEvidence(call, state), { testEvidence: "passed", contractAccepted: false, verificationReason: "TASK_REPORT_INCOMPLETE_OR_MISMATCH", reportError: "TASK_REPORT_INCOMPLETE" });
+  assert.equal(caseEvidence({}, state).testEvidence, "not-run");
 });
 
 const copyPackage = (dir) => {

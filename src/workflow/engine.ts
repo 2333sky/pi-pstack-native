@@ -1,7 +1,7 @@
 import { upstreamVersion } from "../runtime/upstream.ts";
 import { validateEvidencePackets, type EvidencePacket } from "../agent/resources.ts";
 import { loadModels } from "../runtime/config.ts";
-import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies } from "../contracts/brief.ts";
+import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies, hasBlockingReportNotes } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
 import { fingerprint, ownerOf } from "../artifacts/fingerprint.ts";
 import { protocol, hash, transact } from "../runtime/protocol.ts";
@@ -446,7 +446,7 @@ export class WorkflowEngine {
       const report=agent.report;
       let reason: string|undefined;
       if (call.brief.contractLevel === "strict") {
-        if (!report || report.status!=="completed" || !reportSatisfies(call.brief, report) || report.unresolved.length || report.deviations.length || report.head!==ledger.fingerprint.commitSha || !agent.baseline || report.base!==agent.baseline.commitSha) reason="TASK_REPORT_INCOMPLETE_OR_MISMATCH";
+        if (!report || report.status!=="completed" || !reportSatisfies(call.brief, report) || hasBlockingReportNotes(report) || report.head!==ledger.fingerprint.commitSha || !agent.baseline || report.base!==agent.baseline.commitSha) reason="TASK_REPORT_INCOMPLETE_OR_MISMATCH";
       }
       if (!reason && ledger.status === "blocked") {
         const evidence = protocol().evidence;

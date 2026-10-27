@@ -38,6 +38,28 @@ function agentBaseline(spec:any){return capture(spec.cwd,undefined,[],'working',
 test('strict brief validates required acceptance, commands and immutable revisions',()=>{const f=fixture();try{const b=brief(f.repo);validateBrief(b);assert.throws(()=>validateBrief({...b,acceptance:[]}),/BRIEF_INCOMPLETE/);assert.throws(()=>validateBrief({...b,timeboxSeconds:undefined}),/timebox/);saveBrief(b,'test','initial');saveBrief(b,'test','same');assert.equal(protocol().briefs.brief.length,1);assert.throws(()=>saveBrief({...b,goal:'new'},'test','update'),/REVISION/);saveBrief({...b,revision:2,goal:'new'},'test','update');assert.equal(protocol().briefs.brief.length,2);}finally{f.cleanup();}});
 test('task brief describes the accepted report and its specialized fields',()=>{const f=fixture();try{const b=brief(f.repo);b.reportRequirements={kind:'review'};const prompt=briefPrompt(b);assert.match(prompt,/exactly one of completed, failed, or blocked/);assert.match(prompt,/findings:/);const fp=fingerprint(f.repo);const report={status:'completed',base:fp.commitSha,head:fp.commitSha,artifactRefs:[],commandsRun:[],evidenceRefs:[],deviations:[],unresolved:[],nextActions:[],findings:[]};assert.deepEqual(parseReport('```json\n'+JSON.stringify(report)+'\n```'),report);assert.throws(()=>parseReport(JSON.stringify({...report,status:'success'})),/TASK_REPORT_INCOMPLETE/);}finally{f.cleanup();}});
 test('workflow exposes the blocked command policy reason',async()=>{const f=fixture();try{const engine=new WorkflowEngine({} as any);const b=commandBrief(f.repo);const wf=engine.create({cwd:f.repo,contractLevel:'strict',nodes:[{key:'task',task:'x',profile:'worker',brief:b}]});const before=capture(f.repo,undefined,[],'working',{kind:'baseline',owner:ownerOf(b,{workflowId:wf.id,callKey:'task'})}).fingerprint;const r={status:'completed',base:before.commitSha,head:before.commitSha,artifactRefs:[],commandsRun:[],evidenceRefs:[],deviations:[],unresolved:[],nextActions:[]};await engine.verifyCall(wf.id,'task',{id:'a',state:'completed',cwd:f.repo,baseline:before,report:r} as any);assert.equal(engine.get(wf.id)!.calls.task.verification?.reason,'COMMAND_NOT_ALLOWED');}finally{f.cleanup();}});
+test('strict acceptance retains advisory notes and blocks legacy, blocking, malformed and short-SHA reports',async()=>{
+ const f=fixture();try{
+  const engine=new WorkflowEngine({} as any),b=brief(f.repo),wf=engine.create({cwd:f.repo,contractLevel:'strict',nodes:[{key:'task',task:'x',profile:'worker',brief:b}]});
+  const before=capture(f.repo,undefined,[],'working',{kind:'baseline',owner:ownerOf(b,{workflowId:wf.id,callKey:'task'})}).fingerprint;
+  const report={status:'completed',base:before.commitSha,head:before.commitSha,artifactRefs:[],commandsRun:[],evidenceRefs:[],deviations:[],unresolved:[],nextActions:[]};
+  for(const [change,accepted] of [
+   [{unresolved:[{severity:'advisory',description:'Documented trade-off'}],deviations:[{severity:'advisory',description:'Informational warning'}]},true],
+   [{unresolved:['Legacy unresolved item']},false],
+   [{deviations:[{severity:'blocking',description:'Acceptance is incomplete'}]},false],
+   [{unresolved:[{severity:'advisory',description:'   '}]},false],
+   [{deviations:[{severity:'unknown',description:'not classified'}]},false],
+   [{base:before.commitSha.slice(0,7)},false],
+  ] as const){
+   const r={...report,...change};await engine.verifyCall(wf.id,'task',{id:'a',state:'completed',cwd:f.repo,baseline:before,report:r} as any);
+   const v=engine.get(wf.id)!.calls.task.verification!;assert.equal(v.status,accepted?'passed':'blocked');
+   assert.equal(protocol().ledgers[v.ledgerId!].contractAccepted,accepted);
+   if(accepted)assert.deepEqual(engine.get(wf.id)!.calls.task.report!.unresolved,r.unresolved);
+  }
+  assert.match(briefPrompt(b),/40 hex characters for SHA-1 or 64 for SHA-256/);
+  assert.throws(()=>parseReport(JSON.stringify({...report,unresolved:[{severity:'advisory',description:''}]})),/TASK_REPORT_INCOMPLETE/);
+ }finally{f.cleanup();}
+});
 test('scope globs include root paths, deny excluded and traversal patterns',()=>{const f=fixture();try{assert(matchPath('a.ts','**/*.ts'));assert(matchPath('src/a/b.ts','src/**'));assert.deepEqual(scopeViolations(brief(f.repo),['private/a','src/a']),['private/a']);assert.throws(()=>validateBrief({...brief(f.repo),scope:{...brief(f.repo).scope,include:['../*']}}),/relativeGlob/);}finally{f.cleanup();}});
 test('fingerprints distinguish staged, unstaged, untracked, mode and commits',()=>{const f=fixture();try{const a=fingerprint(f.repo);writeFileSync(join(f.repo,'source.txt'),'changed');const b=fingerprint(f.repo);assert(!sameFingerprint(a,b));git(f.repo,['add','.']);const c=fingerprint(f.repo);assert(!sameFingerprint(b,c));writeFileSync(join(f.repo,'other.txt'),'new');assert(!sameFingerprint(c,fingerprint(f.repo)));assert.throws(()=>fingerprint(f.repo,'committed'),/DIRTY/);git(f.repo,['add','.']);git(f.repo,['commit','-qm','new']);assert(!sameFingerprint(a,fingerprint(f.repo)));}finally{f.cleanup();}});
 test('worktrees share repo identity while different repos never share it',()=>{const f=fixture();try{git(f.repo,['worktree','add','-qb','isolated',join(f.root,'wt')]);assert.equal(fingerprint(f.repo).repoId,fingerprint(join(f.root,'wt')).repoId);const other=join(f.root,'other');mkdirSync(other);git(f.repo,['clone','-q',f.repo,other]);assert.notEqual(fingerprint(f.repo).repoId,fingerprint(other).repoId);}finally{f.cleanup();}});

@@ -7,7 +7,7 @@ import { FileLock } from "../runtime/lock.js";
 import { hash, uid, transact, protocol } from "../runtime/protocol.js";
 import { redactSecrets, redactLogTail } from "../runtime/redact.js";
 import { fingerprint, capture, ownerOf, resolveBaseline, sameFingerprint, git } from "../artifacts/fingerprint.js";
-import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies } from "../contracts/brief.js";
+import { changedPaths, matchPath, scopeViolations, validateBrief, reportSatisfies, hasBlockingReportNotes } from "../contracts/brief.js";
 export function loadRunnerPolicy() {
     try {
         return JSON.parse(readFileSync(homePath('verification-policy.json'), 'utf8'));
@@ -244,7 +244,7 @@ export async function verify(cwd, brief, options = {}) {
         }
         const categories = brief.verification.filter(g => (g.required !== false || requiredIds.has(g.id)) && ['command', 'test-report'].includes(g.kind)).map(g => g.category);
         const r = options.report;
-        const contractAccepted = !baselineError && (brief.contractLevel === 'minimal' || Boolean(r && r.status === 'completed' && reportSatisfies(brief, r) && r.head === artifact.fingerprint.commitSha && r.base === (diffBase?.commitSha ?? artifact.fingerprint.commitSha) && !r.deviations.length && !r.unresolved.length));
+        const contractAccepted = !baselineError && (brief.contractLevel === 'minimal' || Boolean(r && r.status === 'completed' && reportSatisfies(brief, r) && r.head === artifact.fingerprint.commitSha && r.base === (diffBase?.commitSha ?? artifact.fingerprint.commitSha) && !hasBlockingReportNotes(r)));
         const ledger = { contractAccepted, id: uid('ver'), artifactId: artifact.id, fingerprint: artifact.fingerprint, evidenceRefs: required.map(e => e.id), gateIds: required.map(e => e.gateId), gateDefinitionHash: hash(brief), status, verdict: status === 'passed' ? (categories.includes('behavior') ? 'unit-test-verified' : 'type-check-only') : status === 'failed' ? 'verifier-failed' : status === 'blocked' ? 'verifier-blocked' : 'not-verified', verifiedAt: new Date().toISOString(), verifiedBy: actor, executionNonce: nonce, diffBase, pr: options.pr };
         transact('verification-recorded', ledger.id, actor, s => { s.ledgers[ledger.id] = ledger; return ledger; });
         return ledger;

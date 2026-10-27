@@ -127,13 +127,15 @@ npm pack
 
 The current suite covers graph validation, bounded concurrency, chain dependencies, failed-dependency propagation, process recovery, recovery beyond a concurrency window, terminal wake-up semantics, dead/live locks, writer placement, explicit integration, verifier artifact placement, dirty-worktree refusal, read-only path confinement, loop schedule locking, atomic state/journals, and model/reasoning routing. Static review also checks nested-runtime wiring and the depth cap.
 
-A user reported a Windows run with real model inference; its checkout had no recorded commit. See the [Windows test record](WINDOWS-MODEL-TEST.zh-CN.md). The real Pi SDK is also exercised by lifecycle, fake-provider E2E and installed-package smoke tests. Authenticated real-model inference is a separate tier: the managed environment's recorded model check found no configured authorized models. A Pi provider credential is required before that tier can run here. See [the current acceptance status and cloud-environment procedure](../docs/SEMANTIC-COMPATIBILITY.md#implementation-and-acceptance-status).
+A user reported Windows real-model runs, including a rerun at commit `4d75ea0b`. See the [Windows test record](WINDOWS-MODEL-TEST.zh-CN.md). The real Pi SDK is also exercised by lifecycle, fake-provider E2E and installed-package smoke tests. Authenticated real-model inference is a separate tier: the managed environment's recorded model check found no configured authorized models. A Pi provider credential is required before that tier can run here. See [the current acceptance status and cloud-environment procedure](../docs/SEMANTIC-COMPATIBILITY.md#implementation-and-acceptance-status).
 
 ## License and provenance
 
 MIT. Upstream pstack semantics/content are attributed to Lauren Tan and retain upstream MIT obligations. New Pi-native runtime code belongs to this project. See `NOTICE.md`.
 
 ## Benchmark
+
+Each case records the deterministic test gate as `testEvidence` and the task-report decision as `contractAccepted`, separately from `verified` (current workflow acceptance). A passing test gate is evidence for the checked artifact, not a general model-quality score; the benchmark exits successfully only when every selected workflow is verified.
 
 ```bash
 npm run build

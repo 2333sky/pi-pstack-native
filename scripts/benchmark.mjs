@@ -7,10 +7,12 @@ import { WorkflowEngine } from '../dist/workflow/engine.js';
 import { AgentHost } from '../dist/agent/host.js';
 import { fingerprint } from '../dist/artifacts/fingerprint.js';
 import { runnerOnce } from '../dist/runner/service.js';
+import { protocol } from '../dist/runtime/protocol.js';
 const usage='benchmark requires explicit --agent-dir PATH --model provider/model';
 export function parseArgs(argv){const opts={};for(let i=0;i<argv.length;i++){const key=argv[i];if(!['--agent-dir','--model','--output','--limit','--max-tokens'].includes(key)||opts[key]!==undefined||!argv[i+1]||argv[i+1].startsWith('--'))throw new Error(`Unknown, repeated, or missing benchmark argument: ${key}`);opts[key]=argv[++i];}const agentDir=opts['--agent-dir'],model=opts['--model'];if(!agentDir||!model)throw new Error(usage);const positive=(name)=>{const value=opts[name];if(value===undefined)return undefined;if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))throw new Error(`Invalid ${name}`);return Number(value);};const limit=positive('--limit'),maxTokens=positive('--max-tokens');return{agentDir,model,output:opts['--output']??'benchmark-output',...(limit===undefined?{}:{limit}),...(maxTokens===undefined?{}:{maxTokens})};}
 export function runnerBlocked(runnerResults=[]){return runnerResults.some(r=>r?.reason==='AUTHENTICATION_UNAVAILABLE');}
 export function exitCode(rows,runnerResults=[]){if(runnerBlocked(runnerResults))return 1;return rows.length>0&&rows.every(r=>r.verified)?0:1;}
+export function caseEvidence(call,state){const ledger=call.verification?.ledgerId ? state.ledgers[call.verification.ledgerId] : undefined;const testEvidence=ledger?.evidenceRefs.map(id=>state.evidence[id]).find(item=>item?.gateId==='tests');return {testEvidence:testEvidence?.status ?? 'not-run',contractAccepted:ledger?.contractAccepted ?? null,verificationReason:call.verification?.reason ?? null,reportError:call.reportError ?? null};}
 export async function runBenchmark({agentDir,model,output,limit,maxTokens=200000}) {
 const root=resolve(output);mkdirSync(root,{recursive:true});
 process.env.PSTACK_NATIVE_HOME=join(root,'state');mkdirSync(process.env.PSTACK_NATIVE_HOME,{recursive:true});
@@ -26,7 +28,8 @@ for(const c of cases.slice(0,limit)) {
   const brief={id:c.id,revision:1,contractLevel:'strict',goal:c.goal,scope:{include:['source.mjs'],exclude:['checks.test.mjs'],repoId:fp.repoId},contextRefs:['checks.test.mjs'],acceptance:[{id:'behavior',description:c.goal,required:true,gateIds:['tests']}],verification:[{id:'tests',kind:'command',command,timeoutSeconds:30,sideEffect:'none',category:'behavior'}],timeboxSeconds:600,forbidden:['change tests','remote-write'],standingOrders:['Only change source.mjs; commit the change locally without pushing; emit task-report-v1.'],reportFormat:'task-report-v1'};
   const wf=engine.create({cwd,parentSessionId:`benchmark-${c.id}`,contractLevel:'strict',budget:{maxTimeSeconds:600,maxTokens},nodes:[{key:'fix',profile:'worker',task:c.goal,model,brief}]});
   runnerResults.push(...await runnerOnce({agentDir:resolve(agentDir),model,workflowIds:[wf.id]}));
-  const result=engine.get(wf.id);rows.push({caseId:c.id,workflowId:wf.id,execution:result.state,verified:engine.acceptedWorkflow(result),usage:result.calls.fix.usage ?? null,error:result.error ?? null});
+  const result=engine.get(wf.id);const call=result.calls.fix;
+  rows.push({caseId:c.id,workflowId:wf.id,execution:result.state,verified:engine.acceptedWorkflow(result),...caseEvidence(call,protocol()),usage:call.usage ?? null,error:result.error ?? null});
   writeFileSync(join(root,'results.json'),JSON.stringify({platform:'pi-pstack-native',model,rows},null,2));
 }
 console.log(JSON.stringify({cases:rows.length,verified:rows.filter(r=>r.verified).length,results:join(root,'results.json')},null,2));
