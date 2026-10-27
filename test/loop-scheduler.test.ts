@@ -446,8 +446,7 @@ test("removing a loop through the scheduler during an active delivery does not r
     await waitUntil(() => existsSync(worker!.readyPath), worker.child);
     await waitUntil(() => records(worker!.attemptsPath).length === 1, worker.child);
     writeFileSync(worker.removePath, "remove");
-    await waitUntil(() => existsSync(worker!.removedPath), worker.child);
-    assert.equal(readFileSync(worker.removedPath, "utf8"), "true");
+    await waitUntil(() => existsSync(worker!.removedPath) && readFileSync(worker!.removedPath, "utf8") === "true", worker.child);
     assert.equal(loadLoops().loops.some((item) => item.id === loop.id), false, "the record is removed while the already claimed send is still active");
     writeFileSync(worker.releaseDeliveryPath, "release");
     await waitUntil(() => existsSync(worker!.deliveryReleasedPath), worker.child);

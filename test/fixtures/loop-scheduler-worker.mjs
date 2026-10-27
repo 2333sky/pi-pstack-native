@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, unlinkSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { LoopScheduler } from "../../src/loop/scheduler.ts";
 
 const logPath = process.env.PSTACK_TEST_LOG;
@@ -56,31 +56,38 @@ const scheduler = new LoopScheduler(pi, {
 });
 
 scheduler.start(ctx);
-writeFileSync(readyPath, "ready");
+// A marker a parent may read while this process writes it. Rename keeps the file
+// either absent or complete, so a reader never sees a truncated value.
+function marker(path, value) {
+  const temp = `${path}.${process.pid}.tmp`;
+  writeFileSync(temp, value);
+  renameSync(temp, path);
+}
+marker(readyPath, "ready");
 const keepAlive = setInterval(() => {
   if (existsSync(stopPath)) {
     unlinkSync(stopPath);
     scheduler.stop();
-    writeFileSync(stoppedPath, "stopped");
+    marker(stoppedPath, "stopped");
     process.stdout.write("STOPPED\n");
   }
   if (existsSync(releaseDeliveryPath)) {
     unlinkSync(releaseDeliveryPath);
     releaseHeldDelivery?.();
     releaseHeldDelivery = undefined;
-    writeFileSync(deliveryReleasedPath, "released");
+    marker(deliveryReleasedPath, "released");
     process.stdout.write("DELIVERY-RELEASED\n");
   }
   if (existsSync(disablePath)) {
     unlinkSync(disablePath);
     if (!loopId) throw new Error("loop id is required to disable a scheduled loop");
     const loop = scheduler.setEnabled(sessionId, loopId, false);
-    writeFileSync(disabledPath, String(loop.enabled));
+    marker(disabledPath, String(loop.enabled));
   }
   if (existsSync(removePath)) {
     unlinkSync(removePath);
     if (!loopId) throw new Error("loop id is required to remove a scheduled loop");
-    writeFileSync(removedPath, String(scheduler.remove(sessionId, loopId)));
+    marker(removedPath, String(scheduler.remove(sessionId, loopId)));
   }
 }, 5);
 process.on("SIGTERM", () => { scheduler.stop(); clearInterval(keepAlive); process.exit(); });
