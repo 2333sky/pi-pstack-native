@@ -10,6 +10,7 @@ An earlier revision of this file recorded the skill as unregistered. That is no 
 - The 27 upstream files under `skills/statechart/scripts/` are vendored and pinned. Their Git blob SHAs match the pinned commit tree.
 - `npm run check:semantics` fails when a generated entrypoint drifts from its pinned source or the adapter.
 - `npm run test:statechart` runs the vendored upstream suite. It is not part of `npm run check` or `npm run check:release`.
+- The `Statechart toolchain` CI job installs Java and the pinned TLC jar, then runs the bundled CLI check and one `from-chart` round trip that writes `chart.png` and `summary.json`. It replaced the full suite, which did not finish on the runner.
 
 ## Toolchain measured here
 
@@ -61,10 +62,16 @@ Claimed: the source is pinned, the entrypoint is generated from it, the scripts 
 
 Not claimed: behavioral parity. `PARITY.json` keeps `behavioralParity` and `behavioralAudit` at `not-claimed`, and this suite is the reason for `statechart`. Nineteen upstream tests do not pass on this environment, so a statement that the skill behaves like upstream would be unsupported.
 
+## CI measurement
+
+The first CI job ran the full suite. It was cancelled at the 20 minute limit on 2026-10-26 (run 40359842172, started 16:30:51, cancelled 16:51:06). With a 45 minute limit it was cancelled again (run 40365921686, started 17:09:12, cancelled 17:54:38). The same suite takes about 4 minutes on a developer machine, so the CI runner does not complete it in 45 minutes.
+
+The job therefore runs a smoke instead: the bundled CLI check from `test/statechart.test.ts`, one `from-chart` round trip on `skills/statechart/scripts/test/regions.mmd`, and an assertion that `chart.png` and `summary.json` exist. That run needs TLC, so the job still installs Java and the pinned jar. Locally the round trip takes about 4.5 seconds.
+
 ## Open work
 
-1. Pin the toolchain in a capability check that reports the measured versions and blocks on a mismatch, then declare `test:statechart` an environment suite with a written skip list naming the three clusters above.
+1. Split the upstream suite into shards and find the one that stalls on CI. Until a shard completes there, no CI job can report the 19 failures.
 2. Fix the three clusters. They sit in a 36 KB script and a 34 KB library, and the failure-injection tests encode another OS's rename semantics.
-3. Leave both alone and keep the suite opt-in. The claim stays `not-claimed`, which is accurate but does not tell a user which flows work.
+3. Pin the toolchain in a capability check that reports the measured versions and blocks on a mismatch.
 
-Option 1 costs a version check and a documented skip list. Option 2 is the only one that would let the suite gate the skill.
+Option 1 is the only path to a suite that reports in CI. Option 2 is what would let it gate the skill.
