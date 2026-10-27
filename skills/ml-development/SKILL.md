@@ -1,5 +1,6 @@
 ---
 name: ml-development
+disable-model-invocation: true
 description: "Develop, debug, compare, evaluate, or reproduce machine learning and AI algorithms with explicit data splits, baselines, experiment budgets, and traceable evidence. Use for model training, algorithm implementation, hyperparameter tuning, evaluation, ablation, or reproducibility."
 ---
 
@@ -23,6 +24,7 @@ Help the user carry a concrete ML task through the applicable stages below. This
 ## Rules for execution
 
 - Follow the user's scope, resource budget and repository instructions. Establish dataset access, storage, expected duration, compute availability, and an execution budget before paid, long-running or shared-resource jobs. Use authorization already given; if a material limit is missing, prepare a bounded plan and obtain the missing constraint before launching dependent work. Do not publish data, models or results or start remote jobs without authorization.
+- Pi child-agent token, cost and elapsed-time limits are not GPU-hour limits or operating-system supervision of spawned training processes. Without an authorized, bounded execution surface that can terminate and account for the full training process tree, prepare commands and a plan instead of launching long-running, remote or potentially unbounded training. A small, clearly bounded local smoke may run if permitted. Never report an unenforced budget as enforced.
 - Separate code tests, smoke runs, validation-set selection and final test evaluation. Never tune on the final test set. If an existing test set has influenced selection, disclose it and avoid claiming a clean independent test.
 - Fix the comparison protocol before experiments: dataset/version and split, primary metric and direction, baseline, budgets, train/eval commands, seeds, checkpoint selection, and acceptance thresholds or decision criteria. For paired comparisons use the same data and protocol; list differences that cannot be controlled.
 - Use appropriate split units and check leakage: group entities, timestamps, duplicates and related samples as the task requires; fit preprocessing on training data only. For LLMs also track prompts, decoding, model/provider versions and possible evaluation contamination.
@@ -33,4 +35,4 @@ Help the user carry a concrete ML task through the applicable stages below. This
 
 ## Pi integration
 
-Use `/skill:ml-development <task>` for an explicit start; natural-language requests can also cause Pi to discover the Skill. `/poteto-mode <task>` may be used alongside it, but the upstream Poteto router does not automatically select these ML playbooks. Ask explicitly for `ml-development` when both are needed. Use `pstack_workflow` only where real independent subagent tasks and integration are useful; a plan or one focused implementation does not require a swarm. Use read-only reviewers for evidence inspection, and the authorized verification runner for configured checks. Never infer that an upstream pstack skill has reviewed or approved this suite.
+Start explicitly with `/skill:ml-development <task>`; this Skill opts out of model-initiated discovery (`disable-model-invocation: true`) and ordinary ML requests do not auto-select it. `/poteto-mode <task>` does not automatically select these playbooks; explicitly request both when needed. Reuse existing `scout` and `architect` for investigation/design, `worker` for permitted changes, and read-only `reviewer` or `verifier` for evidence inspection. Read-only roles cannot run training or shell verification; use an authorized execution lane for checks and have the verifier inspect actual results. Use `pstack_workflow` only for real independent subagent tasks, not one agent per stage. No new ML role or training executor is provided by this Skill. Never infer that an upstream pstack skill has reviewed or approved this suite.
