@@ -99,7 +99,8 @@
   "unsupportedPlatformBehavior": [
     "Cursor private built-in PR-tool provenance",
     "upstream watcher merge-queue verdict protocol",
-    "Cursor-only cleanup plugins"
+    "Cursor-only cleanup plugins",
+    "Benny automations (no Pi event source; documented as unsupported in plan section 0.11)"
   ],
   "pending": [],
   "coverage": {
