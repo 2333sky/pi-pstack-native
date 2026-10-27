@@ -41,6 +41,18 @@ jobs:
       - name: Installed package smoke
         run: npm run smoke:installed
 
+  windows-atomic-store:
+    name: Windows atomic state persistence
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+      - run: npm ci --no-audit --no-fund
+      - run: node --experimental-strip-types --test test/store.test.ts test/loop.test.ts
+
   statechart:
     name: Statechart toolchain
     runs-on: ubuntu-latest

@@ -18,6 +18,26 @@ test("loop records schedule the next run deterministically", () => {
   assert.equal(loop.enabled, true);
 });
 
+test("loop updates persist and replace prior state", async () => {
+  const { mkdtempSync, readdirSync, rmSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { loadLoops, updateLoops } = await import("../src/loop/store.ts");
+  const old = process.env.PSTACK_NATIVE_HOME;
+  const dir = mkdtempSync(join(process.cwd(), ".pstack-loop-store-"));
+  process.env.PSTACK_NATIVE_HOME = dir;
+  try {
+    const loop = createLoop("session", 60_000, "check CI", "run-once", 1_000);
+    updateLoops((file) => file.loops.push(loop));
+    assert.deepEqual(loadLoops().loops, [loop]);
+    updateLoops((file) => { file.loops[0]!.enabled = false; });
+    assert.equal(loadLoops().loops[0]!.enabled, false);
+    assert.deepEqual(readdirSync(join(dir, "loops")), ["loops.json"]);
+  } finally {
+    if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("loop store refuses a concurrent writer instead of losing an update", async () => {
   const { mkdtempSync, rmSync } = await import("node:fs");
   const { tmpdir } = await import("node:os");
