@@ -125,6 +125,7 @@ export function parseReport(text) {
 export function briefPrompt(brief) {
     const extra = {
         evaluation: 'Include evaluation: [{"criterion": "...", "score": 0, "evidence": ["..."], "weaknesses": [], "selectedParts": []}] for every required criterion; scores must be 0 to 10 and evidence must be nonempty.',
+        'cross-evaluation': 'Include crossEvaluation: [{"candidate":"candidate-1", "criterion":"...", "score":0, "evidence":["file:line"], "weaknesses":[], "selectedParts":[]}] for every candidate and every required criterion, with scores 0 to 10 and nonempty evidence. Include selection: {"candidates":["candidate-1"], "selectedParts":[]} selecting exactly one base.',
         selection: 'Include selection: {"candidates": ["..."], "selectedParts": []}, naming candidates from the brief.',
         review: 'Include findings: [{"severity": "low", "location": "...", "description": "...", "evidence": "..."}]; severity is critical, high, medium, or low. Use [] when there are no findings.',
         coverage: 'Include coverage: {"completed": ["..."], "unresolved": []}, listing completed required slices.',
@@ -144,6 +145,25 @@ export function reportSatisfies(brief, report) {
         return true;
     if (req.kind === 'evaluation')
         return Boolean(report.evaluation && req.criteria?.every(c => report.evaluation.some(e => e.criterion === c && Number.isFinite(e.score) && e.score >= 0 && e.score <= 10 && e.evidence?.length && Array.isArray(e.weaknesses) && Array.isArray(e.selectedParts))));
+    if (req.kind === 'cross-evaluation') {
+        if (!req.candidates?.length || !req.criteria?.length || !Array.isArray(report.crossEvaluation) ||
+            !Array.isArray(report.selection?.candidates) || report.selection.candidates.length !== 1 ||
+            !req.candidates.includes(report.selection.candidates[0]) || !Array.isArray(report.selection.selectedParts))
+            return false;
+        const pairs = new Set();
+        for (const entry of report.crossEvaluation) {
+            if (!entry || !req.candidates.includes(entry.candidate) || !req.criteria.includes(entry.criterion) ||
+                !Number.isFinite(entry.score) || entry.score < 0 || entry.score > 10 ||
+                !Array.isArray(entry.evidence) || !entry.evidence.some(value => typeof value === 'string' && value.trim()) ||
+                !Array.isArray(entry.weaknesses) || !Array.isArray(entry.selectedParts))
+                return false;
+            const pair = JSON.stringify([entry.candidate, entry.criterion]);
+            if (pairs.has(pair))
+                return false;
+            pairs.add(pair);
+        }
+        return req.candidates.every(candidate => req.criteria.every(criterion => pairs.has(JSON.stringify([candidate, criterion]))));
+    }
     if (req.kind === 'selection')
         return Boolean(report.selection?.candidates.length && report.selection.candidates.every(c => req.candidates?.includes(c)) && Array.isArray(report.selection.selectedParts));
     if (req.kind === 'review')

@@ -5,6 +5,7 @@
 - Rename the repository and package to `pi-pstack-native` and document direct Pi Git installation.
 - Retain the pstack 0.15.32 source snapshot and Pi 1.4.0 SDK baseline; keep maintainer semantic approval and authenticated model evidence separate.
 - Preserve panel and workflow configuration during setup and validate role-model reasoning selections.
+- Configure task-specific models, reported same-family fallbacks and multi-model arena, architect and interrogate panels in `/setup-pstack`; resolve those selections in native workflow plans and dispatch. Arena and architect use one confined read-only cross-judge by default.
 - Fix Windows atomic state writes, build paths, and lock contention; improve task-report diagnostics and benchmark controls.
 
 Earlier entries below describe their original snapshots and may retain historical package names or validation boundaries.

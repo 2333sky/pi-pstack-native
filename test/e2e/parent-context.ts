@@ -46,9 +46,9 @@ export interface ParentContext {
 
 export const SIGKILL_SESSION_ID = "e2e-sigkill-parent";
 
-export async function openParentContext(options: { agentDir: string; cwd: string; modelPort: number; sessionDir?: string; sessionId?: string }): Promise<ParentContext> {
+export async function openParentContext(options: { agentDir: string; cwd: string; modelPort: number; sessionDir?: string; sessionId?: string; modelIds?: string[] }): Promise<ParentContext> {
   process.env.PI_CODING_AGENT_DIR = options.agentDir;
-  writeModelConfig(options.agentDir, options.modelPort);
+  writeModelConfig(options.agentDir, options.modelPort, options.modelIds);
   const loader = new DefaultResourceLoader({
     cwd: options.cwd, agentDir: options.agentDir,
     noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true,

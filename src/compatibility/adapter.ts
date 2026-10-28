@@ -7,16 +7,16 @@ export const CORE_RESOURCES = [
 ];
 export type CompatibilityStatus = 'equivalent' | 'adapted-with-deviation' | 'unsupported' | 'not-yet-verified';
 export const CAPABILITIES: Record<string, {status: CompatibilityStatus; mapping: string; reason: string}> = {
-  'model-effort-and-speed': {status:'adapted-with-deviation', mapping:'Explicit Pi thinkingLevel and provider/model selectors', reason:'No Cursor family/fast-slug rewriting; unsupported effort fails explicitly in the native model router.'},
+  'model-effort-and-speed': {status:'adapted-with-deviation', mapping:'Pi thinkingLevel presets with reported supported-level fallback', reason:'Pi effort levels replace Cursor slug rewriting; fast/standard slug selection is not inferred.'},
   'statechart-toolchain': {status:'adapted-with-deviation', mapping:'Bundled upstream statechart scripts; external Java/TLC and PNG renderer', reason:'TLA2TOOLS/JAVA select existing tools; Java, TLC and renderer packages are external prerequisites, never mocked as completed.'},
   'skill-frontmatter': {status:'equivalent', mapping:'Pi kebab-case resource name; upstream body unchanged', reason:'The latest upstream uses valid kebab-case identifiers; the wrapper preserves bodies and invocation flags.'},
   'verifier-command-execution': {status:'adapted-with-deviation', mapping:'native verification runner plus separate read-only reviewer', reason:'Reviewers cannot execute shell; commands run in an authorized writable lane or deterministic runner.'},
-  'arena-cross-judge': {status:'adapted-with-deviation', mapping:'explicit DAG for upstream single cross-judge; native template has per-candidate judges', reason:'Template choreography differs; the generated upstream phases remain the coordinator contract.'},
+  'arena-cross-judge': {status:'adapted-with-deviation', mapping:'single read-only cross-judge over verified, confined candidate worktrees', reason:'Native artifact gates and confined tools replace Cursor Task workspaces; the generated upstream phases remain the coordinator contract.'},
   'swarm-mixed-first-pass-template': {status:'unsupported', mapping:'Use an explicit DAG and selection policy instead', reason:'Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all.'},
   'autopilot-template': {status:'adapted-with-deviation', mapping:'local preparation DAG plus coordinator owner lifecycle', reason:'Templates alone do not publish, babysit, countersign, propagate stop orders or deliver a remote PR stack.'},
   Task: {status:'equivalent', mapping:'pstack_agents; pstack_workflow', reason:'Independent Pi AgentSessions with durable DAG dispatch.'},
   'cloud-agent': {status:'adapted-with-deviation', mapping:'Pi child with isolated worktree', reason:'Local process, not a Cursor cloud VM or OS security boundary.'},
-  models: {status:'adapted-with-deviation', mapping:'models.json explicit provider/model panel', reason:'Unavailable models fail explicitly; no silent family/default substitution.'},
+  models: {status:'adapted-with-deviation', mapping:'models.json configured role, task and model panels', reason:'Optional same-provider recognized-family fallback is reported; unknown families and unsupported cases fail explicitly.'},
   loop: {status:'adapted-with-deviation', mapping:'/pstack-loop', reason:'Active Pi session only; no persistent cloud scheduler. A missed occurrence may be lost after a crash.'},
   'patch-id-reuse': {status:'adapted-with-deviation', mapping:'exact head AND base re-verification', reason:'Native ledgers invalidate on any head/base change, including a patch-preserving rebase.'},
   'Cursor-private-PR-provenance': {status:'unsupported', mapping:'none', reason:'GitHub CLI/API receipts cannot establish Cursor private-tool provenance.'},
@@ -84,11 +84,11 @@ export function evaluateRound(round: Round): {clean: boolean; blockers: string[]
   }
   return {clean: blockers.length===0, blockers};
 }
-export function validatePanel(workflow: string, models: string[], judge?: string) {
+export function validatePanel(workflow: string, models: string[], judge?: string, options: { independentJudgeSession?: boolean; allowRepeatedModels?: boolean; allowSingleInterrogate?: boolean } = {}) {
   if (!['architect','arena','interrogate','swarm'].includes(workflow)) throw new Error('UNMAPPED_PANEL');
-  if (!Array.isArray(models) || models.length < (workflow==='swarm'?1:2)) throw new Error('INDEPENDENT_PANEL_REQUIRED');
-  for (const model of [...models, ...(judge ? [judge] : [])]) if (!/^[^/\s]+\/[^\s]+$/.test(model) || model==='inherit-parent' || model==='auto') throw new Error('EXPLICIT_MODEL_REQUIRED');
-  if (workflow==='interrogate' && new Set(models).size<2) throw new Error('MODEL_DIVERSITY_REQUIRED');
-  if (['architect','arena'].includes(workflow) && (!judge || models.includes(judge))) throw new Error('INDEPENDENT_JUDGE_REQUIRED');
-  return {workflow, models:[...models], judge, dispatch:'pstack_workflow', writers:'isolated-worktrees', integration:'explicit-integrator', evidence:'not-run'};
+  if (!Array.isArray(models) || models.length < (workflow==='swarm' || workflow==='interrogate' && options.allowSingleInterrogate ? 1 : 2)) throw new Error('INDEPENDENT_PANEL_REQUIRED');
+  for (const model of [...models, ...(judge ? [judge] : [])]) if (!/^[^/\s]+\/\S(?:.*\S)?$/.test(model) || model==='inherit-parent' || model==='auto') throw new Error('EXPLICIT_MODEL_REQUIRED');
+  if (workflow==='interrogate' && new Set(models).size<2 && !options.allowRepeatedModels) throw new Error('MODEL_DIVERSITY_REQUIRED');
+  if (['architect','arena'].includes(workflow) && (!judge || !options.independentJudgeSession && models.includes(judge))) throw new Error('INDEPENDENT_JUDGE_REQUIRED');
+  return {workflow, models:[...models], judge, modelDiversity: new Set(models).size > 1, judgeIndependence: options.independentJudgeSession ? 'session-only' : 'different-model', dispatch:'pstack_workflow', writers:'isolated-worktrees', integration:'explicit-integrator', evidence:'not-run'};
 }

@@ -17,7 +17,7 @@ interface BriefFields {
   contextRefs: string[];
   verification: GateSpec[]; timeboxSeconds?: number; forbidden: string[];
   standingOrders: string[]; reportFormat: 'task-report-v1';
-  reportRequirements?: {kind:'evaluation'|'selection'|'review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
+  reportRequirements?: {kind:'evaluation'|'cross-evaluation'|'selection'|'review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
 }
 export type ReportNote = string | { severity: 'blocking' | 'advisory'; description: string };
 export interface TaskReport {
@@ -25,6 +25,7 @@ export interface TaskReport {
   base: string; head: string; commandsRun: string[][]; evidenceRefs: string[];
   deviations: ReportNote[]; unresolved: ReportNote[]; nextActions: string[];
   evaluation?: {criterion:string;score:number;evidence:string[];weaknesses:string[];selectedParts:string[]}[];
+  crossEvaluation?: {candidate:string;criterion:string;score:number;evidence:string[];weaknesses:string[];selectedParts:string[]}[];
   selection?: {candidates:string[];selectedParts:string[]};
   findings?: {severity:'critical'|'high'|'medium'|'low';location:string;description:string;evidence:string}[];
   coverage?: {completed:string[];unresolved:string[]};

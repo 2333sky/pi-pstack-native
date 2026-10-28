@@ -45,7 +45,9 @@ pi remove git:github.com/2333sky/pi-pstack-native
 /setup-pstack
 ```
 
-命令先设置子代理推理等级，再为每个角色选择模型。`inherit-parent` 和 `auto` 模型选项都使用父会话的模型；推理等级的 `inherit-parent` 使用父会话的推理等级。显式等级包括 `off`、`minimal`、`low`、`medium`、`high`、`xhigh` 和 `max`；模型支持情况各不相同。选择不兼容的模型时，设置界面会要求重新选择。任一步取消都不会写入配置。
+命令设置推理预算、模型回退策略和各通用角色的默认模型，也可以设置按任务覆盖的模型，以及 Arena 候选、Arena 裁判、Architect 候选和 Interrogate 审查的模型列表。列表中每一项对应一个子代理会话。`inherit-parent` 和 `auto` 都使用父会话的模型；推理等级的 `inherit-parent` 使用父会话的等级。启用同家族回退时，扩展会报告实际使用的模型或较低推理等级；无法找到适用回退时会阻断。任一步取消都不会写入配置。
+
+对应工作流模板会读取已配置的模型列表，可以先计划并检查每个节点的模型。Arena 和 Architect 默认使用一个交叉裁判，通过受限只读工具检查已验证的候选工作区；不可用模型不会被静默替换。详见[模型配置与路由](docs/REFERENCE.md#model-setup-and-routing)。
 
 在 Git 项目中，可以用中文描述任务和验收要求：
 
@@ -65,7 +67,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 
 | 命令 | 用途 |
 | --- | --- |
-| `/setup-pstack` | 选择子代理角色模型和推理等级 |
+| `/setup-pstack` | 选择推理预算、角色模型、任务覆盖和多模型面板 |
 | `/poteto-mode <任务>` | 开启 Poteto Mode 并执行任务 |
 | `/poteto-mode off` | 关闭当前会话的 Poteto Mode |
 | `/pstack status`、`/pstack on`、`/pstack off` | 查看或切换 pstack Skill 的发现状态 |

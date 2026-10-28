@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { AgentHost } from "./agent/host.js";
 import { LoopScheduler } from "./loop/scheduler.js";
 import { formatInterval, parseInterval } from "./loop/store.js";
-import { availableModelSelectors, resolveModelSelector, supportsThinking } from "./models/router.js";
+import { availableModelSelectors, lowerSupportedThinking, resolveModelSelector, supportsThinking } from "./models/router.js";
 import { loadConfig, loadModels, saveConfig, saveModels } from "./runtime/config.js";
 import { ensureHome } from "./runtime/store.js";
 import { registerAgentTool } from "./tools/agents.js";
@@ -50,7 +50,7 @@ function agentSummary(agents, sessionId) {
     const rows = agents.list().filter((a) => a.parentSessionId === sessionId).slice(0, 30);
     if (!rows.length)
         return "No pstack-native agents yet.";
-    return rows.map((a) => `${a.id} ${a.profile} ${a.state}${a.model ? ` ${a.model}` : ""}${a.worktree ? `\n  ${a.worktree}` : ""}`).join("\n");
+    return rows.map((a) => `${a.id} ${a.profile} ${a.state}${a.model ? ` ${a.model}` : ""}${a.modelSelection?.notes.length ? `\n  ${a.modelSelection.notes.join(' ')}` : ''}${a.worktree ? `\n  ${a.worktree}` : ""}`).join("\n");
 }
 export default function piPstackNative(pi) {
     ensureHome();
@@ -106,6 +106,7 @@ export default function piPstackNative(pi) {
             "- Prefer pstack_workflow for multi-agent dependency graphs and pstack_agents for one bounded child.",
             "- One writer may use the target checkout. Independent parallel writers use worktrees; multi-writer delivery converges through an integrator. Reviewers are read-only; verifiers follow the directly dependent artifact.",
             "- Workflow state is durable. Do not manually repeat a completed call after resume.",
+            "- When delegating a named task, pass its playbook name to pstack_agents or pstack_workflow so configured task-specific role models apply. For arena, architect and interrogate use the configured panels and inspect the planned seats before dispatch.",
             "- Core pstack entrypoints retain the pinned upstream body. Read pi-adapter.md with pstack_skill for explicit overrides; resolve original references as upstream/skills/<skill>/... . No unavailable capability may silently count as completed. Use pstack_semantics to check model panels and round receipts; native ledger/Frontier gates still apply.",
             "- One simple writer may work in the target checkout. Independent parallel writers use worktrees. If several writer outputs form one deliverable, converge them through an integrator node before final verification.",
             potetoMode ? "- Poteto Mode is sticky for this session. Route non-trivial work through the matching pstack playbook and verify before declaring done." : "",
@@ -159,15 +160,15 @@ export default function piPstackNative(pi) {
             };
             const thinkingChoices = [
                 { value: "inherit-parent", label: "inherit-parent — use the parent session's reasoning level" },
+                { value: "max", label: "unlimited — max reasoning" },
+                { value: "xhigh", label: "large — extra-high reasoning" },
+                { value: "high", label: "medium budget — high reasoning" },
+                { value: "medium", label: "small budget — medium reasoning" },
                 { value: "off", label: "off — disable reasoning" },
                 { value: "minimal", label: "minimal — least reasoning effort, if supported" },
                 { value: "low", label: "low — lower reasoning effort, if supported" },
-                { value: "medium", label: "medium — moderate reasoning effort, if supported" },
-                { value: "high", label: "high — more reasoning effort, if supported" },
-                { value: "xhigh", label: "xhigh — extra reasoning effort, if supported" },
-                { value: "max", label: "max — maximum reasoning effort, if supported" },
             ];
-            const thinkingLabel = await ctx.ui.select(`child reasoning level (current: ${config.thinkingLevel})`, thinkingChoices.map((choice) => choice.label));
+            const thinkingLabel = await ctx.ui.select(`child reasoning budget (current level: ${config.thinkingLevel})`, thinkingChoices.map((choice) => choice.label));
             if (thinkingLabel === undefined) {
                 ctx.ui.notify("Setup cancelled; nothing was written.", "info");
                 return;
@@ -177,7 +178,48 @@ export default function piPstackNative(pi) {
                 ctx.ui.notify("Invalid reasoning selection; nothing was written.", "error");
                 return;
             }
-            const next = { ...config, roles: { ...config.roles }, thinkingLevel };
+            const fallbackChoices = [
+                { value: 'disabled', label: 'disabled — block unavailable models or unsupported reasoning' },
+                { value: 'same-family', label: 'same-family — use a matching model from the same provider or lower supported reasoning and report it' },
+            ];
+            const orderedFallbackChoices = [...fallbackChoices].sort((a, b) => Number(b.value === config.fallbackPolicy) - Number(a.value === config.fallbackPolicy));
+            const fallbackLabel = await ctx.ui.select(`model fallback policy (current: ${config.fallbackPolicy ?? 'disabled'})`, orderedFallbackChoices.map(choice => choice.label));
+            if (fallbackLabel === undefined) {
+                ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                return;
+            }
+            const fallbackPolicy = fallbackChoices.find(choice => choice.label === fallbackLabel)?.value;
+            if (!fallbackPolicy) {
+                ctx.ui.notify("Invalid fallback selection; nothing was written.", "error");
+                return;
+            }
+            const next = { ...config, roles: { ...config.roles }, panels: { ...config.panels }, thinkingLevel, fallbackPolicy };
+            const validateChoice = (role, value) => {
+                if (thinkingLevel === "inherit-parent")
+                    return true;
+                let model;
+                try {
+                    model = resolveModelSelector(ctx, role, value);
+                }
+                catch (error) {
+                    ctx.ui.notify(error instanceof Error ? error.message : String(error), "error");
+                    return false;
+                }
+                if (!model) {
+                    ctx.ui.notify(`No parent model available for ${role}; select an available model or cancel and choose inherit-parent reasoning.`, "error");
+                    return false;
+                }
+                if (!supportsThinking(model, thinkingLevel)) {
+                    const lower = fallbackPolicy === 'same-family' ? lowerSupportedThinking(model, thinkingLevel) : undefined;
+                    if (lower) {
+                        ctx.ui.notify(`${value} will use ${lower} reasoning for ${role} because ${thinkingLevel} is unavailable.`, 'info');
+                        return true;
+                    }
+                    ctx.ui.notify(`${value} does not support ${thinkingLevel} reasoning for ${role}; choose another model or cancel and select another reasoning level.`, "error");
+                    return false;
+                }
+                return true;
+            };
             for (const [role, description] of Object.entries(roles)) {
                 const current = next.roles[role] ?? "inherit-parent";
                 for (;;) {
@@ -191,30 +233,116 @@ export default function piPstackNative(pi) {
                         ctx.ui.notify("Invalid model selection; nothing was written.", "error");
                         return;
                     }
-                    if (thinkingLevel !== "inherit-parent") {
-                        let model;
-                        try {
-                            model = resolveModelSelector(ctx, role, value);
-                        }
-                        catch (error) {
-                            ctx.ui.notify(error instanceof Error ? error.message : String(error), "error");
-                            continue;
-                        }
-                        if (!model) {
-                            ctx.ui.notify(`No parent model available for ${role}; select an available model or cancel and choose inherit-parent reasoning.`, "error");
-                            continue;
-                        }
-                        if (!supportsThinking(model, thinkingLevel)) {
-                            ctx.ui.notify(`${value} does not support ${thinkingLevel} reasoning for ${role}; choose another model or cancel and select another reasoning level.`, "error");
-                            continue;
-                        }
-                    }
+                    if (!validateChoice(role, value))
+                        continue;
                     next.roles[role] = value;
                     break;
                 }
             }
+            const taskChoice = await ctx.ui.select("Task-specific model overrides", ["Keep current task models", "Configure task models"]);
+            if (taskChoice === undefined) {
+                ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                return;
+            }
+            if (taskChoice === "Configure task models") {
+                next.workflows = Object.fromEntries(Object.entries(config.workflows ?? {}).map(([key, values]) => [key, { ...values }]));
+                const taskRoles = [
+                    { names: ["feature", "refactoring"], profile: "worker", description: "feature and refactoring" },
+                    { names: ["bug-fix"], profile: "worker", description: "bug-fix" },
+                    { names: ["perf-issue"], profile: "worker", description: "performance issue" },
+                    { names: ["hillclimb"], profile: "worker", description: "hillclimb" },
+                    { names: ["how"], profile: "scout", description: "how explorer" },
+                    { names: ["how"], profile: "synthesizer", description: "how explainer" },
+                    { names: ["why"], profile: "scout", description: "why investigator" },
+                    { names: ["why"], profile: "synthesizer", description: "why synthesizer" },
+                    { names: ["swarm"], profile: "worker", description: "swarm worker" },
+                ];
+                for (const taskRole of taskRoles) {
+                    const inherit = `Use ${taskRole.profile} role default`;
+                    const current = next.workflows[taskRole.names[0]]?.[taskRole.profile] ?? inherit;
+                    for (;;) {
+                        const selected = await ctx.ui.select(`${taskRole.description} (current: ${current})`, [inherit, ...choices.map(choice => choice.label)]);
+                        if (selected === undefined) {
+                            ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                            return;
+                        }
+                        const value = selected === inherit ? undefined : choices.find(choice => choice.label === selected)?.value;
+                        if (selected !== inherit && !value) {
+                            ctx.ui.notify("Invalid model selection; nothing was written.", "error");
+                            return;
+                        }
+                        if (value && !validateChoice(taskRole.description, value))
+                            continue;
+                        for (const name of taskRole.names) {
+                            const mapped = { ...next.workflows[name] };
+                            if (value)
+                                mapped[taskRole.profile] = value;
+                            else
+                                delete mapped[taskRole.profile];
+                            if (Object.keys(mapped).length)
+                                next.workflows[name] = mapped;
+                            else
+                                delete next.workflows[name];
+                        }
+                        break;
+                    }
+                }
+            }
+            else if (taskChoice !== "Keep current task models") {
+                ctx.ui.notify("Invalid task model selection; nothing was written.", "error");
+                return;
+            }
+            const panelRoles = [
+                { name: "arena", description: "arena runners", min: 2 },
+                { name: "arena-judges", description: "arena judge pool", min: 1 },
+                { name: "architect", description: "architect runners", min: 2 },
+                { name: "interrogate", description: "interrogate reviewers", min: 1 },
+            ];
+            for (const panel of panelRoles) {
+                const current = next.panels[panel.name];
+                const keep = current?.length ? "Keep current panel" : "Leave panel unconfigured";
+                const edit = "Configure panel";
+                const action = await ctx.ui.select(`${panel.description} (current: ${current?.join(", ") || "not configured"})`, [keep, edit]);
+                if (action === undefined) {
+                    ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                    return;
+                }
+                if (action === keep)
+                    continue;
+                if (action !== edit) {
+                    ctx.ui.notify("Invalid panel selection; nothing was written.", "error");
+                    return;
+                }
+                const seats = [];
+                for (;;) {
+                    const done = "Finish panel";
+                    const selected = await ctx.ui.select(`${panel.description}: seat ${seats.length + 1}; selected: ${seats.join(", ") || "none"}`, [done, ...choices.map((choice) => choice.label)]);
+                    if (selected === undefined) {
+                        ctx.ui.notify("Setup cancelled; nothing was written.", "info");
+                        return;
+                    }
+                    if (selected === done) {
+                        if (seats.length < panel.min) {
+                            ctx.ui.notify(`${panel.description} requires at least ${panel.min} seat${panel.min === 1 ? "" : "s"}.`, "error");
+                            continue;
+                        }
+                        break;
+                    }
+                    const value = choices.find((choice) => choice.label === selected)?.value;
+                    if (!value) {
+                        ctx.ui.notify("Invalid model selection; nothing was written.", "error");
+                        return;
+                    }
+                    if (!validateChoice(panel.description, value))
+                        continue;
+                    seats.push(value);
+                    if (seats.length >= 16)
+                        break;
+                }
+                next.panels[panel.name] = seats;
+            }
             saveModels(next);
-            ctx.ui.notify("Saved pstack-native model roles to ~/.pi/agent/pstack-native/models.json.", "info");
+            ctx.ui.notify("Saved pstack-native role models and panels. Unconfigured panels require setup before use.", "info");
         },
     });
     pi.registerCommand("pstack", {

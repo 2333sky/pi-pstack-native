@@ -48,10 +48,16 @@ export declare function evaluateRound(round: Round): {
     clean: boolean;
     blockers: string[];
 };
-export declare function validatePanel(workflow: string, models: string[], judge?: string): {
+export declare function validatePanel(workflow: string, models: string[], judge?: string, options?: {
+    independentJudgeSession?: boolean;
+    allowRepeatedModels?: boolean;
+    allowSingleInterrogate?: boolean;
+}): {
     workflow: string;
     models: string[];
     judge: string | undefined;
+    modelDiversity: boolean;
+    judgeIndependence: string;
     dispatch: string;
     writers: string;
     integration: string;

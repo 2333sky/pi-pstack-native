@@ -2335,8 +2335,8 @@
   "capabilities": {
     "model-effort-and-speed": {
       "status": "adapted-with-deviation",
-      "mapping": "Explicit Pi thinkingLevel and provider/model selectors",
-      "reason": "No Cursor family/fast-slug rewriting; unsupported effort fails explicitly in the native model router."
+      "mapping": "Pi thinkingLevel presets with reported supported-level fallback",
+      "reason": "Pi effort levels replace Cursor slug rewriting; fast/standard slug selection is not inferred."
     },
     "statechart-toolchain": {
       "status": "adapted-with-deviation",
@@ -2355,8 +2355,8 @@
     },
     "arena-cross-judge": {
       "status": "adapted-with-deviation",
-      "mapping": "explicit DAG for upstream single cross-judge; native template has per-candidate judges",
-      "reason": "Template choreography differs; the generated upstream phases remain the coordinator contract."
+      "mapping": "single read-only cross-judge over verified, confined candidate worktrees",
+      "reason": "Native artifact gates and confined tools replace Cursor Task workspaces; the generated upstream phases remain the coordinator contract."
     },
     "swarm-mixed-first-pass-template": {
       "status": "unsupported",
@@ -2380,8 +2380,8 @@
     },
     "models": {
       "status": "adapted-with-deviation",
-      "mapping": "models.json explicit provider/model panel",
-      "reason": "Unavailable models fail explicitly; no silent family/default substitution."
+      "mapping": "models.json configured role, task and model panels",
+      "reason": "Optional same-provider recognized-family fallback is reported; unknown families and unsupported cases fail explicitly."
     },
     "loop": {
       "status": "adapted-with-deviation",
@@ -2415,45 +2415,52 @@
     }
   },
   "reviewedFiles": {
-    "src/compatibility/adapter.ts": "00e8c89d9cdf03e4249f0cb36fc162f3f894cea16c1ab7f7c14ada36a50bd980",
+    "src/compatibility/adapter.ts": "90e0be97083e1e43beaaec8ab08d6904c045abdc37e4142323c11e58b90bdf29",
     "src/compatibility/source.ts": "b12cf67fa03b3043b2e80b849416ade2ccf9ef972b93f387e829b24ec9812a2e",
-    "src/compatibility/tool.ts": "f29f008dd86f88091b1499d331cf8a5c71981b7bb7cb7b4742a8c977ea10a279",
+    "src/compatibility/tool.ts": "4298d5148bdbdc560da3e8aef7c45fd7b9dcbd946368bdfeb9678fc66cb6b467",
     "src/agent/resources.ts": "840f5953c1c3d8e85ecced0eaba2dffdb8f843a3c02ae0dc41d9b16e3b992c7c",
-    "src/extension.ts": "07e9feac42f131d2f832a13f92ffc37097e6eeac3a5312bb000676e3da140ee5",
-    "src/agent/profiles.ts": "a62f5ecfb522d2b98178eb846d30c96d3d942c70e92235b9f49efcfb066a362e",
-    "src/agent/host.ts": "72f6c9561acbedd157ce0819b78c333fa5bd0dcd8097b081a6d648fbca5a3582",
-    "src/models/router.ts": "458d74aaa24c7b0e35886326e2f5f72bee53d9b198d11a28b5544924c831d990",
-    "src/templates/build.ts": "4c9824de49c7f05668fd7fcc08e201d56eafa0360fa4380fc65290cb2aa6661e",
-    "src/workflow/engine.ts": "af5bcff8ab3a2e3185cf41e5e538bbb3509622257600e9b8ab807f2ed5fbb9b9",
-    "src/workflow/artifacts.ts": "d108b2b8257291bd97f8397863c78aa74110b0c0038a5ec23db4bd6e9ae7684c",
+    "src/extension.ts": "33c58ec6413937cd7217bcf242fd71e1236e20631ba314b6c7685e0e585bfd0e",
+    "src/agent/profiles.ts": "6895fbf9f6b60b62bb02ee22a78951983bca79a1f98c513ce2c1875cd1abbbf1",
+    "src/agent/host.ts": "c750d874f567c3e43ef9fc0aa02cafde9cb627e04411c4d58bcfdd2eedcb806c",
+    "src/models/router.ts": "1067ab7822d19b623a79f81b32ccf62d5112bdcbc53d88188c4ad5fb7a0325a9",
+    "src/templates/build.ts": "c00651a4fa8843f05ad50a2847283dce4ad73e93dc05d3a6a012b3dec43e6053",
+    "src/workflow/engine.ts": "6e362b6a6f23b502e4550df0d2f59b25be7dff12148102c7972ecf12d88899bb",
+    "src/workflow/artifacts.ts": "be49513427635761c8f0c907d68560e2dd8dff4d0dea5f1ad6036d82fe6b2c24",
     "src/verification/runner.ts": "392e5eac32fd42fbfff678b5023ead59b5dd0be177dc7fd1eb6af1669d9fd3a6",
     "src/delivery/frontier.ts": "3eb79a830b1433d5bf2ba5dfd9e459430cce41df99c666f12005ece4f1f88dde",
-    "docs/PI-SEMANTIC-ADAPTER.md": "4c67a30a50000731f6da85cce016e5f23d920f3a77a4be49bcc8e2cc0880ed56",
+    "docs/PI-SEMANTIC-ADAPTER.md": "4e4890f98943aada896267fa40d282c375296e32a1885903eb8f0dbbe66a8f2f",
     "scripts/upstream/cli.mjs": "32f8d80da18c5ae4d0f32f614611c1ebbd98af5d8eaf196c13d4230e5d0a29cf",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
-    "scripts/semantics/core.mjs": "b055cb2fb2e112a320556dbdf2385cffa1b28fcc26fb7edfc182bcef26e25b6a",
-    "scripts/semantics/generate.mjs": "d2dd3d8e1439e6b8db86d3e58ab6d57937d04a7f1dc6c323be360165db5f79c9",
-    "test/semantic-compatibility.test.ts": "4dbc881099c04a0cc63ad51c8025f4eec420f3ac32772a85b895dce212e979fa",
+    "scripts/semantics/core.mjs": "6f288de05f8e7360ccbbe5cdb6871a1071d22624b5b093822ee5ede3f72c4cb6",
+    "scripts/semantics/generate.mjs": "41cd06bce98a2b65bb6fae813bf3f584ce92ea0534883e1e3d74bdb6a8c646b2",
+    "test/semantic-compatibility.test.ts": "df739b2936065d4e176d3d0c5f46ec117ce7b25eeafed7b70cc4feaaec0cdf8e",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
     "scripts/semantics/real-pi-smoke.mjs": "4b89e94521017e2bd10bc575ccc507f8e2cad7e03809f83f9bec9fb2405896c3",
-    "test/e2e/workflow.test.ts": "94905b7ef5a97b5b34b45358f25e0b2544a9d6578dc1facda77dd95308b782ae",
+    "test/e2e/workflow.test.ts": "d347903fb8bc29a952c9953bb2c8a5e45999a109c3bf4793476259c00115c52f",
     "test/e2e/shipping.test.ts": "4f056def8c44c86dccb07a7a2797065a3521a84e253dccbb6f51ff1cef816680",
     "test/protocol.test.ts": "4c8e0f55e781a4f249f634d89a0584510b5de51844e7f4bffed1d7305f396ba2",
     "test/verification.test.ts": "0b5490574f15768e72b15e08113960416ea7ef9b730bd4d373515b36a6bc0882",
     "test/latest-upstream.test.ts": "0d0d4bd8f5b2c91c348f16968ec8ed91cf01e38ea3281839911a2351afeda0c6",
     "test/statechart.test.ts": "3cf9230db9f65624097c644248f925e89931bbe2c3c62178dbb12b08f18c9080",
     "scripts/check-statechart.mjs": "c02f3ebe704e2db53b489721e8b31756c8c227d1504136afca15129fe66024d7",
-    "src/runtime/config.ts": "0c351cfc71ad8dda9f152307e5138e91ac8f00bcfe8155f32281f97641ff6b75",
-    "test/model-router.test.ts": "c6c6142a651a5725bf0fd03af897d77ea6088933b21da814e5d9f57bfca4575c",
-    "test/setup-command.test.ts": "5cb54347f40463337e2087e241e43a105918f2703fa12b56e38b5c271b8994e6",
-    "src/contracts/brief.ts": "fb17be9fa41333ab26d1aa408882c5d29217b540a8d9abf7bc62960443678482",
-    "src/runtime/types.ts": "804148a269ff6b1226c54f48d14688f6d1ff200e255731f2d750d98fa2fafe4b",
+    "src/runtime/config.ts": "fd9178d910169de0bef7eb91f5fc80000fb3b96ecd7d65cd022b33780aed89b8",
+    "test/model-router.test.ts": "7dd8e305ace5cdcb7556f3df781675da22a64103df89bac20c9b19acdc75d58b",
+    "test/setup-command.test.ts": "cd1df06675e307013f196e61fd01fd7fb5b6ad16999d81872a250ae13405feae",
+    "src/contracts/brief.ts": "74a54bddf1baf961a707a992130eb97427138b9e1e3d6cec5c02dcf94da82a90",
+    "src/runtime/types.ts": "42ad20dc07a561fc549525205cc0bdb3e623d901ca2da65206dfc8b9f5e9e522",
     "src/runtime/lock.ts": "f7b68acb71d1e46d208f1720716143102ac2373beaee05c4ed8e2899c9e5af83",
     "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e",
-    "src/contracts/types.ts": "c57775129ef74e8bca4d89bf315d7956f843a05160de1decbe84cda678767e8c",
+    "src/contracts/types.ts": "afc7ef471950e4cd2d363fd26b5a715b7f32709f9851d77df7c830d6105558a0",
     "scripts/benchmark.mjs": "cc1fec3114bff79192629f241608e4a77af5fe2a9a46334826cfe22157558fb8",
     "scripts/check-benchmark.mjs": "dc03b3db1aa8172ec45ff49727d0cd2af9688a466e7653bffa5be2291617ad57",
-    "test/benchmark.test.ts": "c8b40b94ec8778dabfd73b9282932e0c5e575e4964bcc50576fbb7c854e964f0"
+    "test/benchmark.test.ts": "c8b40b94ec8778dabfd73b9282932e0c5e575e4964bcc50576fbb7c854e964f0",
+    "src/tools/agents.ts": "62f12400db72d537b166bfadbfdf7b0801cbe165d255591506b6a7f5f25087e0",
+    "src/tools/workflow.ts": "096e8c267f544335255dfa7a929a8e0c8c31c52cadab9d150059eea249bb8805",
+    "test/model-panels.test.ts": "c00103951aef2e14bd6043e83262dcf1b9640473ef9bbd416efb43f4f3ff2cb4",
+    "test/e2e/harness.ts": "9363a5beb9b41cbf4b74e6912544968dfecf4e5f0a5ab4829d30d78f13111618",
+    "test/e2e/parent-context.ts": "686e295dc806e1f7e0bb13230de6653951092084a8a4f55a39de2d6066b0f0de",
+    "scripts/check-e2e.mjs": "4587fe8758daae8fde3f8d92516d7e30e2fd9a08a9875652ec27cae4fe6e1d3a",
+    "src/agent/candidates.ts": "c8f3ef5f83fe44203894d8c370e5dea0f520c24e1c20dbf9d8add2ac682bb1ce"
   },
   "driftReviews": [],
   "evidence": {
@@ -2476,13 +2483,17 @@
         "quote": "Match the model to the job.",
         "hash": "74fb1b31c08c0e0f2f1810005c664663854e84370da160ab0b83c276a5c36b81"
       },
-      "mapping": "Explicit Pi thinkingLevel and provider/model selectors",
-      "rationale": "No Cursor family/fast-slug rewriting; unsupported effort fails explicitly in the native model router.",
+      "mapping": "Pi thinkingLevel presets with reported supported-level fallback",
+      "rationale": "Pi effort levels replace Cursor slug rewriting; fast/standard slug selection is not inferred.",
       "scope": "Explicit Pi platform mapping; source preservation and scoped offline checks do not establish full model or external-platform parity.",
       "tests": [
         {
           "file": "test/latest-upstream.test.ts",
           "name": "latest source: every supported 0.15.32 Skill and playbook retains its pinned body and loads on Pi 1.4"
+        },
+        {
+          "file": "test/model-router.test.ts",
+          "name": "same-family fallback reports the selected model and nearest supported reasoning"
         }
       ]
     },
@@ -2556,13 +2567,21 @@
         "quote": "Spawn one readonly judge subagent",
         "hash": "3beef0b001053c332ac9981947f48997959dd884704e75649cfb97403af996d7"
       },
-      "mapping": "explicit DAG for upstream single cross-judge; native template has per-candidate judges",
-      "rationale": "Template choreography differs; the generated upstream phases remain the coordinator contract.",
+      "mapping": "single read-only cross-judge over verified, confined candidate worktrees",
+      "rationale": "Native artifact gates and confined tools replace Cursor Task workspaces; the generated upstream phases remain the coordinator contract.",
       "scope": "Explicit Pi platform mapping; source preservation and scoped offline checks do not establish full model or external-platform parity.",
       "tests": [
         {
           "file": "test/semantic-compatibility.test.ts",
           "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        },
+        {
+          "file": "test/e2e/workflow.test.ts",
+          "name": "one cross-judge inspects isolated candidates before integration"
+        },
+        {
+          "file": "test/model-panels.test.ts",
+          "name": "candidate inspection rejects workspace escapes and stale verified artifacts"
         }
       ]
     },
@@ -2656,13 +2675,25 @@
         "quote": "Pick the runners.",
         "hash": "efb61a22fe16780549c5e67b21724e1636b1404b85a530a2d8831fcce4d9535b"
       },
-      "mapping": "models.json explicit provider/model panel",
-      "rationale": "Unavailable models fail explicitly; no silent family/default substitution.",
+      "mapping": "models.json configured role, task and model panels",
+      "rationale": "Optional same-provider recognized-family fallback is reported; unknown families and unsupported cases fail explicitly.",
       "scope": "Explicit Pi platform mapping; source preservation and scoped offline checks do not establish full model or external-platform parity.",
       "tests": [
         {
           "file": "test/semantic-compatibility.test.ts",
           "name": "semantic capabilities: unavailable Cursor operations and unknown mappings fail explicitly"
+        },
+        {
+          "file": "test/model-panels.test.ts",
+          "name": "configured review panels resolve models, plan, and dispatch one reviewer per seat"
+        },
+        {
+          "file": "test/e2e/workflow.test.ts",
+          "name": "configured review panels dispatch distinct models through Pi sessions"
+        },
+        {
+          "file": "test/e2e/workflow.test.ts",
+          "name": "panel model fallback is visible in the durable workflow"
         }
       ]
     },

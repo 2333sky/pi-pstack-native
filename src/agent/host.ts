@@ -3,8 +3,8 @@ import { capture, fingerprint, ownerOf, sameFingerprint } from "../artifacts/fin
 import type { TaskBrief, Budget } from "../contracts/types.ts";
 import type { ThinkingLevelName } from "../runtime/types.ts";
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { lstatSync, mkdirSync, realpathSync } from "node:fs";
+import { dirname, join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   createAgentSession,
@@ -14,7 +14,7 @@ import {
   type AgentSession,
   type ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { agentPath, childSessionRoot, lockPath, workflowPath } from "../runtime/home.ts";
+import { agentPath, childSessionRoot, lockPath, workflowPath, worktreeRoot } from "../runtime/home.ts";
 import { durableError } from "../runtime/errors.ts";
 import { FileLock } from "../runtime/lock.ts";
 import { writerLockKey } from "../runtime/checkout.ts";
@@ -27,6 +27,7 @@ import { createWorktree, removeWorktree, type WorktreeInfo } from "../worktree/m
 import { getProfile } from "./profiles.ts";
 import { createResourceTools, validateEvidencePackets, type EvidencePacket } from "./resources.ts";
 import { createReadOnlyTools } from "./read-only-tools.ts";
+import { assertCandidateCurrent, createCandidateTool, type CandidateInput } from "./candidates.ts";
 import { assertCompatibleIsolation } from "./isolation.ts";
 import { dispatchVeto } from "../program/dispatch.ts";
 
@@ -89,6 +90,37 @@ export class AgentHost {
     const depth = explicit ?? this.parentDepth(ctx) + 1;
     if (depth > MAX_AGENT_DEPTH) throw new Error(`pstack-native nested agent depth limit exceeded (${MAX_AGENT_DEPTH}). Collapse the work or return a handoff to the parent coordinator.`);
     return depth;
+  }
+
+  private crossJudgeInputs(record: AgentRecord, workflow: WorkflowRecord | undefined, cwd: string): CandidateInput[] {
+    const call = workflow?.calls[record.callKey ?? ''];
+    if (!workflow || !record.workflowId || !call || call.profile !== 'cross-judge' || !record.brief || call.dependsOn.length < 2) {
+      throw new Error('CROSS_JUDGE_REQUIRES_VERIFIED_WORKFLOW_CANDIDATES');
+    }
+    const repoId = fingerprint(cwd).repoId;
+    const worktrees = realpathSync(worktreeRoot());
+    const inputs = call.dependsOn.map(key => {
+      const source = workflow.calls[key];
+      const agent = source?.agentId ? this.get(source.agentId) : undefined;
+      if (!source || source.profile !== 'worker' || source.state !== 'completed' || source.verification?.status !== 'passed' ||
+          !source.verification.ledgerId || !source.artifactId || !agent || agent.state !== 'completed' ||
+          agent.workflowId !== workflow.id || agent.callKey !== key || !agent.worktree || !agent.baseline) throw new Error(`CROSS_JUDGE_CANDIDATE_UNAVAILABLE: ${key}`);
+      const workspace = realpathSync(agent.worktree);
+      if (lstatSync(agent.worktree).isSymbolicLink() || !workspace.startsWith(`${worktrees}${sep}`)) throw new Error(`CROSS_JUDGE_CANDIDATE_OUTSIDE_WORKTREES: ${key}`);
+      if (fingerprint(workspace).repoId !== repoId) throw new Error(`CROSS_JUDGE_CANDIDATE_UNAVAILABLE: ${key}`);
+      const input: CandidateInput = { key, agentId: agent.id, workspace, artifactId: source.artifactId, ledgerId: source.verification.ledgerId, baseline: agent.baseline };
+      assertCandidateCurrent(input);
+      return input;
+    });
+    if (new Set(inputs.map(input => input.workspace)).size !== inputs.length) throw new Error('CROSS_JUDGE_CANDIDATES_NOT_ISOLATED');
+    if (record.candidateInputs) {
+      if (record.candidateInputs.length !== inputs.length || inputs.some((input, i) => {
+        const saved = record.candidateInputs![i];
+        return !saved || saved.key !== input.key || saved.agentId !== input.agentId || saved.workspace !== input.workspace ||
+          saved.artifactId !== input.artifactId || saved.ledgerId !== input.ledgerId || !sameFingerprint(saved.baseline, input.baseline);
+      })) throw new Error('CROSS_JUDGE_CANDIDATES_CHANGED_ON_RECOVERY');
+    }
+    return inputs;
   }
 
   get(id: string): AgentRecord | undefined {
@@ -277,6 +309,11 @@ export class AgentHost {
         const veto = dispatchVeto(record.workflowId, ownerWorkflow);
         if (veto) throw new Error(`${veto}: workflow ${record.workflowId} cannot start a child under the current dispatch record`);
       }
+      if (profile.name !== 'cross-judge' && record.candidateInputs) throw new Error('CANDIDATE_INPUTS_REQUIRE_CROSS_JUDGE');
+      if (profile.name === 'cross-judge') {
+        const inputs = this.crossJudgeInputs(record, ownerWorkflow, cwd);
+        if (!record.candidateInputs) record = this.change(record.id, agent => { agent.candidateInputs = inputs; });
+      }
       if (currentBrief) {
         validateBrief(currentBrief);
         const current = fingerprint(cwd);
@@ -312,9 +349,9 @@ export class AgentHost {
         resourceLoader: loader,
         ...(resolved.model ? { model: resolved.model } : {}),
         ...(resolved.thinkingLevel ? { thinkingLevel: resolved.thinkingLevel as any } : {}),
-        tools: [...profile.tools, "pstack_skill", "pstack_evidence"],
+        tools: [...profile.tools, "pstack_skill", "pstack_evidence", ...(record.candidateInputs ? ['pstack_candidates'] : [])],
         ...(profile.writable ? {} : {noTools:"builtin" as const}),
-        customTools: [...(profile.writable ? [] : createReadOnlyTools(cwd)), ...createResourceTools(SKILLS_DIR, record.evidencePackets)],
+        customTools: [...(profile.writable ? [] : createReadOnlyTools(cwd)), ...createResourceTools(SKILLS_DIR, record.evidencePackets), ...(record.candidateInputs ? [createCandidateTool(record.candidateInputs)] : [])],
       });
       this.live.set(record.id, session);
       if (this.isStopping(record.id)) {
@@ -326,6 +363,7 @@ export class AgentHost {
         Object.assign(latest, {
           ...record, state: "running", startedAt: record.startedAt ?? now(),
           model: resolved.model ? `${resolved.model.provider}/${resolved.model.id}` : resolved.selector,
+          modelSelection: resolved.notes.length ? { requested: resolved.requestedSelector, effective: resolved.model ? `${resolved.model.provider}/${resolved.model.id}` : resolved.selector, notes: resolved.notes } : record.modelSelection,
           sessionDir, sessionFile: session.sessionFile,
           attempt: spec.attempt ?? record.attempt,
         });
@@ -356,6 +394,7 @@ export class AgentHost {
         }
       }, 100);
       await session.prompt(prompt + (record.brief ? briefPrompt(record.brief) : ""));
+      for (const input of record.candidateInputs ?? []) assertCandidateCurrent(input);
       const stats = session.getSessionStats();
       this.change(record.id, a=>{a.usage={tokens:stats.tokens.total,cost:stats.cost,elapsedMs:Date.now()-budgetStart};});
       if (budgetExceeded) throw new Error("BUDGET_EXCEEDED");

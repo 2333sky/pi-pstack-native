@@ -57,6 +57,10 @@ export function planArtifacts(nodes: WorkflowNodeSpec[]): ArtifactPlan {
       if (["reviewer", "verifier"].includes(profile.name) && prior.size > 1) {
         throw new Error(`${profile.name} call ${key} sees multiple unmerged writable artifacts (${[...prior].join(", ")}). Add an integrator node first, then verify/review the integrated checkout.`);
       }
+      if (profile.name === 'cross-judge' && (deps.length < 2 || prior.size !== deps.length || deps.some(dep => {
+        const candidate = byKey.get(dep)!;
+        return (candidate.profile ?? 'worker') !== 'worker' || candidate.isolation !== 'worktree' || (candidate.dependsOn?.length ?? 0) !== 0 || origin.get(dep)?.size !== 1;
+      }))) throw new Error(`Cross-judge ${key} requires distinct root worker worktrees as direct dependencies.`);
       origin.set(key, prior);
     }
     visiting.delete(key);

@@ -9,6 +9,7 @@ export const DEFAULT_CONFIG = {
 export const DEFAULT_MODELS = {
     version: 1,
     thinkingLevel: "inherit-parent",
+    fallbackPolicy: "same-family",
     roles: {
         worker: "inherit-parent",
         reviewer: "inherit-parent",
@@ -37,6 +38,9 @@ export function loadModels() {
     if (typeof level !== "string" || !["inherit-parent", "off", "minimal", "low", "medium", "high", "xhigh", "max"].includes(level)) {
         throw new Error(`Invalid thinkingLevel in ${modelConfigPath()}; edit it to inherit-parent, off, minimal, low, medium, high, xhigh, or max.`);
     }
-    return { panels: raw.panels, workflows: raw.workflows, version: 1, roles: { ...DEFAULT_MODELS.roles, ...(raw.roles ?? {}) }, thinkingLevel: level };
+    const fallbackPolicy = raw.fallbackPolicy ?? "disabled";
+    if (fallbackPolicy !== "disabled" && fallbackPolicy !== "same-family")
+        throw new Error(`Invalid fallbackPolicy in ${modelConfigPath()}; use disabled or same-family.`);
+    return { panels: raw.panels, workflows: raw.workflows, version: 1, roles: { ...DEFAULT_MODELS.roles, ...(raw.roles ?? {}) }, thinkingLevel: level, fallbackPolicy };
 }
 export function saveModels(config) { writeJsonAtomic(modelConfigPath(), config); }

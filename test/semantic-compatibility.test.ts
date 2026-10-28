@@ -105,7 +105,9 @@ test('semantic DAG: native dispatch isolates candidate writers and verifies the 
   assert.deepEqual([...artifacts.isolated].sort(),['candidate-1','candidate-2']);
   assert.equal(plan.nodes.find(n=>n.key==='integrate')?.profile,'integrator');
   assert.deepEqual(plan.nodes.find(n=>n.key==='verify')?.dependsOn,['integrate']);
-  assert.deepEqual(plan.nodes.filter(n=>n.profile==='reviewer').map(n=>n.model),['p/j','p/j']);
+  assert.deepEqual(plan.nodes.filter(n=>n.profile==='cross-judge').map(n=>n.model),['p/j']);
+  const legacy=buildTemplate({...t,judgeMode:'per-candidate'});
+  assert.deepEqual(legacy.nodes.filter(n=>n.profile==='reviewer').map(n=>n.model),['p/j','p/j']);
   assert.throws(()=>buildTemplate({...t,judgeModel:'p/a'}),/JUDGE_NOT_INDEPENDENT/);
   assert.throws(()=>planArtifacts(plan.nodes.filter(n=>n.key!=='integrate').map(n=>n.key==='verify'?{...n,dependsOn:['candidate-1','candidate-2']}:n)),/multiple unmerged writable artifacts/);
 });

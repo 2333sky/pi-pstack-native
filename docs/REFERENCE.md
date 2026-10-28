@@ -12,6 +12,18 @@ The model receives Pi-native pstack tools:
 
 For code that must land in the user's checkout, prefer `pstack_workflow` over several independent `pstack_agents` starts. The workflow engine knows when to keep one writer local, isolate parallel writers, and require an integration owner.
 
+## Model setup and routing
+
+Run `/setup-pstack` in Pi's interactive UI. Choose a reasoning budget, the default model for each native profile, optionally configure task-specific model overrides, and configure each model panel. Arena and architect runner panels take at least two seats; the interrogate reviewer panel and arena judge pool take at least one. Choose **Finish panel** after adding its seats. Selecting `auto` or `inherit-parent` counts as a seat and resolves to the parent model when a template is planned. Multiple seats using the same model are independent sessions but do not establish model diversity. Existing panels may be kept, and cancelling any prompt leaves the complete configuration unchanged.
+
+The `unlimited`, `large`, `medium`, and `small` budget choices map to Pi `max`, `xhigh`, `high`, and `medium` thinking levels, respectively. This does not rewrite Cursor fast/standard slugs. With the `same-family` fallback policy, a missing registered selector can fall back to the closest recognized family model from the same provider, and an unsupported explicit reasoning level can fall to the nearest supported lower level. It does not guess unrecognized families, switch provider, silently disable reasoning, or retry authentication/inference errors. Substitutions are recorded in plan notes or agent/workflow status. Fresh configuration defaults to `same-family`; an existing configuration without this field retains the earlier `disabled` behavior. The setup prompt can choose either policy.
+
+Task overrides apply when the caller supplies a matching `playbook` to `pstack_agents` or `pstack_workflow`; an explicit node or agent model takes precedence, followed by a task/profile override and then the profile default. The swarm template uses the configured swarm worker override when no model list is supplied.
+
+The `arena`, `architect`, and `interrogate` workflow templates automatically load their configured panels unless a model list or named panel is explicitly supplied. Arena and architect also choose a judge from the configured `arena-judges` pool unless `judgeModel` is given. The selection prefers a recognized family different from the parent, then a different model identifier; it reports when family independence cannot be established and does not infer family from the provider name. The judge is a separate session and can use the same model as a candidate. One cross-judge compares all verified candidates through the `pstack_candidates` read-only tool; its paths are confined to each candidate worktree. Candidate ledgers and fingerprints must remain current during judging and at integration. The legacy per-candidate judge template remains available with `judgeMode: "per-candidate"`. Full upstream behavioral equivalence is not claimed.
+
+The coordinator can call `pstack_semantics` with `action: "panel"` and the skill name to resolve and preflight configured seats, and `pstack_workflow` with `action: "plan"` to inspect the resulting nodes and models. Templates require a strict task brief; arena and architect also require a rubric. Registry resolution does not prove provider authentication or successful inference. A substitution is reported; an unavailable selector without a suitable allowed fallback blocks. Check `/pstack-agents` or `/pstack-workflows status <id>` after dispatch for the recorded models and outcomes.
+
 ## Durable recovery
 
 State lives under:

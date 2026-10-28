@@ -395,6 +395,7 @@
       "manualOnly": true,
       "roles": [
         "architect",
+        "cross-judge",
         "worker"
       ],
       "parentOnly": false,

@@ -4,6 +4,7 @@ import { validateBrief } from "../contracts/brief.js";
 import { validateGraph, dependencyEdges } from "../workflow/graph.js";
 import { planArtifacts } from "../workflow/artifacts.js";
 import { chainNodes } from "../workflow/graph.js";
+import { loadModels } from "../runtime/config.js";
 import { assertSessionOwner } from "../runtime/ownership.js";
 import { array, enums, number, object, string } from "./schema.js";
 const NODE = object({
@@ -27,7 +28,9 @@ const PARAMETERS = object({
     id: string("Workflow id."),
     key: string("Call key for retry."),
     name: string("Human-readable workflow name."),
-    mode: enums(["graph", "parallel", "chain", "swarm", "arena", "orchestrate", "review"], "Workflow mode."),
+    playbook: string("Optional task or playbook name for configured role-model overrides, such as feature or bug-fix."),
+    skill: string("Optional originating pstack skill."),
+    mode: enums(["graph", "parallel", "chain", "swarm", "arena", "architect", "interrogate", "orchestrate", "review"], "Workflow mode."),
     nodes: array(NODE, "Workflow nodes."),
     maxConcurrency: number("Shared concurrency limit.", { minimum: 1, maximum: 16 }),
 });
@@ -43,7 +46,7 @@ export function registerWorkflowTool(pi, workflows) {
     pi.registerTool({
         name: "pstack_workflow",
         label: "Pstack Workflow",
-        description: "Run durable Pi-native dependency graphs. Nodes that completed are not rerun after recovery. Use profiles such as worker, verifier, reviewer, architect, synthesizer, and integrator. Independent parallel writers are isolated; when several writer artifacts form one deliverable, add an integrator node depending on them, then verify the integrated target checkout.",
+        description: "Run durable Pi-native dependency graphs. Pass playbook to apply task-specific model overrides. For multi-model work, template.kind arena, architect or interrogate loads its configured panel unless models or a named panel are supplied; arena and architect also use the configured judge pool. A single read-only cross-judge compares verified candidate worktrees; judgeMode per-candidate retains the legacy template. Each template needs a strict brief; arena/architect also need a rubric. Plan first to inspect models and nodes. Independent writers are isolated and integrated before final verification.",
         promptSnippet: "Run durable pstack multi-agent workflows",
         parameters: PARAMETERS,
         executionMode: "sequential",
@@ -56,16 +59,17 @@ export function registerWorkflowTool(pi, workflows) {
                 case "start": {
                     let plan;
                     if (params.template) {
-                        plan = buildTemplate(params.template);
+                        plan = buildTemplate(params.template, ctx);
                         params.nodes = plan.nodes;
-                        params.mode = params.template.kind.startsWith("autopilot") ? "graph" : params.template.kind;
+                        params.mode = params.template.kind.startsWith("autopilot") ? "graph" : params.template.kind === "interrogate" ? "review" : params.template.kind === "architect" ? "arena" : params.template.kind;
                         params.budget = params.budget ?? plan.budget;
                     }
-                    else if (["arena", "swarm", "review"].includes(params.mode))
+                    else if (["arena", "architect", "interrogate", "swarm", "review"].includes(params.mode))
                         throw new Error("SPECIALIZED_MODE_REQUIRES_TEMPLATE");
                     if (!Array.isArray(params.nodes) || !params.nodes.length)
                         throw new Error(`${params.action} requires nodes`);
-                    const nodes = normalizedNodes(params.mode, params.nodes);
+                    const overrides = loadModels().workflows?.[params.playbook ?? params.mode ?? "graph"];
+                    const nodes = normalizedNodes(params.mode, params.nodes).map(node => ({ ...node, model: node.model ?? overrides?.[node.profile ?? "worker"] }));
                     validateGraph(nodes);
                     planArtifacts(nodes);
                     for (const n of nodes) {
@@ -79,7 +83,10 @@ export function registerWorkflowTool(pi, workflows) {
                     const record = workflows.create({
                         name: params.name,
                         deliveryContract: plan?.deliveryContract,
+                        modelNotes: plan?.notes,
                         type: params.mode || "graph",
+                        playbook: params.playbook,
+                        skill: params.skill,
                         nodes, contractLevel: params.contractLevel, budget: params.budget,
                         maxConcurrency: params.maxConcurrency,
                         parentSessionId: ctx.sessionManager.getSessionId(),

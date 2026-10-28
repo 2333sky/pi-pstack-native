@@ -44,7 +44,9 @@ In Pi, choose role models and a child reasoning level:
 /poteto-mode Fix the login bug, run relevant tests, and report the evidence.
 ```
 
-Both model aliases, `inherit-parent` and `auto`, use the parent session's model. A reasoning level of `inherit-parent` uses the parent's level. Explicit reasoning levels are checked against each selected role model; support varies by model. Cancel setup at any prompt to leave the configuration unchanged. Existing panel and workflow overrides are retained.
+Setup offers reasoning-budget presets, an explicit fallback policy, default models for each native role, optional task-specific overrides, and model lists for arena runners, arena judges, architect runners and interrogate reviewers. Each list entry starts a separate child. Both model aliases, `inherit-parent` and `auto`, use the parent session's model. Explicit reasoning levels are checked against selected models; support varies by model. Cancel setup at any prompt to leave the configuration unchanged. Other existing panel and workflow overrides are retained.
+
+Configured panels are used by the corresponding `pstack_workflow` templates; the agent can plan first to display the resolved models. Arena and architect use a single cross-judge with confined read-only access to the verified candidates. No model family or fallback is silently substituted. See [model setup and routing](docs/REFERENCE.md#model-setup-and-routing) for usage and limitations.
 
 Poteto Mode remains active for the current session until `/poteto-mode off`. You can ask Pi naturally to use child agents for exploration, implementation, or review. Whether agents are launched depends on the request and model's tool calls.
 

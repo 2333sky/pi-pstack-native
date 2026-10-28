@@ -32,6 +32,7 @@ export declare class AgentHost {
     private finishCancelled;
     private parentDepth;
     private nextDepth;
+    private crossJudgeInputs;
     get(id: string): AgentRecord | undefined;
     list(): AgentRecord[];
     run(spec: RunSpec, ctx: ExtensionContext): Promise<AgentRecord>;

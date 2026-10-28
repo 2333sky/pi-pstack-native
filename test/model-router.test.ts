@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadModels, saveModels } from "../src/runtime/config.ts";
-import { resolveRoleModel } from "../src/models/router.ts";
+import { resolveRoleModel, selectJudgeFromPool } from "../src/models/router.ts";
 
 async function withHome(fn: () => void | Promise<void>) {
   const old = process.env.PSTACK_NATIVE_HOME;
@@ -72,4 +72,42 @@ test("invalid configured reasoning fails before model routing, while absent valu
   }
   writeFileSync(file, JSON.stringify({ version: 1, roles: {} }));
   assert.equal(loadModels().thinkingLevel, "inherit-parent");
+}));
+
+test("same-family fallback reports the selected model and nearest supported reasoning", async () => withHome(() => {
+  const parent = { provider: 'provider', id: 'parent', reasoning: true };
+  const similar = { provider: 'provider', id: 'claude-opus-4', reasoning: true, thinkingLevelMap: { xhigh: 'xhigh', max: null } };
+  const other = { provider: 'provider', id: 'claude-sonnet-4', reasoning: true, thinkingLevelMap: { max: 'max' } };
+  const elsewhere = { provider: 'other', id: 'claude-opus-5', reasoning: true, thinkingLevelMap: { max: 'max' } };
+  saveModels({ version: 1, roles: { worker: 'provider/claude-opus-5' }, thinkingLevel: 'max', fallbackPolicy: 'same-family' });
+  const resolved = resolveRoleModel(ctx(parent, [parent, similar, other, elsewhere]), 'worker');
+  assert.equal(resolved.model, similar);
+  assert.equal(resolved.thinkingLevel, 'xhigh');
+  assert.equal(resolved.requestedSelector, 'provider/claude-opus-5');
+  assert.equal(resolved.notes.length, 2);
+  assert.match(resolved.notes[0]!, /using same-family provider\/claude-opus-4/);
+  assert.match(resolved.notes[1]!, /using xhigh/);
+}));
+
+test("fallback does not guess unknown families, cross providers or silently disable reasoning", async () => withHome(() => {
+  const parent = { provider: 'provider', id: 'parent', reasoning: true };
+  const elsewhere = { provider: 'other', id: 'claude-opus-4', reasoning: true };
+  const basic = { provider: 'provider', id: 'claude-opus-basic', reasoning: false };
+  saveModels({ version: 1, roles: { worker: 'provider/unknown-model' }, thinkingLevel: 'high', fallbackPolicy: 'same-family' });
+  assert.throws(() => resolveRoleModel(ctx(parent, [parent, elsewhere]), 'worker'), /not available/);
+  saveModels({ version: 1, roles: { worker: 'provider/claude-opus-5' }, thinkingLevel: 'high', fallbackPolicy: 'same-family' });
+  assert.throws(() => resolveRoleModel(ctx(parent, [parent, elsewhere]), 'worker'), /not available/);
+  assert.throws(() => resolveRoleModel(ctx(parent, [parent, basic]), 'worker'), /not supported/);
+  saveModels({ version: 1, roles: { worker: 'provider/claude-opus-5' }, thinkingLevel: 'high', fallbackPolicy: 'disabled' });
+  assert.throws(() => resolveRoleModel(ctx(parent, [parent, basic]), 'worker'), /not available/);
+}));
+
+test("judge pool prefers a recognized family different from the parent and reports rejected seats", async () => withHome(() => {
+  const parent = { provider: 'provider', id: 'claude-opus-5', reasoning: true };
+  const same = { provider: 'provider', id: 'claude-sonnet-5', reasoning: true };
+  const different = { provider: 'provider', id: 'grok-4', reasoning: true };
+  saveModels({ version: 1, roles: {}, thinkingLevel: 'inherit-parent', fallbackPolicy: 'disabled' });
+  const selected = selectJudgeFromPool(ctx(parent, [parent, same, different]), ['provider/not-registered', 'provider/claude-sonnet-5', 'provider/grok-4']);
+  assert.equal(selected.model, 'provider/grok-4');
+  assert(selected.notes.some(note => note.includes('not-registered') && note.includes('unavailable')));
 }));
