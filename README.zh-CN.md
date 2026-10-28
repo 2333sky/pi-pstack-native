@@ -35,7 +35,13 @@ pi update git:github.com/2333sky/pi-pstack-native
 pi remove git:github.com/2333sky/pi-pstack-native
 ```
 
-在安装命令后加 `--local` 可仅为当前项目安装；Pi 需要先信任该项目。未固定版本的 Git 来源在更新时跟随仓库默认分支，也可以通过 `@` 后接 Git 标签或提交固定版本。目前没有发布 npm 包。
+在安装命令后加 `--local` 可仅为当前项目安装；Pi 需要先信任该项目。未固定版本的 Git 来源在更新时跟随仓库默认分支，也可以通过 `@` 后接 Git 标签或提交固定版本。
+
+npm 预览版发布到 `next` 标签后，也可以使用：
+
+```bash
+pi install npm:pi-pstack-native@next
+```
 
 ## 初次使用
 
