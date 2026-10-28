@@ -12,6 +12,20 @@ The model receives Pi-native pstack tools:
 
 For code that must land in the user's checkout, prefer `pstack_workflow` over several independent `pstack_agents` starts. The workflow engine knows when to keep one writer local, isolate parallel writers, and require an integration owner.
 
+## Model setup and routing
+
+Run `/setup-pstack` in Pi's interactive UI. Select a reasoning budget and fallback policy, then review the displayed role models, task overrides and suggested panels. Save the displayed choices or edit individual roles, task roles or panels. Existing values are preserved; cancelling does not write a partial configuration. Fresh suggestions use available Pi models, prefer different recognized families for runner seats where possible, and report repeated seats. They do not establish provider authentication.
+
+The `unlimited`, `large`, `medium`, and `small` budget choices map to Pi `max`, `xhigh`, `high`, and `medium` thinking levels. The optional `same-family` fallback selects a recognized family from the same provider or lowers an unsupported reasoning level, with a note; it does not switch providers, rewrite Cursor `-fast` slugs or retry authentication/inference errors. Legacy configurations without a policy retain `disabled`.
+
+Pass `playbook` to `pstack_agents` or `pstack_workflow` for task overrides; for named roles such as `reflect` tooling, judgment, divergent and synthesizer, pass `modelRole` as well. An explicit model wins over a named role, then a profile override, then the generic role default. The coordinator must actually supply the routing fields.
+
+Arena, architect and interrogate load configured panels; unconfigured panels use disclosed session-available suggestions. Unavailable seats are reported and replaced or dropped when possible. With a known parent family, arena/architect choose a judge only from a different recognized family; without one, their plan returns candidates for the coordinator to compare, integrate and verify. With a judge, verified worktrees are available through confined `pstack_candidates`, and failed candidates are recorded and excluded before comparing surviving verified work. Architect adds an implementation phase after the chosen sketch; the coordinator still owns grounding and any requested checkpoint.
+
+Interrogate copies the fixed target's staged, unstaged and untracked files into isolated adversary worktrees. A separate repro session reruns each adversary's findings in its worktree; no changes are integrated. Reports require commands and observed/expected output, but are model statements, so inspect actual command evidence and repro edits before accepting a finding. Swarm offers partition, best-of, first-pass and rank-all; mixed partition/race requires an explicit DAG. First-pass cancellation is cooperative and the workflow waits for remaining calls to settle.
+
+Use `pstack_semantics` with `action: "panel"` and `pstack_workflow` with `action: "plan"` to inspect seats, fallbacks and judge-skip notes. Templates require a strict brief; arena/architect require a rubric. Registry resolution does not prove authentication or successful inference.
+
 ## Durable recovery
 
 State lives under:
@@ -105,7 +119,7 @@ See `PARITY.json` and `PARITY.md`.
 - `PI_ONLY`: native control/runtime capability added by this port.
 - `PENDING_PORT`: incomplete item inside the listed semantic coverage.
 
-**Active source pin:** Cursor pstack **0.15.32** at `99b609a72323b70204eab407c622f436e858e112`. Its 58 Skill names and 23 playbooks are registered: 57 Skills and all playbooks retain the latest source body through generated Pi entrypoints; `make-bot-ui` stays Cursor-only. Statechart now ships its complete upstream scripts and references; see [toolchain requirements](../docs/STATECHART.md). [Source provenance](../docs/upstream-provenance-0.15.32.json) verifies all 200 upstream blobs. These counts and byte checks do not prove model behavior. Maintainer semantic approval and authenticated real-model evidence remain separate, pending records in `SEMANTICS.json`. The previous source snapshot and historical reports are retained.
+**Active source pin:** Cursor pstack **0.15.36** at `c742dd61706fbacc1b95f1a20b7b988cf096ce6c`. Its 58 Skill names and 23 playbooks are registered: 57 Skills and all playbooks retain the latest source body through generated Pi entrypoints; `make-bot-ui` stays Cursor-only. Statechart now ships its complete upstream scripts and references; see [toolchain requirements](../docs/STATECHART.md). [Source provenance](../docs/upstream-provenance-0.15.36.json) verifies all 573 upstream blobs. These counts and byte checks do not prove model behavior. Maintainer semantic approval and authenticated real-model evidence remain separate, pending records in `SEMANTICS.json`. The previous source snapshot and historical reports are retained.
 
 ## Safety boundaries
 
@@ -238,7 +252,7 @@ merged may the candidate be described as integrated. No CLI provides an
 
 ## Candidate pstack 0.15.23 behavior ports
 
-This historical candidate has been superseded by the active **0.15.32** source pin. Its behavior changes were implemented or explicitly mapped in
+This historical candidate has been superseded by the active **0.15.36** source pin. Its behavior changes were implemented or explicitly mapped in
 [the per-file candidate receipt](../docs/upstream-sync/candidate-0.15.23.json),
 with every upstream diff accounted for. The archived receipt retains its original **proposed / pending maintainer semantic review** status; it does not describe current source availability or prove Cursor equivalence.
 See [port details and limitations](../docs/upstream-sync/PORT-0.15.23.md).
@@ -334,6 +348,6 @@ still fails explicitly; historical evidence is never silently overwritten.
 
 ## Core upstream semantics
 
-All supported entrypoints preserve the fixed 0.15.32 source body; the eleven core workflows have critical-rule mappings, with [Pi-specific mappings and deviations](../docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](../docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
+All supported entrypoints preserve the fixed 0.15.36 source body; the eleven core workflows have critical-rule mappings, with [Pi-specific mappings and deviations](../docs/PI-SEMANTIC-ADAPTER.md) kept separately. `pstack_skill` exposes original Markdown to read-only children; `pstack_semantics` checks capabilities, declared task routing, model panels and round receipts. These checks complement native DAG/ledger/Frontier gates. See [semantic compatibility and evidence tiers](../docs/SEMANTIC-COMPATIBILITY.md). Neither ADAPTED inventory entries nor offline tests establish complete behavioral parity.
 
-[PR #17](https://github.com/2333sky/pi-pstack-native/pull/17) merged the initial 0.15.17 compatibility infrastructure. The [0.15.32 / Pi 1.4 upgrade](../docs/upstream-upgrade-0.15.32.md) updates the active source and dependency lock. The foundation PR’s Node 22.19 / 24 CI passed. A subsequent user-reported Windows real-model run is described in the [test record](WINDOWS-MODEL-TEST.zh-CN.md); the repository’s commit-bound authenticated-model receipt remains `not-run` and semantic review remains `pending-maintainer-signoff`. [The remaining acceptance steps](../docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.
+[PR #17](https://github.com/2333sky/pi-pstack-native/pull/17) merged the initial 0.15.17 compatibility infrastructure. The [0.15.36 upgrade](../docs/upstream-upgrade-0.15.36.md) describes the current source pin; Pi remains locked to SDK 1.4.0. The foundation PR’s Node 22.19 / 24 CI passed. A subsequent user-reported Windows real-model run is described in the [test record](WINDOWS-MODEL-TEST.zh-CN.md); the repository’s commit-bound authenticated-model receipt remains `not-run` and semantic review remains `pending-maintainer-signoff`. [The remaining acceptance steps](../docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) explain how to record both without treating a merge or an unavailable-model probe as a passing model test.

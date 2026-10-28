@@ -73,7 +73,7 @@
         {
           "order": 4,
           "sourceOrder": 4,
-          "text": "Mid-run discoveries are yours. Address broken skills, related bugs, flaky verifiers, review noise, tooling failures, orphaned follow-ups, and fixable drift yourself via poteto-mode. Put out-of-band fixes in their own PR. Do not park reversible work for the human or use AskQuestion. Surface only irreversible actions, genuine product or preference calls no experiment can settle, or a real dead end. Keep the predicate as the main drive, and return to it after each side fix."
+          "text": "Mid-run discoveries that support the goal are yours. Address broken skills, related bugs, flaky verifiers, review noise, tooling failures, orphaned follow-ups, and fixable drift yourself via poteto-mode. Put out-of-band fixes in their own PR. Do not park reversible work for the human or use AskQuestion. Surface only irreversible actions, genuine product or preference calls no experiment can settle, or a real dead end. Keep the predicate as the main drive, and return to it after each side fix."
         },
         {
           "order": 5,
@@ -131,7 +131,7 @@
         {
           "order": 4,
           "sourceOrder": 4,
-          "text": "**Swarm-verify once.** A full swarm runs once, at the code-ready head. Another full swarm runs only for new behavior, a redesign, or a large new diff. A rebase, a merge-conflict resolution, or a minor fix gets a single verifier at the new head. Fan out independent verifiers at the code-ready SHA per the **swarm** skill. They re-run the gates, prove the load-bearing behavior live on the real surface through its control skill (such as control-ui or control-cli from cursor-team-kit) or a named driver, and audit the diff. The verdict is not clean without the live lane, or before you audit the merge-ready report's receipts, because no lane trusts a claim it has not checked."
+          "text": "**Swarm-verify once.** A full swarm runs once, at the code-ready head. Another full swarm runs only for new behavior, a redesign, or a large new diff. A rebase, a merge-conflict resolution, or a minor fix gets a single verifier at the new head, and a wording-only change gets none. Fan out independent verifiers at the code-ready SHA per the **swarm** skill. They re-run the gates, prove the load-bearing behavior live on the real surface through its control skill (such as control-ui or control-cli from cursor-team-kit) or a named driver, and audit the diff. The verdict is not clean without the live lane, or before you audit the merge-ready report's receipts, because no lane trusts a claim it has not checked."
         },
         {
           "order": 5,
@@ -172,22 +172,12 @@
         {
           "order": 1,
           "sourceOrder": 1,
-          "text": "**Run Autopilot-full's owners, minus the landing.** Owners report STACK-READY in place of merge-ready. They never rebase onto another branch, trunk included, and never retarget, merge, close a PR, or arm auto-merge, because the root owns the chain's topology and the operator owns the landing. When an item depends on another, its owner branches from that item's branch, not from trunk."
+          "text": "**In place of step 5, stop at verified.** Stop when each PR is verified and green at its current head, then hand the PRs to the operator. After the handoff, nobody pushes without the operator's go. Every loop tick prompt names this file, so each tick sees the no-merge rule."
         },
         {
           "order": 2,
           "sourceOrder": 2,
-          "text": "**Give the topology one writer.** Owners push only their own branches and report each tip and its intended parent. Only you rebase or retarget a link, because two writers on one chain undo each other. Append each clean PR in dependency order, with its base set to its parent's branch (origin pr edit <pr> --base <parent-branch> or gh pr edit <pr> --base <parent-branch>). Never require gt. An owner takes your push as its new base and lease, and on a conflict resolves its own slice for you to push."
-        },
-        {
-          "order": 3,
-          "sourceOrder": 3,
-          "text": "**Absorb drift at the root.** Until landing starts, apply Autopilot-full step 5's test to each link and rebase the chain bottom-up where it calls for one. Then apply the patch-id rule link by link, since a link's base is its parent."
-        },
-        {
-          "order": 4,
-          "sourceOrder": 4,
-          "text": "**Deliver the chain, then keep your hands off it.** Each link carries its verdict in its PR. Once landing starts, nobody writes to the chain except the post-merge retarget that playbooks/shipping.md sanctions, because a second writer breaks a landing in flight. A mid-landing problem goes through you to the operator, and any fix waits for the operator's go."
+          "text": "**Stack a PR only when it builds on another PR.** This is the one exception to step 3. Base the PR on the other PR's branch in place of trunk, per **Size and stacks** in playbooks/opening-a-pr.md. In place of step 2's rebase onto trunk, each PR rebases onto its parent PR's branch, and the stack root rebases onto trunk. A new head on the lower PR restacks the PRs above it, and a PR whose git patch-id the restack leaves unchanged keeps its verdict."
         }
       ],
       "observe": [
@@ -228,7 +218,7 @@
         {
           "order": 4,
           "sourceOrder": 4,
-          "text": "**Never mutate stack topology.** No base retarget, rebase, stack-wide submit, or force-push from inside a babysit. Fix on the owning branch, report anything rebase-shaped upward, and let the owner do it. An Autopilot-full owner babysitting its own PR is that owner. Where this playbook says to report a rebase, that owner rebases its own branch and publishes it with git push --force-with-lease per playbooks/autopilot-full.md step 2. In Autopilot-stack, the root is that owner. The one sanctioned creation: when a fix's owning PR has already merged, it becomes a new PR on top of the remaining stack, never a rewrite of merged history, and it is the single case where the frozen queue list of step 6 changes."
+          "text": "**Never mutate stack topology.** No base retarget, rebase, stack-wide submit, or force-push from inside a babysit. Fix on the owning branch, report anything rebase-shaped upward, and let the owner do it. An Autopilot-full or Autopilot-stack owner babysitting its own PR is that owner. Where this playbook says to report a rebase, that owner rebases its own branch and publishes it with git push --force-with-lease per playbooks/autopilot-full.md step 2. The one sanctioned creation: when a fix's owning PR has already merged, it becomes a new PR on top of the remaining stack, never a rewrite of merged history, and it is the single case where the frozen queue list of step 6 changes."
         },
         {
           "order": 5,
@@ -395,6 +385,7 @@
       "manualOnly": true,
       "roles": [
         "architect",
+        "cross-judge",
         "worker"
       ],
       "parentOnly": false,
@@ -621,7 +612,7 @@
         {
           "order": 4,
           "sourceOrder": 4,
-          "text": "Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the agent store's docs/. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between playbooks/autopilot-full.md and playbooks/autopilot-stack.md per the rule at the end of playbooks/autopilot-stack.md. A standing program takes playbooks/orchestrate.md."
+          "text": "Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the agent store's docs/. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick playbooks/autopilot-full.md when the run may merge. Pick playbooks/autopilot-stack.md when the operator lands the PRs. A standing program takes playbooks/orchestrate.md."
         },
         {
           "order": 5,
@@ -744,38 +735,11 @@
       "requiredSteps": [
         {
           "order": 1,
-          "sourceOrder": 1,
-          "text": "**Frame.** State the done predicate as something countable (\"all 126 units merged, each ledger-verified unit-test-verified or better\"). Quantify scope: units, rough effort, expected stacks, and the wall-clock budget. If one agent could finish inside that budget, stop here and run Autonomous run instead. Collapsing must not depend on another document being present. It means do the work directly in this session, plain workers where they help, verification inline, landing as you go, and none of the store, register, or pilot machinery below. Schedule landing against the budget. By roughly 70% of it, stop spawning and land what is verified. Name the tracks per project. A contested decomposition or one-way door goes through the arena skill before the pilot. Present the framing once. Reversible prep proceeds without waiting."
+          "text": "You run the program, never the code. Decide which agent does each piece of work, then check what each one produces. For a standing project handed to one coordinator chat: multi-day, many stacked PRs, dozens to hundreds of subagents, few human turns. One task driven to a predicate is Autonomous run. One ambitious run that needs a bespoke workflow is figure-it-out. Work that one agent could finish inside the session's budget is not a program."
         },
         {
           "order": 2,
-          "sourceOrder": 2,
-          "text": "**Install the runtime.** Run orch init. Open the trail via the show-me-your-work skill, write the standing orders before any spawn, and seed frontier.json from existing PRs with orch frontier set --repo <repo-dir>, adding --forge origin when the forge is Origin."
-        },
-        {
-          "order": 3,
-          "sourceOrder": 3,
-          "text": "**Pilot.** Push one unit through the whole path: brief, worker, verification, stack entry, ledger row, merge. The pilot exists to falsify the brief template, the verify recipe, and the unit size while that costs one agent instead of fifty. Fix the contract from pilot evidence before any fan-out. Scale the pilot to the unit. On programs of near-identical cheap units, the first unit is the pilot, run as a normal unit with its verify command inline, and fan-out starts the moment it lands. The dedicated pilot pipeline (separate verifier agent, audit gate) is for expensive or novel unit shapes, not for clone-units where a serialized pilot has nothing to falsify."
-        },
-        {
-          "order": 4,
-          "sourceOrder": 4,
-          "text": "**Scale.** Spawn a rolling window of workers up to the in-flight cap, refilling as children finish. Blocking batches pay the slowest child of every batch. Spawn track sub-coordinators only past the one-drain threshold in Roles. Recompute ready work after each drain. Relay upstream reports into downstream briefs. Keep sibling communication upward only. The sampled brief audit runs alongside the wave it samples and stops the next refill on failure, not the current one."
-        },
-        {
-          "order": 5,
-          "sourceOrder": 5,
-          "text": "**Drain.** Run the queue discipline below at every drain point."
-        },
-        {
-          "order": 6,
-          "sourceOrder": 6,
-          "text": "**Land.** Landing is continuous, never a terminal phase. Integration starts with the first verified unit and runs alongside the remaining waves. On heavy repos the stacker is a standing role from wave one, integrating as units verify. On repos where local git is cheap, the coordinator lands verified units itself per Roles. Keep the frontier green before upper-stack work. Stack safety governs. Advance frontier.json only on merge or reported new head SHAs."
-        },
-        {
-          "order": 7,
-          "sourceOrder": 7,
-          "text": "**Close.** Drain the final inbox, reconcile every spawned agent to a terminal row (done, abandoned, zombie-reconciled), confirm the predicate on the real artifact, confirm every landed PR has a verdict for its current head SHA, audit the trail per show-me-your-work including its cross-model review, encode recurring corrections into preferences.md or the brief template. Leave the store intact. It is the postmortem."
+          "text": "Reply: what landed against the goal, each PR's live state and verdict with its link, what was dropped and why, and the decisions waiting on the user."
         }
       ],
       "observe": [

@@ -1,11 +1,11 @@
 import { briefPrompt, validateBrief, parseReport, scopeViolations, changedPaths } from "../contracts/brief.js";
 import { capture, fingerprint, ownerOf, sameFingerprint } from "../artifacts/fingerprint.js";
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { lstatSync, mkdirSync, realpathSync } from "node:fs";
+import { dirname, join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAgentSession, DefaultResourceLoader, getAgentDir, SessionManager, } from "@earendil-works/pi-coding-agent";
-import { agentPath, childSessionRoot, lockPath, workflowPath } from "../runtime/home.js";
+import { agentPath, childSessionRoot, lockPath, workflowPath, worktreeRoot } from "../runtime/home.js";
 import { durableError } from "../runtime/errors.js";
 import { FileLock } from "../runtime/lock.js";
 import { writerLockKey } from "../runtime/checkout.js";
@@ -14,9 +14,11 @@ import { updateRecord } from "../runtime/transaction.js";
 import { evaluateAssistantTurn } from "./outcome.js";
 import { resolveRoleModel } from "../models/router.js";
 import { createWorktree, removeWorktree } from "../worktree/manager.js";
+import { copyReviewSnapshot } from "../worktree/snapshot.js";
 import { getProfile } from "./profiles.js";
 import { createResourceTools, validateEvidencePackets } from "./resources.js";
 import { createReadOnlyTools } from "./read-only-tools.js";
+import { assertCandidateCurrent, createCandidateTool } from "./candidates.js";
 import { assertCompatibleIsolation } from "./isolation.js";
 import { dispatchVeto } from "../program/dispatch.js";
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -61,6 +63,41 @@ export class AgentHost {
         if (depth > MAX_AGENT_DEPTH)
             throw new Error(`pstack-native nested agent depth limit exceeded (${MAX_AGENT_DEPTH}). Collapse the work or return a handoff to the parent coordinator.`);
         return depth;
+    }
+    crossJudgeInputs(record, workflow, cwd) {
+        const call = workflow?.calls[record.callKey ?? ''];
+        if (!workflow || !record.workflowId || !call || call.profile !== 'cross-judge' || !record.brief || call.dependsOn.length < 1) {
+            throw new Error('CROSS_JUDGE_REQUIRES_VERIFIED_WORKFLOW_CANDIDATES');
+        }
+        const repoId = fingerprint(cwd).repoId;
+        const worktrees = realpathSync(worktreeRoot());
+        const inputs = call.dependsOn.map(key => {
+            const source = workflow.calls[key];
+            const agent = source?.agentId ? this.get(source.agentId) : undefined;
+            if (!source || source.profile !== 'worker' || source.state !== 'completed' || source.verification?.status !== 'passed' ||
+                !source.verification.ledgerId || !source.artifactId || !agent || agent.state !== 'completed' ||
+                agent.workflowId !== workflow.id || agent.callKey !== key || !agent.worktree || !agent.baseline)
+                throw new Error(`CROSS_JUDGE_CANDIDATE_UNAVAILABLE: ${key}`);
+            const workspace = realpathSync(agent.worktree);
+            if (lstatSync(agent.worktree).isSymbolicLink() || !workspace.startsWith(`${worktrees}${sep}`))
+                throw new Error(`CROSS_JUDGE_CANDIDATE_OUTSIDE_WORKTREES: ${key}`);
+            if (fingerprint(workspace).repoId !== repoId)
+                throw new Error(`CROSS_JUDGE_CANDIDATE_UNAVAILABLE: ${key}`);
+            const input = { key, agentId: agent.id, workspace, artifactId: source.artifactId, ledgerId: source.verification.ledgerId, baseline: agent.baseline };
+            assertCandidateCurrent(input);
+            return input;
+        });
+        if (new Set(inputs.map(input => input.workspace)).size !== inputs.length)
+            throw new Error('CROSS_JUDGE_CANDIDATES_NOT_ISOLATED');
+        if (record.candidateInputs) {
+            if (record.candidateInputs.length !== inputs.length || inputs.some((input, i) => {
+                const saved = record.candidateInputs[i];
+                return !saved || saved.key !== input.key || saved.agentId !== input.agentId || saved.workspace !== input.workspace ||
+                    saved.artifactId !== input.artifactId || saved.ledgerId !== input.ledgerId || !sameFingerprint(saved.baseline, input.baseline);
+            }))
+                throw new Error('CROSS_JUDGE_CANDIDATES_CHANGED_ON_RECOVERY');
+        }
+        return inputs;
     }
     get(id) {
         const path = agentPath(id);
@@ -236,6 +273,10 @@ export class AgentHost {
                 worktree = await createWorktree(record.cwd, record.id);
                 cwd = worktree.path;
                 record = { ...record, cwd, worktree: worktree.path, branch: worktree.branch, worktreeRepoRoot: worktree.repoRoot, worktreeBaseRef: worktree.baseRef };
+                record = this.change(record.id, latest => { if (!['cancelling', 'cancelled'].includes(latest.state))
+                    Object.assign(latest, record); });
+                if (profile.name === 'adversary')
+                    copyReviewSnapshot(worktree.repoRoot, cwd);
             }
             else if (record.worktree) {
                 cwd = record.worktree;
@@ -257,15 +298,30 @@ export class AgentHost {
             // Reload the authoritative contract on every spawn/recovery; never trust stale session text.
             const ownerWorkflow = record.workflowId ? readJson(workflowPath(record.workflowId), undefined) : undefined;
             const currentBrief = ownerWorkflow?.calls[record.callKey ?? ""]?.brief ?? spec.brief ?? record.brief;
+            if (profile.name === 'repro-verifier') {
+                const call = ownerWorkflow?.calls[record.callKey ?? ''];
+                const source = call?.dependsOn.length === 1 ? ownerWorkflow?.calls[call.dependsOn[0]] : undefined;
+                const agent = source?.agentId ? this.get(source.agentId) : undefined;
+                const managedRoot = realpathSync(worktreeRoot());
+                if (!ownerWorkflow || !source || source.profile !== 'adversary' || source.state !== 'completed' || !agent?.worktree || agent.workflowId !== ownerWorkflow.id || realpathSync(agent.worktree) !== realpathSync(cwd) || !realpathSync(cwd).startsWith(`${managedRoot}${sep}`))
+                    throw new Error('REPRO_VERIFIER_REQUIRES_OWNED_WORKTREE');
+            }
             if (record.workflowId) {
                 const veto = dispatchVeto(record.workflowId, ownerWorkflow);
                 if (veto)
                     throw new Error(`${veto}: workflow ${record.workflowId} cannot start a child under the current dispatch record`);
             }
+            if (profile.name !== 'cross-judge' && record.candidateInputs)
+                throw new Error('CANDIDATE_INPUTS_REQUIRE_CROSS_JUDGE');
+            if (profile.name === 'cross-judge') {
+                const inputs = this.crossJudgeInputs(record, ownerWorkflow, cwd);
+                if (!record.candidateInputs)
+                    record = this.change(record.id, agent => { agent.candidateInputs = inputs; });
+            }
             if (currentBrief) {
                 validateBrief(currentBrief);
                 const current = fingerprint(cwd);
-                if (ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint, current))
+                if (ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint, profile.name === 'repro-verifier' ? fingerprint(ownerWorkflow.parentCwd) : current))
                     throw new Error("FIXED_REVIEW_ARTIFACT_CHANGED");
                 const baseline = record.baseline ?? capture(cwd, record.id, [], 'working', { kind: 'baseline', owner: ownerOf(currentBrief, { workflowId: record.workflowId, callKey: record.callKey }) }).fingerprint;
                 if (baseline.repoId !== currentBrief.scope.repoId)
@@ -300,9 +356,9 @@ export class AgentHost {
                 resourceLoader: loader,
                 ...(resolved.model ? { model: resolved.model } : {}),
                 ...(resolved.thinkingLevel ? { thinkingLevel: resolved.thinkingLevel } : {}),
-                tools: [...profile.tools, "pstack_skill", "pstack_evidence"],
+                tools: [...profile.tools, "pstack_skill", "pstack_evidence", ...(record.candidateInputs ? ['pstack_candidates'] : [])],
                 ...(profile.writable ? {} : { noTools: "builtin" }),
-                customTools: [...(profile.writable ? [] : createReadOnlyTools(cwd)), ...createResourceTools(SKILLS_DIR, record.evidencePackets)],
+                customTools: [...(profile.writable ? [] : createReadOnlyTools(cwd)), ...createResourceTools(SKILLS_DIR, record.evidencePackets), ...(record.candidateInputs ? [createCandidateTool(record.candidateInputs)] : [])],
             });
             this.live.set(record.id, session);
             if (this.isStopping(record.id)) {
@@ -315,6 +371,7 @@ export class AgentHost {
                 Object.assign(latest, {
                     ...record, state: "running", startedAt: record.startedAt ?? now(),
                     model: resolved.model ? `${resolved.model.provider}/${resolved.model.id}` : resolved.selector,
+                    modelSelection: resolved.notes.length ? { requested: resolved.requestedSelector, effective: resolved.model ? `${resolved.model.provider}/${resolved.model.id}` : resolved.selector, notes: resolved.notes } : record.modelSelection,
                     sessionDir, sessionFile: session.sessionFile,
                     attempt: spec.attempt ?? record.attempt,
                 });
@@ -348,6 +405,10 @@ export class AgentHost {
                     }
                 }, 100);
             await session.prompt(prompt + (record.brief ? briefPrompt(record.brief) : ""));
+            if (ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint, fingerprint(ownerWorkflow.parentCwd)))
+                throw new Error('FIXED_REVIEW_ARTIFACT_CHANGED');
+            for (const input of record.candidateInputs ?? [])
+                assertCandidateCurrent(input);
             const stats = session.getSessionStats();
             this.change(record.id, a => { a.usage = { tokens: stats.tokens.total, cost: stats.cost, elapsedMs: Date.now() - budgetStart }; });
             if (budgetExceeded)

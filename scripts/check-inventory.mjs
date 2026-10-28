@@ -6,7 +6,7 @@ import { buildInventory, readSnapshot, validateInventory } from './upstream/inve
 
 export function checkInventory(root) {
   const snapshot = readSnapshot(root), parity = readJSON(join(root,'PARITY.json'));
-  const path = 'docs/upstream-inventory-0.15.32.json', committed = readFileSync(join(root,path),'utf8');
+  const path = 'docs/upstream-inventory-0.15.36.json', committed = readFileSync(join(root,path),'utf8');
   const inputs = {snapshot,parity,localRoot:root};
   validateInventory(JSON.parse(committed),inputs);
   const inventory = validateInventory(buildInventory(inputs),inputs);

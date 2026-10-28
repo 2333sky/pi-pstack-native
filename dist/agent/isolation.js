@@ -6,4 +6,7 @@ export function assertCompatibleIsolation(profile, isolation) {
     if (profile.name === "integrator" && isolation !== "shared") {
         throw new Error("Integrator must use shared isolation in the target checkout.");
     }
+    if (profile.name === 'adversary' && isolation !== 'worktree') {
+        throw new Error('Adversarial reviews must use an isolated worktree.');
+    }
 }

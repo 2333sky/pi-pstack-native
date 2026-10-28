@@ -1,9 +1,10 @@
 import type { EvidencePacket } from "../agent/resources.ts";
+import type { CandidateInput } from "../agent/candidates.ts";
 import type { TaskBrief, TaskReport, Fingerprint, Usage, Budget, GateStatus } from "../contracts/types.ts";
 export type WorkflowState = "created" | "running" | "blocked" | "paused" | "completed" | "failed" | "cancelling" | "cancelled";
 export type CallState = "pending" | "ready" | "running" | "waiting" | "completed" | "failed" | "cancelled" | "skipped";
 export type IsolationMode = "shared" | "worktree" | "readonly";
-export type AgentProfileName = "worker" | "reviewer" | "scout" | "architect" | "verifier" | "synthesizer" | "integrator" | "poteto-agent" | "comment-sicko";
+export type AgentProfileName = "worker" | "reviewer" | "adversary" | "repro-verifier" | "cross-judge" | "scout" | "architect" | "verifier" | "synthesizer" | "integrator" | "poteto-agent" | "comment-sicko";
 
 export interface DurableError {
   code: string;
@@ -15,6 +16,7 @@ export interface DurableError {
 
 export interface AgentRecord {
   evidencePackets?: EvidencePacket[];
+  candidateInputs?: CandidateInput[];
   brief?: TaskBrief;
   baseline?: Fingerprint;
   report?: TaskReport;
@@ -31,6 +33,7 @@ export interface AgentRecord {
   task: string;
   state: "created" | "running" | "completed" | "failed" | "cancelling" | "cancelled";
   model?: string;
+  modelSelection?: { requested: string; effective: string; notes: string[] };
   cwd: string;
   isolation: IsolationMode;
   worktree?: string;
@@ -49,6 +52,8 @@ export interface AgentRecord {
 }
 
 export interface WorkflowCall {
+  /** A failed candidate excluded before a comparison, never an accepted artifact. */
+  excludedFromSelection?: boolean;
   evidencePackets?: EvidencePacket[];
   brief?: TaskBrief;
   thinkingLevel?: ThinkingLevelName;
@@ -65,6 +70,7 @@ export interface WorkflowCall {
   dependsOn: string[];
   attempt: number;
   model?: string;
+  modelSelection?: { requested: string; effective: string; notes: string[] };
   isolation?: IsolationMode;
   cwd?: string;
   agentId?: string;
@@ -80,7 +86,10 @@ export interface WorkflowEdge {
 }
 
 export interface WorkflowRecord {
-  deliveryContract?: "local-dag" | "remote-stack-required";
+  completionPolicy?: 'first-pass';
+  firstPassWinner?: string;
+  modelNotes?: string[];
+  deliveryContract?: "local-dag" | "candidate-only" | "remote-stack-required";
   schemaVersion?: 2;
   reviewFingerprint?: Fingerprint;
   budget?: Budget;
@@ -148,6 +157,7 @@ export interface ModelConfig {
   version: 1;
   roles: Record<string, string>;
   thinkingLevel: "inherit-parent" | ThinkingLevelName;
+  fallbackPolicy?: "disabled" | "same-family";
 }
 
 export interface AgentProfile {
@@ -170,11 +180,15 @@ export interface WorkflowNodeSpec {
   task: string;
   dependsOn?: string[];
   model?: string;
+  /** Named task role, distinct from the tool-permission profile. */
+  modelRole?: string;
   isolation?: IsolationMode;
 }
 
 export interface WorkflowRunSpec {
-  deliveryContract?: "local-dag" | "remote-stack-required";
+  completionPolicy?: 'first-pass';
+  modelNotes?: string[];
+  deliveryContract?: "local-dag" | "candidate-only" | "remote-stack-required";
   contractLevel?: "strict" | "minimal";
   budget?: Budget;
   name?: string;

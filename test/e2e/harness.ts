@@ -63,7 +63,7 @@ export function initFixtureRepo(dir: string, remote: string, files: Record<strin
   return git(dir, ["rev-parse", "HEAD"]);
 }
 
-export function writeModelConfig(agentDir: string, port: number): void {
+export function writeModelConfig(agentDir: string, port: number, modelIds: string[] = [MODEL]): void {
   mkdirSync(agentDir, { recursive: true });
   writeFileSync(join(agentDir, "models.json"), JSON.stringify({
     providers: {
@@ -71,7 +71,7 @@ export function writeModelConfig(agentDir: string, port: number): void {
         baseUrl: `http://127.0.0.1:${port}/v1`,
         api: "openai-completions",
         apiKey: "loopback-token-not-a-secret",
-        models: [{ id: MODEL, name: MODEL, reasoning: false, contextWindow: 16_384, maxTokens: 1_024, input: ["text"] }],
+        models: modelIds.map(id => ({ id, name: id, reasoning: false, contextWindow: 16_384, maxTokens: 1_024, input: ["text"] })),
       },
     },
   }));
@@ -83,7 +83,7 @@ export function writeVerificationPolicy(home: string, commands: string[][]): voi
 }
 
 export interface ModelStep { tool?: { name: string; args: unknown }; text?: string; hold?: boolean }
-export interface ModelCall { node: string; step: number; tools: string[]; messages: any[] }
+export interface ModelCall { node: string; step: number; model: string; tools: string[]; messages: any[] }
 export interface ModelServer { port: number; calls: ModelCall[]; close(): Promise<void> }
 
 function messageText(message: any): string {
@@ -109,11 +109,11 @@ export async function startModelServer(script: (call: ModelCall) => ModelStep): 
     const userMessages = messages.filter((message) => message.role === "user");
     const node = taskMarker(userMessages.length ? messageText(userMessages.at(-1)) : "");
     const step = messages.filter((message) => message.role === "assistant" && Array.isArray(message.tool_calls) && message.tool_calls.length).length;
-    const call: ModelCall = { node, step, tools: (body.tools ?? []).map((tool: any) => tool.function?.name), messages };
+    const call: ModelCall = { node, step, model: body.model, tools: (body.tools ?? []).map((tool: any) => tool.function?.name), messages };
     calls.push(call);
     const next = script(call);
     if (next.hold) return;
-    const chunk = (delta: unknown, finish: string | null = null) => ({ id: "chatcmpl-e2e", object: "chat.completion.chunk", created: 1, model: MODEL, choices: [{ index: 0, delta, finish_reason: finish }] });
+    const chunk = (delta: unknown, finish: string | null = null) => ({ id: "chatcmpl-e2e", object: "chat.completion.chunk", created: 1, model: body.model, choices: [{ index: 0, delta, finish_reason: finish }] });
     res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache" });
     if (next.tool) {
       const args = JSON.stringify(next.tool.args ?? {});

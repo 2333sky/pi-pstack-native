@@ -4,7 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { readJSON, safePath, shaPattern } from './core.mjs';
 import { buildInventory, readSnapshot } from './inventory.mjs';
 
-export const recordsPath = 'docs/registry-records-0.15.32.json';
+export const recordsPath = 'docs/registry-records-0.15.36.json';
 const kindOrder = ['skill', 'playbook'];
 const registryOf = { skill: 'skills', playbook: 'playbooks' };
 const handlingOf = { ADAPTED: 'adapted', CURSOR_ONLY: 'cursor-only' };

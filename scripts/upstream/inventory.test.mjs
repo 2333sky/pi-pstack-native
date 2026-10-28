@@ -10,13 +10,13 @@ import { digest, readJSON } from './core.mjs';
 import { buildInventory, readSnapshot, validateInventory, validateSnapshot } from './inventory.mjs';
 
 const root = resolve('.');
-const snapshotPath = 'docs/upstream-target-0.15.32.json';
-const inventoryPath = 'docs/upstream-inventory-0.15.32.json';
-const dispositionsPath = 'docs/upstream-dispositions-0.15.32.json';
+const snapshotPath = 'docs/upstream-target-0.15.36.json';
+const inventoryPath = 'docs/upstream-inventory-0.15.36.json';
+const dispositionsPath = 'docs/upstream-dispositions-0.15.36.json';
 const serialize = value => JSON.stringify(value,null,2)+'\n';
 function snapshotFor(paths) {
   const blobs = paths.sort((a,b)=>a.localeCompare(b,'en')).map((path,index)=>({path,blob:String(index+1).repeat(40),mode:'100644',size:10+index}));
-  return {schemaVersion:1,repository:'cursor/plugins',path:'pstack',treeTruncated:false,commit:'a'.repeat(40),version:'0.15.32',blobs,pstackBlobCount:blobs.length,blobDigest:digest(blobs)};
+  return {schemaVersion:1,repository:'cursor/plugins',path:'pstack',treeTruncated:false,commit:'a'.repeat(40),version:'0.15.36',blobs,pstackBlobCount:blobs.length,blobDigest:digest(blobs)};
 }
 function fixture(t) {
   const localRoot = mkdtempSync(join(tmpdir(),'upstream-inventory-'));
@@ -46,7 +46,7 @@ test('fixture inventory separates port, closure, contracts and evidence',t=>{
   const f = fixture(t), inventory = buildInventory(f);
   assert.equal(validateSnapshot(f.snapshot),f.snapshot);
   assert.equal(validateInventory(inventory,f),inventory);
-  assert.deepEqual(inventory.target,{commit:'a'.repeat(40),version:'0.15.32',snapshot:snapshotPath,snapshotDigest:f.snapshot.blobDigest});
+  assert.deepEqual(inventory.target,{commit:'a'.repeat(40),version:'0.15.36',snapshot:snapshotPath,snapshotDigest:f.snapshot.blobDigest});
   assert.deepEqual(inventory.reviewedBaseline,{commit:'b'.repeat(40),version:'0.15.17',registry:'PARITY.json'});
   assert.deepEqual(inventory.counts,{files:4,skills:2,playbooks:0,agents:1,manifest:0,references:1,scripts:0,automations:0,docs:0,assets:0,other:0,nestedSkills:0});
   assert.deepEqual(inventory.dispositionSummary,{local:2,sourceOnly:1,unsupported:0,pending:1});
@@ -121,10 +121,10 @@ test('real recorded snapshot has a complete non-overlapping category partition',
   const snapshot = readSnapshot(root), parity = readJSON(join(root,'PARITY.json'));
   const inputs = {snapshot,parity,localRoot:root}, inventory = buildInventory(inputs);
   assert.equal(validateInventory(inventory,inputs),inventory);
-  assert.deepEqual(inventory.counts,{files:200,skills:58,playbooks:23,agents:2,manifest:2,references:33,scripts:48,automations:12,docs:13,assets:7,other:2,nestedSkills:3});
+  assert.deepEqual(inventory.counts,{files:573,skills:58,playbooks:23,agents:2,manifest:2,references:30,scripts:424,automations:12,docs:13,assets:7,other:2,nestedSkills:3});
   const {files,nestedSkills,...partition} = inventory.counts;
-  assert.equal(Object.values(partition).reduce((total,count)=>total+count,0),200);
-  assert.equal(files,200);
+  assert.equal(Object.values(partition).reduce((total,count)=>total+count,0),573);
+  assert.equal(files,573);
   assert.equal(nestedSkills,3);
   assert.deepEqual(inventory.openWork.pendingNestedSkills,[]);
   assert.deepEqual(inventory.openWork.pendingPlaybooks,[]);
@@ -144,12 +144,12 @@ test('real recorded snapshot has a complete non-overlapping category partition',
   assert.equal(checker.port.path,'scripts/check-plan.mjs');
   const manifest = inventory.entries.find(e=>e.source.path === '.cursor-plugin/plugin.json');
   assert.equal(manifest.port.kind,'local');
-  assert.equal(manifest.port.path,'vendor/upstream/0.15.32/pstack/.cursor-plugin/plugin.json');
+  assert.equal(manifest.port.path,'vendor/upstream/0.15.36/pstack/.cursor-plugin/plugin.json');
   assert.deepEqual(inventory.entries.find(e=>e.source.path === 'skills/make-bot-ui/SKILL.md').port,{kind:'unsupported',reason:'cursor-only'});
   for(const entry of inventory.entries.filter(e=>e.port.kind === 'local')) assert.ok(existsSync(join(root,entry.port.path)),entry.source.path);
-  assert.deepEqual(inventory.dispositionSummary,{local:143,sourceOnly:44,unsupported:13,pending:0});
+  assert.deepEqual(inventory.dispositionSummary,{local:519,sourceOnly:41,unsupported:13,pending:0});
   const reviewed = readJSON(join(root,dispositionsPath));
-  assert.equal(Object.keys(reviewed.byPath).length,117);
+  assert.equal(Object.keys(reviewed.byPath).length,490);
   assert.deepEqual(Object.keys(reviewed.byPath).sort(),inventory.entries
     .filter(e=>!['skill','playbook','agent','manifest'].includes(e.source.category) || ['skills/statechart/SKILL.md','.cursor-plugin/plugin.json'].includes(e.source.path))
     .map(e=>e.source.path).sort());

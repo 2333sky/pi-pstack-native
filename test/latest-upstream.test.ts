@@ -1,20 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {loadSkillsFromDir} from '@earendil-works/pi-coding-agent';
 import {evaluateRound, type Round} from '../src/compatibility/adapter.ts';
 // @ts-ignore shared ESM tooling
 import {generatedResources, renderCore} from '../scripts/semantics/generate.mjs';
 const read=(path:string)=>JSON.parse(readFileSync(path,'utf8'));
-test('latest source: every supported 0.15.32 Skill and playbook retains its pinned body and loads on Pi 1.4',()=>{
+test('latest source: every supported 0.15.36 Skill and playbook retains its pinned body and loads on Pi 1.4',()=>{
  const upstream=read('UPSTREAM.json'),manifest=read('SEMANTICS.json'),parity=read('PARITY.json');
- assert.equal(upstream.version,'0.15.32');assert.equal(upstream.commit,'99b609a72323b70204eab407c622f436e858e112');
+ assert.equal(upstream.version,'0.15.36');assert.equal(upstream.commit,'c742dd61706fbacc1b95f1a20b7b988cf096ce6c');
  assert.equal(manifest.snapshot.commit,upstream.commit);
  assert.equal(read('package-lock.json').packages['node_modules/@earendil-works/pi-coding-agent'].version,'1.4.0');
  assert.equal(Object.keys(parity.skills).length,58);assert.equal(parity.skills['make-bot-ui'],'CURSOR_ONLY');assert.equal(parity.skills.statechart,'ADAPTED');
  const loaded=loadSkillsFromDir({dir:process.cwd()+'/skills',source:'path'});assert.deepEqual(loaded.diagnostics,[]);assert.ok(loaded.skills.some(s=>s.name==='statechart'));
  const resources=generatedResources(process.cwd());assert.equal(resources.length,80);
  for(const resource of resources){const body=readFileSync(`${manifest.snapshot.root}/pstack/skills/${resource}`,'utf8').replace(/^---\n[\s\S]*?\n---\n/,'');assert.ok(renderCore(process.cwd(),resource).includes(body),resource);}
+ const target=read(parity.coverage.targetInventory);
+ for(const entry of target.blobs.filter((v:any)=>v.path.startsWith('skills/statechart/scripts/'))) {
+   const bytes=readFileSync(entry.path);const hash=createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
+   assert.equal(hash,entry.blob,entry.path);
+ }
 });
 function full():Round {
  const head='a'.repeat(40),base='b'.repeat(40),lanes=['gates','live','diff-1','diff-2','trunk-regression'];

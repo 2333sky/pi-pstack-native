@@ -19,7 +19,7 @@ test('the pinned snapshot yields one record per registry name', () => {
   assert.equal(document.records.filter(record => record.kind === 'skill').length, 58);
   assert.equal(document.records.filter(record => record.kind === 'playbook').length, 23);
   assert.deepEqual(document.records.map(record => record.name).sort(), [...Object.keys(parity.skills), ...Object.keys(parity.playbooks)].sort());
-  assert.deepEqual(document.target, { commit: '99b609a72323b70204eab407c622f436e858e112', version: '0.15.32', snapshotDigest: '9b8d702bc57e10594e7cbf739bb61feb286bca8b166756e16080f9e420afdac1' });
+  assert.deepEqual(document.target, { commit: 'c742dd61706fbacc1b95f1a20b7b988cf096ce6c', version: '0.15.36', snapshotDigest: '44d926c3b018434eb9ae6ab24354bda5fd158a7eda1565401fe75de4acddce9f' });
 });
 
 test('the committed record file matches a fresh build byte for byte', () => {
@@ -102,7 +102,7 @@ test('a registry name without a snapshot blob fails the build loudly', () => {
   const box = mkdtempSync(join(tmpdir(), 'registry-records-'));
   try {
     cpSync(join(root, 'PARITY.json'), join(box, 'PARITY.json'));
-    for (const path of ['vendor', 'skills', 'scripts', 'docs/upstream-target-0.15.32.json', 'docs/upstream-dispositions-0.15.32.json', 'LICENSE']) {
+    for (const path of ['vendor', 'skills', 'scripts', 'docs/upstream-target-0.15.36.json', 'docs/upstream-dispositions-0.15.36.json', 'LICENSE']) {
       mkdirSync(dirname(join(box, path)), { recursive: true });
       cpSync(join(root, path), join(box, path), { recursive: true });
     }

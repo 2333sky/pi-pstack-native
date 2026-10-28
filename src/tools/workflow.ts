@@ -6,6 +6,7 @@ import { planArtifacts } from "../workflow/artifacts.ts";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import type { WorkflowEngine } from "../workflow/engine.ts";
 import { chainNodes } from "../workflow/graph.ts";
+import { loadModels } from "../runtime/config.ts";
 import { assertSessionOwner } from "../runtime/ownership.ts";
 import { array, enums, number, object, string } from "./schema.ts";
 
@@ -19,6 +20,7 @@ const NODE = object({
   task: string("Task for this node."),
   dependsOn: array(string(), "Keys that must complete first."),
   model: string("Optional model selector."),
+  modelRole: string("Optional named model role within the playbook."),
   isolation: enums(["shared", "readonly", "worktree"]),
 }, ["key", "task"]);
 const PARAMETERS = object({
@@ -30,7 +32,9 @@ const PARAMETERS = object({
   id: string("Workflow id."),
   key: string("Call key for retry."),
   name: string("Human-readable workflow name."),
-  mode: enums(["graph", "parallel", "chain", "swarm", "arena", "orchestrate", "review"], "Workflow mode."),
+  playbook: string("Optional task or playbook name for configured role-model overrides, such as feature or bug-fix."),
+  skill: string("Optional originating pstack skill."),
+  mode: enums(["graph", "parallel", "chain", "swarm", "arena", "architect", "interrogate", "orchestrate", "review"], "Workflow mode."),
   nodes: array(NODE, "Workflow nodes."),
   maxConcurrency: number("Shared concurrency limit.", { minimum: 1, maximum: 16 }),
 }) as any;
@@ -46,7 +50,7 @@ export function registerWorkflowTool(pi: ExtensionAPI, workflows: WorkflowEngine
   pi.registerTool({
     name: "pstack_workflow",
     label: "Pstack Workflow",
-    description: "Run durable Pi-native dependency graphs. Nodes that completed are not rerun after recovery. Use profiles such as worker, verifier, reviewer, architect, synthesizer, and integrator. Independent parallel writers are isolated; when several writer artifacts form one deliverable, add an integrator node depending on them, then verify the integrated target checkout.",
+    description: "Run durable Pi-native dependency graphs. Pass playbook and optional node modelRole for task-specific routing. Arena, architect and interrogate load configured or suggested panels. With no eligible cross-judge, arena/architect return candidates for the coordinator to compare, integrate and verify. Interrogate uses isolated adversaries and separate repro sessions; inspect actual evidence. Swarm races support first-pass and rank-all selection. Each template needs a strict brief; arena/architect also need a rubric. Plan first to inspect models, nodes and fallback notes.",
     promptSnippet: "Run durable pstack multi-agent workflows",
     parameters: PARAMETERS,
     executionMode: "sequential",
@@ -58,17 +62,26 @@ export function registerWorkflowTool(pi: ExtensionAPI, workflows: WorkflowEngine
         case "run":
         case "start": {
           let plan: ReturnType<typeof buildTemplate> | undefined;
-          if (params.template) {plan=buildTemplate(params.template);params.nodes=plan.nodes;params.mode=params.template.kind.startsWith("autopilot")?"graph":params.template.kind;params.budget=params.budget ?? plan.budget;}
-          else if (["arena","swarm","review"].includes(params.mode)) throw new Error("SPECIALIZED_MODE_REQUIRES_TEMPLATE");
+          if (params.template) {
+            plan=buildTemplate(params.template,ctx);params.nodes=plan.nodes;
+            params.mode=params.template.kind.startsWith("autopilot")?"graph":params.template.kind === "interrogate"?"review":params.template.kind === "architect"?"arena":params.template.kind;
+            params.budget=params.budget ?? plan.budget;
+          }
+          else if (["arena","architect","interrogate","swarm","review"].includes(params.mode)) throw new Error("SPECIALIZED_MODE_REQUIRES_TEMPLATE");
           if (!Array.isArray(params.nodes) || !params.nodes.length) throw new Error(`${params.action} requires nodes`);
-          const nodes=normalizedNodes(params.mode,params.nodes);
+          const overrides = loadModels().workflows?.[params.playbook ?? params.mode ?? "graph"];
+          const nodes=normalizedNodes(params.mode,params.nodes).map(node => ({ ...node, model: node.model ?? (node.modelRole ? overrides?.[node.modelRole] : undefined) ?? overrides?.[node.profile ?? "worker"] }));
           validateGraph(nodes);planArtifacts(nodes);
           for(const n of nodes) {if(params.contractLevel==="strict" && !n.brief)throw new Error("BRIEF_INCOMPLETE");if(n.brief)validateBrief(n.brief);}
           if(params.action==="plan" || params.dryRun) return reply({nodes,edges:dependencyEdges(nodes),plan,budget:params.budget ?? null,dryRun:true});
           const record = workflows.create({
             name: params.name,
             deliveryContract: plan?.deliveryContract,
+            completionPolicy: plan?.completionPolicy,
+            modelNotes: plan?.notes,
             type: params.mode || "graph",
+            playbook: params.playbook,
+            skill: params.skill,
             nodes, contractLevel: params.contractLevel, budget:params.budget,
             maxConcurrency: params.maxConcurrency,
             parentSessionId: ctx.sessionManager.getSessionId(),

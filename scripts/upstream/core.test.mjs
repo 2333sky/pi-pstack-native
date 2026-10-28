@@ -67,7 +67,7 @@ test('AC-11 dynamic parity preserves pending, metadata, count, unsupported and f
   for(const mutate of [p=>p.upstreamCommit='0'.repeat(40),p=>p.coverage.topLevelSkills++,p=>p.skills.architect='PENDING_PORT',p=>p.coverage.fileLevelAudit='claimed',p=>p.cursorOnly=[],p=>p.coverage.pendingTargetSkills=['statechart'],p=>{delete p.skills.statechart;},p=>p.skills.invented='ADAPTED',p=>p.coverage.targetSkills--,p=>{delete p.coverage.targetInventory;}]) {
     const p=structuredClone(original);mutate(p);writeFileSync(join(dir,'PARITY.json'),JSON.stringify(p));assert.throws(()=>checkParity(dir));
   }
-  rmSync(join(dir,'docs/upstream-target-0.15.32.json'));
+  rmSync(join(dir,'docs/upstream-target-0.15.36.json'));
   writeFileSync(join(dir,'PARITY.json'),JSON.stringify(original));
   assert.throws(()=>checkParity(dir),'a missing target snapshot must fail the parity check');
 });

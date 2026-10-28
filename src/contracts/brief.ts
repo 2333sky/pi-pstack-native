@@ -85,8 +85,11 @@ export function parseReport(text: string): TaskReport {
 export function briefPrompt(brief: TaskBrief): string {
   const extra = {
     evaluation: 'Include evaluation: [{"criterion": "...", "score": 0, "evidence": ["..."], "weaknesses": [], "selectedParts": []}] for every required criterion; scores must be 0 to 10 and evidence must be nonempty.',
+    'cross-evaluation': 'Include crossEvaluation: [{"candidate":"candidate-1", "criterion":"...", "score":0, "evidence":["file:line"], "weaknesses":[], "selectedParts":[]}] for every candidate and every required criterion, with scores 0 to 10 and nonempty evidence. Include selection: {"candidates":["candidate-1"], "selectedParts":[]} selecting exactly one base.',
     selection: 'Include selection: {"candidates": ["..."], "selectedParts": []}, naming candidates from the brief.',
+    ranking: 'Include ranking: [{"candidate":"...", "rank":1, "reason":"..."}] for every candidate exactly once, with unique consecutive ranks starting at 1.',
     review: 'Include findings: [{"severity": "low", "location": "...", "description": "...", "evidence": "..."}]; severity is critical, high, medium, or low. Use [] when there are no findings.',
+    'repro-review': 'Include findings: [{"severity":"high", "location":"...", "description":"...", "evidence":"...", "reproduction":{"command":["executable","arg"], "observed":"actual output", "expected":"intent requires this output"}}]. Include only findings proven by a run. Use [] when none survive.',
     coverage: 'Include coverage: {"completed": ["..."], "unresolved": []}, listing completed required slices.',
   };
   return `\n\nAuthoritative Task Brief (${brief.id} revision ${brief.revision}, orders ${hash(brief.standingOrders)}):\n${JSON.stringify(brief, null, 2)}\nReturn one fenced JSON task report with all fields: {"status":"completed", "artifactRefs":[], "base":"<starting full git commit SHA>", "head":"<current full git commit SHA>", "commandsRun":[], "evidenceRefs":[], "deviations":[], "unresolved":[], "nextActions":[]}. status must be exactly one of completed, failed, or blocked (not a synonym). All six array fields are required, even when empty; commandsRun entries are arrays of command arguments. Use full commit SHAs from git rev-parse (40 hex characters for SHA-1 or 64 for SHA-256), not abbreviations or invented values. For each unresolved item or deviation, use {"severity":"advisory","description":"..."} or {"severity":"blocking","description":"..."}; use blocking when it affects acceptance or its impact is uncertain, and advisory only for non-blocking information supported by evidence. Legacy plain strings are blocking. ${brief.reportRequirements ? extra[brief.reportRequirements.kind] : ''} Do not claim verification from narrative alone.`;
@@ -100,8 +103,42 @@ export function validateBudget(budget?: import('./types.ts').Budget): void {
 export function reportSatisfies(brief: TaskBrief, report: TaskReport): boolean {
   const req=brief.reportRequirements;if(!req)return true;
   if(req.kind==='evaluation')return Boolean(report.evaluation && req.criteria?.every(c=>report.evaluation!.some(e=>e.criterion===c && Number.isFinite(e.score) && e.score>=0 && e.score<=10 && e.evidence?.length && Array.isArray(e.weaknesses) && Array.isArray(e.selectedParts))));
+  if(req.kind==='cross-evaluation') {
+    if (!req.candidates?.length || !req.criteria?.length || !Array.isArray(report.crossEvaluation) ||
+        !Array.isArray(report.selection?.candidates) || report.selection.candidates.length !== 1 ||
+        !req.candidates.includes(report.selection.candidates[0]!) || !Array.isArray(report.selection.selectedParts)) return false;
+    const pairs = new Set<string>();
+    for (const entry of report.crossEvaluation) {
+      if (!entry || !req.candidates.includes(entry.candidate) || !req.criteria.includes(entry.criterion) ||
+          !Number.isFinite(entry.score) || entry.score < 0 || entry.score > 10 ||
+          !Array.isArray(entry.evidence) || !entry.evidence.some(value => typeof value === 'string' && value.trim()) ||
+          !Array.isArray(entry.weaknesses) || !Array.isArray(entry.selectedParts)) return false;
+      const pair = JSON.stringify([entry.candidate, entry.criterion]);
+      if (pairs.has(pair)) return false;
+      pairs.add(pair);
+    }
+    return req.candidates.every(candidate => req.criteria!.every(criterion => pairs.has(JSON.stringify([candidate, criterion]))));
+  }
   if(req.kind==='selection')return Boolean(report.selection?.candidates.length && report.selection.candidates.every(c=>req.candidates?.includes(c)) && Array.isArray(report.selection.selectedParts));
+  if(req.kind==='ranking') {
+    if (!req.candidates?.length || !Array.isArray(report.ranking) || report.ranking.length !== req.candidates.length) return false;
+    const candidates = new Set<string>(), ranks = new Set<number>();
+    for (const item of report.ranking) {
+      if (!item || !req.candidates.includes(item.candidate) || candidates.has(item.candidate) || !Number.isInteger(item.rank) || item.rank < 1 || item.rank > req.candidates.length || ranks.has(item.rank) || typeof item.reason !== 'string' || !item.reason.trim()) return false;
+      candidates.add(item.candidate); ranks.add(item.rank);
+    }
+    return candidates.size === req.candidates.length && ranks.size === req.candidates.length;
+  }
   if(req.kind==='review')return Array.isArray(report.findings) && report.findings.every(f=>['critical','high','medium','low'].includes(f.severity) && Boolean(f.location && f.description && f.evidence));
+  if(req.kind==='repro-review')return Array.isArray(report.findings) && report.findings.every(f=>['critical','high','medium','low'].includes(f.severity) && Boolean(f.location && f.description && f.evidence) && Array.isArray(f.reproduction?.command) && f.reproduction.command.length > 0 && f.reproduction.command.every(x=>typeof x==='string' && x.trim().length>0) && typeof f.reproduction.observed==='string' && f.reproduction.observed.trim().length>0 && typeof f.reproduction.expected==='string' && f.reproduction.expected.trim().length>0);
   if(req.kind==='coverage')return Boolean(report.coverage && !report.coverage.unresolved.length && req.slices?.every(c=>report.coverage!.completed.includes(c)));
   return false;
+}
+
+/** Synthesis may paraphrase a finding, but its reproduction must appear in a verifier report. */
+export function findingsBackedByVerifiers(report: TaskReport, verifiers: TaskReport[]): boolean {
+  if (!Array.isArray(report.findings)) return false;
+  const key = (finding: NonNullable<TaskReport['findings']>[number]) => finding.reproduction && JSON.stringify([finding.reproduction.command, finding.reproduction.observed, finding.reproduction.expected]);
+  const confirmed = new Set(verifiers.flatMap(value => value.findings ?? []).map(key).filter(Boolean));
+  return report.findings.every(finding => Boolean(key(finding) && confirmed.has(key(finding))));
 }

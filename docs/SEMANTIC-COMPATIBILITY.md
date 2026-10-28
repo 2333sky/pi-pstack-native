@@ -1,6 +1,6 @@
 # Core semantic compatibility
 
-Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.32 at `99b609a72323b70204eab407c622f436e858e112`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and a commit-bound authenticated model receipt remain separate pending records. A user reported Windows real-model runs, including an independent rerun at commit `4d75ea0b`; see [the test record](WINDOWS-MODEL-TEST.zh-CN.md).
+Issue #16 separates behavior source, platform adaptation and exercised evidence. The active source is pstack 0.15.36 at `c742dd61706fbacc1b95f1a20b7b988cf096ce6c`, on Pi SDK 1.4.0. The source pin and availability inventory are current; maintainer semantic approval and a commit-bound authenticated model receipt remain separate pending records. A user reported Windows real-model runs, including an independent rerun at commit `4d75ea0b`; see [the test record](WINDOWS-MODEL-TEST.zh-CN.md).
 
 ## Implementation and acceptance status
 
@@ -15,7 +15,7 @@ Issue #16 separates behavior source, platform adaptation and exercised evidence.
 | Limited real Pi + real-model probe | `not-run` | No passing real-model receipt is recorded |
 | Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
 
-The latest-source upgrade retains the evidence tiers below and adds [statechart toolchain validation](STATECHART.md). The [upgrade audit](upstream-upgrade-0.15.32.md) records changed source files and mapping decisions. The merged PR/CI links above document the earlier foundation, not a test of every later source change.
+The latest-source upgrade retains the evidence tiers below and adds [statechart toolchain validation](STATECHART.md). The [upgrade audit](upstream-upgrade-0.15.36.md) records changed source files and mapping decisions. The merged PR/CI links above document the earlier foundation, not a test of every later source change.
 
 The managed environment check on 2026-10-26 found zero configured authorized models through the real Pi SDK. The SDK itself is installed and usable. This is a missing provider-authorization prerequisite, rather than a requirement to run the test on a personal computer. Environment configuration may change; check the SDK's available models again before a new run.
 
@@ -23,7 +23,7 @@ A probe of an unavailable model returned `blocked` with `inference: false`. That
 
 ## Source and adapter
 
-`vendor/upstream/0.15.32/pstack/` contains 141 pinned source artifacts: Skill/playbook/reference Markdown, the complete statechart toolchain, the manifest and upstream MIT license. Every file is checked by its original Git blob ID and byte length. The source provenance report additionally verifies all 200 upstream files. Images, other plugins, Cursor runtime scripts, cloud infrastructure and private tools are outside the executable Pi port. The earlier 0.15.17 snapshot remains historical evidence.
+`vendor/upstream/0.15.36/pstack/` contains 141 pinned source artifacts: Skill/playbook/reference Markdown, the statechart runtime, the manifest and upstream MIT license. The statechart test corpus is available in the installed Skill tree. Every vendored file is checked against its original Git blob ID and length; the source provenance report additionally verifies all 573 upstream files. Images, other plugins, Cursor runtime scripts, cloud infrastructure and private tools are outside the executable Pi port. The earlier 0.15.17 snapshot remains historical evidence.
 
 The five core Skills (`poteto-mode`, `architect`, `arena`, `swarm`, `interrogate`) and six core playbooks (`bug-fix`, `feature`, `autopilot-full`, `autopilot-stack`, `babysit`, `shipping`) retain critical-rule mappings. All 57 supported Skills and all 23 playbooks are generated entrypoints whose upstream body is retained verbatim. The separate [Pi adapter](PI-SEMANTIC-ADAPTER.md) explains tool substitutions, model selection, paths, worktrees, loop limitations, read-only verification, template choreography differences, authority boundaries and unsupported operations.
 

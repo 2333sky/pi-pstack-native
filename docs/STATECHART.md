@@ -1,40 +1,13 @@
 # Statechart on Pi
 
-The `statechart` Skill from pstack 0.15.32 is registered. Its original Skill body and all 26 supporting script/fixture files are pinned to `99b609a72323b70204eab407c622f436e858e112`. The executable scripts live at `skills/statechart/scripts/`; the generated Skill retains the original modeling and evidence rules plus the Pi adapter.
+The active Skill and TypeScript statechart source are pinned to pstack 0.15.36 at `c742dd61706fbacc1b95f1a20b7b988cf096ce6c`. The upstream runtime and test corpus are installed under `skills/statechart/scripts/`. The build compiles the 0.15.36 runtime to `dist/statechart/`, since Node does not strip TypeScript inside `node_modules`; the older 0.15.32 `.mjs` CLI is retained for compatibility.
 
-This supersedes the earlier macOS assessment's pending-port decision. That assessment remains a historical environment report, not the result of this Linux validation.
-
-## Tools and commands
+For the active version, provide a TLA+ specification and configuration:
 
 ```sh
-node skills/statechart/scripts/statechart.mjs --help
+node dist/statechart/statechart.js SPEC.tla --config SPEC.cfg --out OUTPUT
 ```
 
-The CLI supports `from-chart`, `from-spec`, comparison and PNG rendering. Run work in a scratch directory outside the source checkout. Inputs and the output folder are real artifacts; inspect the generated summary, chart and stories before claiming a model or code property holds.
+The output includes `report.md` and, where applicable, `chart.mmd`. Java 11 or later and TLC are external prerequisites. Set `TLA2TOOLS` to a local `tla2tools.jar` and optionally `JAVA` to the Java executable. Without `TLA2TOOLS`, upstream attempts installation through `mise` and the network. Missing prerequisites are errors, not evidence of a successful run. See the Skill's `references/render.md` for optional rendering.
 
-The original toolchain supports either existing tools selected with `TLA2TOOLS` and optional `JAVA`, or its mise-based installer. This port does not replace TLC with a mock. The validated external tool set is:
-
-| Component | Version or selection |
-|---|---|
-| Java | OpenJDK 21; upstream accepts Java 11 or later |
-| TLC | Immutable release 1.7.4 |
-| TLC SHA-256 | `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88` |
-| Renderer | `pele@1.8.0`, `@resvg/resvg-js@2.6.2` |
-
-To use an existing installation, set `TLA2TOOLS` to the absolute JAR path and `JAVA` to the Java executable if it is not on PATH. `XDG_CACHE_HOME` selects the renderer cache. First-time PNG rendering installs the pinned renderer packages there and needs network access. Java/TLC and renderer dependencies are not runtime dependencies of the Pi extension itself. Missing tools cause an explicit command error; help/parser checks do not establish that TLC ran.
-
-## Verification
-
-```sh
-npm run test:statechart
-```
-
-The native runner resolves Java to an absolute executable and normalizes an explicitly supplied JAR path before invoking the unchanged upstream suite. This matters because an upstream async fixture forwards JAVA into a scratch working directory, where a bare `java` fails the upstream file-existence check. Each test has a two-minute timeout, so an early child exit cannot leave a fixture polling forever.
-
-With Java 21, the checksummed TLC 1.7.4 and an isolated renderer cache on Linux/Node 24.19.0, the unchanged upstream suite reported **150 tests: 149 passed, zero failed, one skipped**. It exercised real TLC state graphs, spec/chart conversion, bug/fix comparisons, PNG rendering, filesystem recovery and concurrent runs.
-
-The skipped test is `statechart.mjs finds TLC with the real mise when an untrusted mise.toml is next to the spec and above TMPDIR`: it requires TLC resolved by mise, whereas this run explicitly selected the checked JAR through `TLA2TOOLS`. The explicit-JAR path and the simulated installer/error cases were exercised. This is not a claim to have tested real mise provisioning or every operating system.
-
-CI initially exposed that bare-Java fixture setup problem and hit its job timeout; the native preflight fixes the setup without modifying or skipping an upstream assertion. CI includes a separate Node 24 / Java 21 statechart job that fetches TLC 1.7.4, verifies the same checksum and runs the upstream suite. Default offline tests also check CLI availability and composite-state transition behavior without fetching Java or renderer packages.
-
-These results establish the toolchain's behavior for its tested fixtures. They do not prove an agent-generated model is faithful to arbitrary application code. The Skill still requires tying model actions to real code, replaying reported bugs on the real surface and reporting what the model leaves out. Real-model orchestration remains a separate evidence tier.
+`npm run test:statechart` runs the upstream TypeScript suite, including the pinned corpus. Some tests require Java, TLC and a working process-inspection environment. Tests that report a skip are not live-TLC evidence. CI runs a real-TLC smoke in addition to deterministic checks; consult the actual CI run for its result. Neither a successful toolchain test nor a generated model proves that an arbitrary application's code matches the model.

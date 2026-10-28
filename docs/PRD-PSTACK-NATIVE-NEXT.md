@@ -172,6 +172,8 @@ Benny 依赖 Cursor 的自动化事件来源。Pi 没有对应的事件源，本
 
 2026-10-27 新增 `docs/registry-records-0.15.32.json`。`npm run registry:records` 生成它，`npm run check:records` 检查它。`PARITY.json` 仍由人维护，生成记录单独成文件，`coverage.records` 指向该文件。
 
+PR #41 将当前基准更新到 0.15.36；上述 0.15.32 文件作为历史记录保留，生成与校验命令现在使用 `docs/registry-records-0.15.36.json`，并以该版本的清单和 blob 校验记录。
+
 一条记录对应一个 Skill 或 Playbook，共 81 条，58 个 Skill，23 个 Playbook。五个字段如下。`source` 记上游路径和 blob。`port` 记本地路径、处理方式、规则版本和差异。`requirements`、`contracts`、`evidence` 各记一段。
 
 今天所有记录都是 `evidence: not_run`。`differences` 和 `requirements` 都是 `not_recorded`。这是有意的。文件已随包，行为没有运行过，工具和模型要求没有审阅过。已登记不等于已验证。

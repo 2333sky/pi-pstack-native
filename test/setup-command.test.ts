@@ -1,110 +1,90 @@
-import test from "node:test";
-import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import extension from "../src/extension.ts";
-import { loadModels, saveModels } from "../src/runtime/config.ts";
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import extension from '../src/extension.ts';
+import { loadModels, saveModels } from '../src/runtime/config.ts';
 
-async function runSetup(select: (title: string, options: string[]) => string | undefined, model: any = { provider: "example", id: "model — special", reasoning: true }, available: any[] = [model]) {
+const claude = { provider: 'anthropic', id: 'claude-opus-4', reasoning: true, thinkingLevelMap: { xhigh: 'high', max: 'high' } };
+const grok = { provider: 'xai', id: 'grok-4', reasoning: true, thinkingLevelMap: { xhigh: 'high', max: 'high' } };
+async function setup(choose: (title: string, options: string[]) => string | undefined, models: any[] = [claude, grok], parent: any = claude) {
   const commands = new Map<string, any>();
-  const pi = { registerCommand: (name: string, command: any) => commands.set(name, command), registerTool() {}, on() {} };
-  extension(pi as any);
-  const notifications: string[] = [];
-  const ctx = { hasUI: true, model, scopedModels: [], modelRegistry: { getAvailable: () => available, find: (provider: string, id: string) => available.find((m) => provider === m.provider && id === m.id) }, ui: { select, notify: (message: string) => notifications.push(message) } };
-  await commands.get("setup-pstack").handler("", ctx);
-  return notifications;
+  extension({ registerCommand: (name: string, value: any) => commands.set(name, value), registerTool() {}, on() {} } as any);
+  const notices: string[] = [], titles: string[] = [];
+  const ctx = { hasUI: true, model: parent, scopedModels: [], modelRegistry: { getAvailable: () => models, find: (provider: string, id: string) => models.find(m => m.provider === provider && m.id === id) }, ui: { select: (title: string, options: string[]) => { titles.push(title); return choose(title, options); }, notify: (message: string) => notices.push(message) } };
+  await commands.get('setup-pstack').handler('', ctx);
+  return { notices, titles };
 }
-
-test("setup describes each choice, saves exact values and preserves panels and workflows", async () => {
-  const old = process.env.PSTACK_NATIVE_HOME;
-  const home = mkdtempSync(join(tmpdir(), "pstack-setup-"));
+async function withHome(fn: () => Promise<void>) {
+  const old = process.env.PSTACK_NATIVE_HOME, home = mkdtempSync(join(tmpdir(), 'pstack-setup-'));
   process.env.PSTACK_NATIVE_HOME = home;
-  try {
-    saveModels({ version: 1, roles: { worker: "auto" }, thinkingLevel: "off", panels: { arena: ["example/model"] }, workflows: { feature: { worker: "example/model" } } });
-    const titles: string[] = [];
-    const notifications = await runSetup((title, options) => {
-      titles.push(title);
-      if (titles.length === 1) {
-        assert.equal(options.length, 8);
-        assert.ok(options.every((value) => value.includes(" — ")));
-        return options.find((value) => value.startsWith("high — "));
-      }
-      assert.equal(options.length, 3);
-      assert.match(options[0], /parent session's model/);
-      assert.match(options[1], /parent session's model/);
-      return titles.length === 2 ? options[2] : options[0];
+  try { await fn(); } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(home, { recursive: true, force: true }); }
+}
+const normal = (title: string, options: string[]) => title.startsWith('child reasoning') ? options[0] : title.startsWith('model fallback') ? options[0] : options.find(x => x === 'Save settings');
+
+test('setup presents available-model defaults and saves panels in three prompts', async () => withHome(async () => {
+  const { notices, titles } = await setup(normal);
+  assert.equal(titles.length, 3);
+  assert.match(titles[2], /arena=\[anthropic\/claude-opus-4, xai\/grok-4\]/);
+  const config = loadModels();
+  assert.equal(config.roles.worker, 'xai/grok-4');
+  assert.equal(config.roles.reviewer, 'anthropic/claude-opus-4');
+  assert.deepEqual(config.panels?.interrogate, ['anthropic/claude-opus-4', 'xai/grok-4']);
+  assert.equal(config.workflows?.reflect.tooling, 'xai/grok-4');
+  assert.match(notices.at(-1)!, /Saved/);
+}));
+
+test('setup permits editing one role, task model and panel while preserving unrelated config', async () => withHome(async () => {
+  saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: { worker: 'auto' }, workflows: { custom: { worker: 'anthropic/claude-opus-4' } }, panels: { extra: ['xai/grok-4'] } });
+  const actions = ['Edit a role', 'Edit a task model', 'Edit a panel', 'Save settings'];
+  await setup((title, options) => {
+    if (title.startsWith('child reasoning') || title.startsWith('model fallback')) return options[0];
+    if (title.startsWith('Review pstack settings')) return actions.shift();
+    if (title === 'Choose role to edit') return options.find(x => x.startsWith('worker —'));
+    if (title === 'Choose task model to edit') return options.find(x => x.startsWith('reflect tooling '));
+    if (title === 'Choose panel to edit') return options.find(x => x.startsWith('interrogate reviewers '));
+    if (title.includes(': seat 2;')) return options.find(x => x.startsWith('xai/grok-4 —'));
+    if (title.includes(': seat 3;')) return options[0];
+    if (title.includes(': seat 1;')) return options.find(x => x.startsWith('anthropic/claude-opus-4 —'));
+    return options.find(x => x.startsWith('xai/grok-4 —'));
+  });
+  const config = loadModels();
+  assert.equal(config.roles.worker, 'xai/grok-4');
+  assert.equal(config.workflows?.reflect.tooling, 'xai/grok-4');
+  assert.equal(config.workflows?.custom.worker, 'anthropic/claude-opus-4');
+  assert.deepEqual(config.panels?.interrogate, ['anthropic/claude-opus-4', 'xai/grok-4']);
+  assert.deepEqual(config.panels?.extra, ['xai/grok-4']);
+}));
+
+test('setup preserves existing mappings and reports repeated seats for one model', async () => withHome(async () => {
+  saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: { worker: 'auto' }, panels: { arena: ['auto', 'auto'] }, workflows: { feature: { worker: 'auto' } } });
+  const { notices } = await setup(normal, [claude]);
+  const config = loadModels();
+  assert.equal(config.roles.worker, 'auto');
+  assert.deepEqual(config.panels?.arena, ['auto', 'auto']);
+  assert.equal(config.workflows?.feature.worker, 'auto');
+  assert.match(notices.at(-1)!, /Repeated model seats/);
+}));
+
+test('cancelling setup during editing never writes any settings', async () => withHome(async () => {
+  saveModels({ version: 1, thinkingLevel: 'off', roles: { worker: 'auto' } });
+  const before = readFileSync(join(process.env.PSTACK_NATIVE_HOME!, 'models.json'), 'utf8');
+  for (let stop = 1; stop <= 5; stop++) {
+    let calls = 0;
+    const result = await setup((title, options) => {
+      if (++calls === stop) return undefined;
+      if (title.startsWith('Review pstack settings')) return 'Edit a role';
+      return options[0];
     });
-    assert.equal(titles.length, 10);
-    assert.match(titles[1], /worker — implementation/);
-    assert.match(titles[9], /comment-sicko — comment and workaround review/);
-    const saved = loadModels();
-    assert.equal(saved.thinkingLevel, "high");
-    assert.equal(saved.roles.worker, "example/model — special");
-    assert.equal(saved.roles.architect, "inherit-parent");
-    assert.deepEqual(saved.panels, { arena: ["example/model"] });
-    assert.deepEqual(saved.workflows, { feature: { worker: "example/model" } });
-    assert.match(notifications.at(-1)!, /Saved/);
-  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(home, { recursive: true, force: true }); }
-});
+    assert.match(result.notices.at(-1)!, /cancelled/);
+    assert.equal(readFileSync(join(process.env.PSTACK_NATIVE_HOME!, 'models.json'), 'utf8'), before);
+  }
+}));
 
-test("setup rejects an unsupported model and lets the user choose a compatible replacement", async () => {
-  const old = process.env.PSTACK_NATIVE_HOME;
-  const home = mkdtempSync(join(tmpdir(), "pstack-setup-"));
-  process.env.PSTACK_NATIVE_HOME = home;
-  try {
-    const basic = { provider: "example", id: "basic", reasoning: false };
-    const capable = { provider: "example", id: "reasoner", reasoning: true, thinkingLevelMap: { max: "max" } };
-    let calls = 0;
-    const notices = await runSetup((_title, choices) => {
-      calls++;
-      if (calls === 1) return choices.find((x) => x.startsWith("max — "));
-      if (calls === 2) return choices.find((x) => x.startsWith("example/basic — "));
-      return choices.find((x) => x.startsWith("example/reasoner — "));
-    }, basic, [basic, capable]);
-    assert.match(notices[0], /does not support max/);
-    assert.match(notices.at(-1)!, /Saved/);
-    assert.equal(loadModels().thinkingLevel, "max");
-    assert.equal(loadModels().roles.worker, "example/reasoner");
-  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(home, { recursive: true, force: true }); }
-});
-
-test("setup handles a missing parent model and can be cancelled without writing", async () => {
-  const old = process.env.PSTACK_NATIVE_HOME;
-  const home = mkdtempSync(join(tmpdir(), "pstack-setup-"));
-  process.env.PSTACK_NATIVE_HOME = home;
-  try {
-    let calls = 0;
-    const notices = await runSetup((_title, choices) => {
-      calls++;
-      if (calls === 1) return choices.find((x) => x.startsWith("off — "));
-      if (calls === 2) return choices[1];
-      return undefined;
-    }, null, []);
-    assert.match(notices[0], /No parent model available/);
-    assert.match(notices.at(-1)!, /cancelled/);
-    assert.equal(loadModels().thinkingLevel, "inherit-parent");
-  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(home, { recursive: true, force: true }); }
-});
-
-test("cancelling any setup prompt or returning an unknown label never writes config", async () => {
-  const old = process.env.PSTACK_NATIVE_HOME;
-  const home = mkdtempSync(join(tmpdir(), "pstack-setup-"));
-  process.env.PSTACK_NATIVE_HOME = home;
-  try {
-    saveModels({ version: 1, roles: { worker: "auto" }, thinkingLevel: "off", panels: { arena: ["a/b"] } });
-    const before = readFileSync(join(home, "models.json"), "utf8");
-    for (let stop = 1; stop <= 10; stop++) {
-      let count = 0;
-      const notices = await runSetup((_title, choices) => ++count === stop ? undefined : choices[0]);
-      assert.match(notices.at(-1)!, /cancelled/);
-      assert.equal(readFileSync(join(home, "models.json"), "utf8"), before);
-    }
-    for (const stop of [1, 2]) {
-      let count = 0;
-      const notices = await runSetup((_title, choices) => ++count === stop ? "unexpected label" : choices[0]);
-      assert.match(notices.at(-1)!, /Invalid/);
-      assert.equal(readFileSync(join(home, "models.json"), "utf8"), before);
-    }
-  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(home, { recursive: true, force: true }); }
-});
+test('setup refuses to save an unsupported reasoning level unless fallback is enabled', async () => withHome(async () => {
+  const basic = { provider: 'a', id: 'basic', reasoning: false };
+  const { notices } = await setup((title, options) => title.startsWith('child reasoning') ? options.find(x => x.startsWith('unlimited')) : title.startsWith('model fallback') ? options.find(x => x.startsWith('disabled')) : options[0], [basic], basic);
+  assert(notices.some(x => /does not support max/.test(x)));
+  assert.equal(loadModels().thinkingLevel, 'inherit-parent');
+}));

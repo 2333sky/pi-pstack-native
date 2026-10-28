@@ -6,7 +6,7 @@ pi-pstack-native 是将 [pstack](https://github.com/cursor/plugins/tree/main/pst
 
 本文提供中文使用说明；扩展的命令名、部分界面选项和错误信息目前仍为英文。
 
-项目由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.32；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
+项目由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.36；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
 
 ## 项目亮点
 
@@ -45,7 +45,9 @@ pi remove git:github.com/2333sky/pi-pstack-native
 /setup-pstack
 ```
 
-命令先设置子代理推理等级，再为每个角色选择模型。`inherit-parent` 和 `auto` 模型选项都使用父会话的模型；推理等级的 `inherit-parent` 使用父会话的推理等级。显式等级包括 `off`、`minimal`、`low`、`medium`、`high`、`xhigh` 和 `max`；模型支持情况各不相同。选择不兼容的模型时，设置界面会要求重新选择。任一步取消都不会写入配置。
+命令先展示推理预算、角色和任务模型，以及根据当前 Pi 可用模型建议的面板。可以直接保存，也可以只修改某个角色、任务或面板；已有自定义设置会保留，取消则不写入。一个面板席位对应一个独立子会话；多个席位使用相同模型不代表模型多样性。`inherit-parent` 和 `auto` 使用父会话模型。
+
+Arena 和 Architect 在有可用异家族模型时使用交叉裁判；否则返回候选，由协调者选择和整合。Interrogate 在隔离工作区执行对抗调查，并由独立会话复跑；协调者仍须核对实际命令证据。详见[模型配置与路由](docs/REFERENCE.md#model-setup-and-routing)。
 
 在 Git 项目中，可以用中文描述任务和验收要求：
 
@@ -65,7 +67,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 
 | 命令 | 用途 |
 | --- | --- |
-| `/setup-pstack` | 选择子代理角色模型和推理等级 |
+| `/setup-pstack` | 选择推理预算、角色模型、任务覆盖和多模型面板 |
 | `/poteto-mode <任务>` | 开启 Poteto Mode 并执行任务 |
 | `/poteto-mode off` | 关闭当前会话的 Poteto Mode |
 | `/pstack status`、`/pstack on`、`/pstack off` | 查看或切换 pstack Skill 的发现状态 |
@@ -82,7 +84,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 
 ## 子代理和工作流
 
-子代理是通过 Pi 的 `AgentSession` 创建的独立会话。扩展提供 `worker`、`architect`、`reviewer`、`scout`、`verifier`、`synthesizer`、`integrator`、`poteto-agent` 和 `comment-sicko` 九种内置角色。
+子代理是通过 Pi 的 `AgentSession` 创建的独立会话。扩展提供 `worker`、`architect`、`reviewer`、`adversary`、`repro-verifier`、`scout`、`verifier`、`synthesizer`、`integrator`、`poteto-agent` 和 `comment-sicko` 等内置角色。
 
 可写代理可执行和修改文件；reviewer、scout、verifier 等只读角色使用受限的读取工具。并行写入通常使用独立 worktree，多个写入结果由 integrator 合并后再验证。工作流默认最多同时运行 4 个节点，可在调用时设置为 1–16。
 

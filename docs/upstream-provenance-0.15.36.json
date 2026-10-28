@@ -1,0 +1,11 @@
+{
+  "repository": "cursor/plugins",
+  "version": "0.15.36",
+  "commit": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+  "verifiedAt": "2026-10-28",
+  "treeTruncated": false,
+  "manifestBlob": "1295f46878218d568a037344877f0b603a887696",
+  "verifiedPstackBlobs": 573,
+  "verification": "Every Git tree entry was independently hashed against its checked-out blob; the vendored executable and Markdown subset is enumerated in SEMANTICS.json.",
+  "previousBaseline": "99b609a72323b70204eab407c622f436e858e112"
+}
