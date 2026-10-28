@@ -1,0 +1,2161 @@
+{
+  "schemaVersion": 1,
+  "target": {
+    "commit": "99b609a72323b70204eab407c622f436e858e112",
+    "version": "0.15.32",
+    "snapshotDigest": "9b8d702bc57e10594e7cbf739bb61feb286bca8b166756e16080f9e420afdac1"
+  },
+  "records": [
+    {
+      "name": "architect",
+      "kind": "skill",
+      "source": {
+        "path": "skills/architect/SKILL.md",
+        "blob": "88e23ca105b89e67f4085d0e676c40d4b170a623"
+      },
+      "port": {
+        "path": "skills/architect/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "arena",
+      "kind": "skill",
+      "source": {
+        "path": "skills/arena/SKILL.md",
+        "blob": "b198b9e425c6b3e6ff01ca789b97ca5b4abb7ce2"
+      },
+      "port": {
+        "path": "skills/arena/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "automate-me",
+      "kind": "skill",
+      "source": {
+        "path": "skills/automate-me/SKILL.md",
+        "blob": "50971b894688b1e1923458996b89f2a9961feeb3"
+      },
+      "port": {
+        "path": "skills/automate-me/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "benchmark-checklist",
+      "kind": "skill",
+      "source": {
+        "path": "skills/benchmark-checklist/SKILL.md",
+        "blob": "e901d1fdbc9ffce53e94d6514be7d9a22e771a1a"
+      },
+      "port": {
+        "path": "skills/benchmark-checklist/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "blast-radius",
+      "kind": "skill",
+      "source": {
+        "path": "skills/blast-radius/SKILL.md",
+        "blob": "b296cce0d746260a53c16e3671cb05bacfe82daf"
+      },
+      "port": {
+        "path": "skills/blast-radius/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "bro",
+      "kind": "skill",
+      "source": {
+        "path": "skills/bro/SKILL.md",
+        "blob": "b1701b778639c08bfc306291d70170c525c66a68"
+      },
+      "port": {
+        "path": "skills/bro/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "correct",
+      "kind": "skill",
+      "source": {
+        "path": "skills/correct/SKILL.md",
+        "blob": "c45e06f48a0982ae19f92c6e83a8cd05988097a3"
+      },
+      "port": {
+        "path": "skills/correct/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "create-formal-verification-skill",
+      "kind": "skill",
+      "source": {
+        "path": "skills/create-formal-verification-skill/SKILL.md",
+        "blob": "37d73f9044b6bcc0132a0e703f70d13be5ded7c3"
+      },
+      "port": {
+        "path": "skills/create-formal-verification-skill/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "create-verification-skill",
+      "kind": "skill",
+      "source": {
+        "path": "skills/create-verification-skill/SKILL.md",
+        "blob": "140d033a001e8d27acd14b06004506c43053b199"
+      },
+      "port": {
+        "path": "skills/create-verification-skill/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "figure-it-out",
+      "kind": "skill",
+      "source": {
+        "path": "skills/figure-it-out/SKILL.md",
+        "blob": "0d04c2e69b75b22ff1a9a1d8ab339580a5fbbfed"
+      },
+      "port": {
+        "path": "skills/figure-it-out/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "how",
+      "kind": "skill",
+      "source": {
+        "path": "skills/how/SKILL.md",
+        "blob": "67edc340d4d8a9c7ab0b9e08c663e0e63b8d9125"
+      },
+      "port": {
+        "path": "skills/how/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "in-your-own-words",
+      "kind": "skill",
+      "source": {
+        "path": "skills/in-your-own-words/SKILL.md",
+        "blob": "4b2a476a9017863032c8dba9d12f0a2026943292"
+      },
+      "port": {
+        "path": "skills/in-your-own-words/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "interrogate",
+      "kind": "skill",
+      "source": {
+        "path": "skills/interrogate/SKILL.md",
+        "blob": "94946d22d8bf896bfcc2c54d363df5af3d17b4ca"
+      },
+      "port": {
+        "path": "skills/interrogate/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "ketchup",
+      "kind": "skill",
+      "source": {
+        "path": "skills/ketchup/SKILL.md",
+        "blob": "9eef27f92f8029137a7bfa7378305b075df9dc4f"
+      },
+      "port": {
+        "path": "skills/ketchup/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "ketchup-video",
+      "kind": "skill",
+      "source": {
+        "path": "skills/ketchup-video/SKILL.md",
+        "blob": "69aa72aba763ae1836f8440d88e03e2928eb3719"
+      },
+      "port": {
+        "path": "skills/ketchup-video/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "maintain-formal-verification-skill",
+      "kind": "skill",
+      "source": {
+        "path": "skills/maintain-formal-verification-skill/SKILL.md",
+        "blob": "5d2f7f2228a3b771ca5b03124fc265ddfc53c5fc"
+      },
+      "port": {
+        "path": "skills/maintain-formal-verification-skill/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "maintain-verification-skill",
+      "kind": "skill",
+      "source": {
+        "path": "skills/maintain-verification-skill/SKILL.md",
+        "blob": "a2680b91fead45a0b4963d8c367a854956bea59d"
+      },
+      "port": {
+        "path": "skills/maintain-verification-skill/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "make-bot-ui",
+      "kind": "skill",
+      "source": {
+        "path": "skills/make-bot-ui/SKILL.md",
+        "blob": "446342ca35a46af771271e0cd901354a61997589"
+      },
+      "port": {
+        "handling": "cursor-only",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "no-comments",
+      "kind": "skill",
+      "source": {
+        "path": "skills/no-comments/SKILL.md",
+        "blob": "a07ce9dfc657bdf1b2bdf3f7619225e7faac091b"
+      },
+      "port": {
+        "path": "skills/no-comments/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "poteto-help",
+      "kind": "skill",
+      "source": {
+        "path": "skills/poteto-help/SKILL.md",
+        "blob": "9d68a7a72da3a9712f77cc06d4a6bead90222b95"
+      },
+      "port": {
+        "path": "skills/poteto-help/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "poteto-mode",
+      "kind": "skill",
+      "source": {
+        "path": "skills/poteto-mode/SKILL.md",
+        "blob": "21993f546032ca37671d5f1caf39c9a82ab4fa9d"
+      },
+      "port": {
+        "path": "skills/poteto-mode/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-attack-the-premise",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-attack-the-premise/SKILL.md",
+        "blob": "e9a6d499606992edd9963b80f8f8f57feaccb221"
+      },
+      "port": {
+        "path": "skills/principle-attack-the-premise/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-boundary-discipline",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-boundary-discipline/SKILL.md",
+        "blob": "dfe9a6fb0e5acd6ae43a41437ee0951adfe839cb"
+      },
+      "port": {
+        "path": "skills/principle-boundary-discipline/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-build-the-lever",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-build-the-lever/SKILL.md",
+        "blob": "cbf003850489d95fea78e64198fd972c35b1aad3"
+      },
+      "port": {
+        "path": "skills/principle-build-the-lever/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-encode-lessons-in-structure",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-encode-lessons-in-structure/SKILL.md",
+        "blob": "4a96f77fe70e36cb030f9c5efa142f66877bf58a"
+      },
+      "port": {
+        "path": "skills/principle-encode-lessons-in-structure/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-exhaust-the-design-space",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-exhaust-the-design-space/SKILL.md",
+        "blob": "395a0839126bb231430a9c9da02ebab5422557d5"
+      },
+      "port": {
+        "path": "skills/principle-exhaust-the-design-space/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-experience-first",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-experience-first/SKILL.md",
+        "blob": "5ea51741302cf3af4cc0b90ec70815bd3208dbf2"
+      },
+      "port": {
+        "path": "skills/principle-experience-first/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-explain-the-number",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-explain-the-number/SKILL.md",
+        "blob": "1e180c14aefe49a3b2a515320398e08c3ebeb57d"
+      },
+      "port": {
+        "path": "skills/principle-explain-the-number/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-fix-root-causes",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-fix-root-causes/SKILL.md",
+        "blob": "14fc189fa1ec3fb1614b0a3c75557f92943d8f13"
+      },
+      "port": {
+        "path": "skills/principle-fix-root-causes/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-foundational-thinking",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-foundational-thinking/SKILL.md",
+        "blob": "19cc6c0eaa6fcbc2863fb73d1d25ca196c6a46e0"
+      },
+      "port": {
+        "path": "skills/principle-foundational-thinking/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-guard-the-context-window",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-guard-the-context-window/SKILL.md",
+        "blob": "0a1d3cfcf4539fe048887174000fecbf2fa40e81"
+      },
+      "port": {
+        "path": "skills/principle-guard-the-context-window/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-laziness-protocol",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-laziness-protocol/SKILL.md",
+        "blob": "016c3c7c8dfffd995c1a02135a62248e6625879b"
+      },
+      "port": {
+        "path": "skills/principle-laziness-protocol/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-make-operations-idempotent",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-make-operations-idempotent/SKILL.md",
+        "blob": "c93f323d694a4d310515ea27165a093d399bc55e"
+      },
+      "port": {
+        "path": "skills/principle-make-operations-idempotent/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-migrate-callers-then-delete-legacy-apis",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+        "blob": "57ddd7b27d06ba4ee9e2d3811880476a18b88df6"
+      },
+      "port": {
+        "path": "skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-minimize-reader-load",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-minimize-reader-load/SKILL.md",
+        "blob": "628999088c5d05c1c546b3a3ca89da553cd3f3b2"
+      },
+      "port": {
+        "path": "skills/principle-minimize-reader-load/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-model-the-domain",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-model-the-domain/SKILL.md",
+        "blob": "09b7c739955facf03f08f66e1e329745d2f8880e"
+      },
+      "port": {
+        "path": "skills/principle-model-the-domain/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-never-block-on-the-human",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-never-block-on-the-human/SKILL.md",
+        "blob": "4f59bdc69f79d536b30b0014a563ed3be05b8b62"
+      },
+      "port": {
+        "path": "skills/principle-never-block-on-the-human/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-outcome-oriented-execution",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-outcome-oriented-execution/SKILL.md",
+        "blob": "c49be0bc74783f0dee013101365ae09b2abb48a2"
+      },
+      "port": {
+        "path": "skills/principle-outcome-oriented-execution/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-prove-it-works",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-prove-it-works/SKILL.md",
+        "blob": "5dc14a3b06f9d579e5c17cd8a7242f432ddb3125"
+      },
+      "port": {
+        "path": "skills/principle-prove-it-works/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-redesign-from-first-principles",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-redesign-from-first-principles/SKILL.md",
+        "blob": "5ca5246cbb0fa08884ce17b0d22c117ae1ad67b8"
+      },
+      "port": {
+        "path": "skills/principle-redesign-from-first-principles/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-separate-before-serializing-shared-state",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-separate-before-serializing-shared-state/SKILL.md",
+        "blob": "ff93b4a2032c08e2232992a9a24f2891ee14e58f"
+      },
+      "port": {
+        "path": "skills/principle-separate-before-serializing-shared-state/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-sequence-verifiable-units",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-sequence-verifiable-units/SKILL.md",
+        "blob": "986371260ebccd9a5a6818c9561e88c1d270d0ee"
+      },
+      "port": {
+        "path": "skills/principle-sequence-verifiable-units/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-subtract-before-you-add",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-subtract-before-you-add/SKILL.md",
+        "blob": "b8740ba6f06922d8e7ef3b23f9fb16e0fc4a876f"
+      },
+      "port": {
+        "path": "skills/principle-subtract-before-you-add/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-test-behavior-not-implementation",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-test-behavior-not-implementation/SKILL.md",
+        "blob": "78c9389bfe707d6d56485ade32c59150958228f9"
+      },
+      "port": {
+        "path": "skills/principle-test-behavior-not-implementation/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "principle-type-system-discipline",
+      "kind": "skill",
+      "source": {
+        "path": "skills/principle-type-system-discipline/SKILL.md",
+        "blob": "9fa08b0b17d536ce751fffa90134be8fb03699c7"
+      },
+      "port": {
+        "path": "skills/principle-type-system-discipline/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "recall",
+      "kind": "skill",
+      "source": {
+        "path": "skills/recall/SKILL.md",
+        "blob": "cd8cc20790d90579e632626fe6db2b1fff593eea"
+      },
+      "port": {
+        "path": "skills/recall/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "reflect",
+      "kind": "skill",
+      "source": {
+        "path": "skills/reflect/SKILL.md",
+        "blob": "9bb153bd2121e49d73a7af7d55ef372079889e62"
+      },
+      "port": {
+        "path": "skills/reflect/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "setup-pstack",
+      "kind": "skill",
+      "source": {
+        "path": "skills/setup-pstack/SKILL.md",
+        "blob": "cb61b8d3ee5d2a1b8fa403d8b99ed8d2e18f77df"
+      },
+      "port": {
+        "path": "skills/setup-pstack/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "sharpen",
+      "kind": "skill",
+      "source": {
+        "path": "skills/sharpen/SKILL.md",
+        "blob": "5b4a7b104e709f8cded1726541be42431c334164"
+      },
+      "port": {
+        "path": "skills/sharpen/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "show-me-your-work",
+      "kind": "skill",
+      "source": {
+        "path": "skills/show-me-your-work/SKILL.md",
+        "blob": "ada1bba1e51356de0e0d4da1d13ba5a56ba9c7cb"
+      },
+      "port": {
+        "path": "skills/show-me-your-work/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "statechart",
+      "kind": "skill",
+      "source": {
+        "path": "skills/statechart/SKILL.md",
+        "blob": "66670ebd1856621ef5307bb73eed09e60133212b"
+      },
+      "port": {
+        "path": "skills/statechart/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "swarm",
+      "kind": "skill",
+      "source": {
+        "path": "skills/swarm/SKILL.md",
+        "blob": "9cd32247b4f381bb020cbbf0fc546ba71407d558"
+      },
+      "port": {
+        "path": "skills/swarm/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "tdd",
+      "kind": "skill",
+      "source": {
+        "path": "skills/tdd/SKILL.md",
+        "blob": "ca6f24c963001d9d518db2936dfe3d12f29b4e94"
+      },
+      "port": {
+        "path": "skills/tdd/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "teach",
+      "kind": "skill",
+      "source": {
+        "path": "skills/teach/SKILL.md",
+        "blob": "25369f3f554ed6b5826340ae3eee688fac0bda80"
+      },
+      "port": {
+        "path": "skills/teach/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "technical-writing",
+      "kind": "skill",
+      "source": {
+        "path": "skills/technical-writing/SKILL.md",
+        "blob": "3e6d26109376cd66439c87ed48b4033df8d78a3a"
+      },
+      "port": {
+        "path": "skills/technical-writing/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "typescript-best-practices",
+      "kind": "skill",
+      "source": {
+        "path": "skills/typescript-best-practices/SKILL.md",
+        "blob": "e1e5aa7c97ed39c425d60d933a96424a3f14539e"
+      },
+      "port": {
+        "path": "skills/typescript-best-practices/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "unslop",
+      "kind": "skill",
+      "source": {
+        "path": "skills/unslop/SKILL.md",
+        "blob": "97f5b6412148fa5b2a2fe478836fe8923ffa5cbb"
+      },
+      "port": {
+        "path": "skills/unslop/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "why",
+      "kind": "skill",
+      "source": {
+        "path": "skills/why/SKILL.md",
+        "blob": "b5fe93f8b78f58b06e0bf245a6b5b8faae4300e8"
+      },
+      "port": {
+        "path": "skills/why/SKILL.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": []
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "authoring-a-skill",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/authoring-a-skill.md",
+        "blob": "8c5a55a44f5e95bba92f652da0ac87e941c49538"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/authoring-a-skill.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "authoring-a-skill"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autonomous-run",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/autonomous-run.md",
+        "blob": "e6b88703cf327a76bcdd424429345ac0efeca67e"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/autonomous-run.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "autonomous-run"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autopilot-full",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/autopilot-full.md",
+        "blob": "068882379d9bdc2298052e7762d67ac795715baf"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/autopilot-full.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "autopilot-full"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "autopilot-stack",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/autopilot-stack.md",
+        "blob": "d7bdc289e045e8bc7da97b4ddfccc8d6c9ed0800"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/autopilot-stack.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "autopilot-stack"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "babysit",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/babysit.md",
+        "blob": "51549ab2da11e5905342bbb3aadb93685c8ac348"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/babysit.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "babysit"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "bug-fix",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/bug-fix.md",
+        "blob": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/bug-fix.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "bug-fix"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "eval",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/eval.md",
+        "blob": "768a894e275b1e9b198e83ceb6b46964e3f9d6db"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/eval.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "eval"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "feature",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/feature.md",
+        "blob": "eb1040cb2631f3eeacd8f9f6469d7e97277f24ef"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/feature.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "feature"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "hillclimb",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/hillclimb.md",
+        "blob": "e9cf267908a9737236b3a8a8a5a99fe9066f7554"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/hillclimb.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "hillclimb"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "investigation",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/investigation.md",
+        "blob": "cd119f04f23e0b7acb3f8cc5ba13ce4ab7aa6c7d"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/investigation.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "investigation"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "multi-phase-plan",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+        "blob": "27e99947bd20575e2ff503dbfba985a4f0fa298e"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "multi-phase-plan"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "opening-a-pr",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
+        "blob": "d729a7a06c5b67e406b081e1777114bc03b66f4a"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "opening-a-pr"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "orchestrate",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/orchestrate.md",
+        "blob": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/orchestrate.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "orchestrate"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "pause-safely",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/pause-safely.md",
+        "blob": "9d1c5f8303976fff40de099f7f28185909430c11"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/pause-safely.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "pause-safely"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "perf-issue",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/perf-issue.md",
+        "blob": "46dcc9963366992016dfb1d59ccaae977930f982"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/perf-issue.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "perf-issue"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "prototype",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/prototype.md",
+        "blob": "18bedc7e9249d180f9198d5b4b13e3817d41d281"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/prototype.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "prototype"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "refactoring",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/refactoring.md",
+        "blob": "c04b07eeb8b8fa651d080729363466ab73d2fe40"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/refactoring.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "refactoring"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "runtime-forensics",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/runtime-forensics.md",
+        "blob": "6bf64240d1a890df290b98c632ad374d20ca9fd4"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/runtime-forensics.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "runtime-forensics"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "session-pickup",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/session-pickup.md",
+        "blob": "876b1433828ccc7c874123cdf300240abb285dd9"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/session-pickup.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "session-pickup"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "shipping",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/shipping.md",
+        "blob": "0a0c3cfde8948e3aa8ee80c6f3f9ce7e3e64fcba"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/shipping.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "shipping"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "trace-forensics",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/trace-forensics.md",
+        "blob": "bf1b003786503623d91ca173fc97a6e54eee3acf"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/trace-forensics.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "trace-forensics"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "visual-parity",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/visual-parity.md",
+        "blob": "248830ec74a593fc22143a842026388f92f1b9f4"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/visual-parity.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "visual-parity"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    },
+    {
+      "name": "worktree-cleanup",
+      "kind": "playbook",
+      "source": {
+        "path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
+        "blob": "45e1af693cc40d0271249a0e98f15bfc815af615"
+      },
+      "port": {
+        "path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
+        "handling": "adapted",
+        "ruleVersion": 1,
+        "differences": {
+          "status": "not_recorded"
+        }
+      },
+      "requirements": {
+        "status": "not_recorded"
+      },
+      "contracts": {
+        "ids": [
+          "worktree-cleanup"
+        ]
+      },
+      "evidence": {
+        "status": "not_run",
+        "refs": []
+      }
+    }
+  ]
+}

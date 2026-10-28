@@ -107,6 +107,7 @@
     "topLevelSkills": 58,
     "potetoPlaybooks": 23,
     "countEvidence": "docs/upstream-sync-0.15.32.json",
+    "records": "docs/registry-records-0.15.32.json",
     "countsMean": "observed upstream names, not exercised behavior",
     "behavioralAudit": "not-claimed",
     "ketchupEvidence": "Pi skill loader and structural sections only; chat behavior not exercised (issue #6)",

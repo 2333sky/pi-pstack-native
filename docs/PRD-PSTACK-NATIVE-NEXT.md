@@ -168,6 +168,16 @@ Benny 依赖 Cursor 的自动化事件来源。Pi 没有对应的事件源，本
 
 文件去向只说明文件放在哪里，不说明其行为已验证。所有记录的 `contracts` 和 `evidence` 仍为 `not_run`。
 
+### 0.13 逐条登记协议
+
+2026-10-27 新增 `docs/registry-records-0.15.32.json`。`npm run registry:records` 生成它，`npm run check:records` 检查它。`PARITY.json` 仍由人维护，生成记录单独成文件，`coverage.records` 指向该文件。
+
+一条记录对应一个 Skill 或 Playbook，共 81 条，58 个 Skill，23 个 Playbook。五个字段如下。`source` 记上游路径和 blob。`port` 记本地路径、处理方式、规则版本和差异。`requirements`、`contracts`、`evidence` 各记一段。
+
+今天所有记录都是 `evidence: not_run`。`differences` 和 `requirements` 都是 `not_recorded`。这是有意的。文件已随包，行为没有运行过，工具和模型要求没有审阅过。已登记不等于已验证。
+
+校验器只认一条规则：声明不能超过证据。`passed` 要求工具要求已记录、合同 ID 非空、证据引用非空、差异非空。`not_run` 不许带引用。`CURSOR_ONLY` 只写处理方式，不写本地路径。
+
 ## 1. 原稿质量评审
 
 原稿适合作为方向说明。它还不能直接作为开发任务书。
