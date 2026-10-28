@@ -4,7 +4,7 @@ import type { TaskBrief, TaskReport, Fingerprint, Usage, Budget, GateStatus } fr
 export type WorkflowState = "created" | "running" | "blocked" | "paused" | "completed" | "failed" | "cancelling" | "cancelled";
 export type CallState = "pending" | "ready" | "running" | "waiting" | "completed" | "failed" | "cancelled" | "skipped";
 export type IsolationMode = "shared" | "worktree" | "readonly";
-export type AgentProfileName = "worker" | "reviewer" | "cross-judge" | "scout" | "architect" | "verifier" | "synthesizer" | "integrator" | "poteto-agent" | "comment-sicko";
+export type AgentProfileName = "worker" | "reviewer" | "adversary" | "repro-verifier" | "cross-judge" | "scout" | "architect" | "verifier" | "synthesizer" | "integrator" | "poteto-agent" | "comment-sicko";
 
 export interface DurableError {
   code: string;
@@ -52,6 +52,8 @@ export interface AgentRecord {
 }
 
 export interface WorkflowCall {
+  /** A failed candidate excluded before a comparison, never an accepted artifact. */
+  excludedFromSelection?: boolean;
   evidencePackets?: EvidencePacket[];
   brief?: TaskBrief;
   thinkingLevel?: ThinkingLevelName;
@@ -84,8 +86,10 @@ export interface WorkflowEdge {
 }
 
 export interface WorkflowRecord {
+  completionPolicy?: 'first-pass';
+  firstPassWinner?: string;
   modelNotes?: string[];
-  deliveryContract?: "local-dag" | "remote-stack-required";
+  deliveryContract?: "local-dag" | "candidate-only" | "remote-stack-required";
   schemaVersion?: 2;
   reviewFingerprint?: Fingerprint;
   budget?: Budget;
@@ -176,12 +180,15 @@ export interface WorkflowNodeSpec {
   task: string;
   dependsOn?: string[];
   model?: string;
+  /** Named task role, distinct from the tool-permission profile. */
+  modelRole?: string;
   isolation?: IsolationMode;
 }
 
 export interface WorkflowRunSpec {
+  completionPolicy?: 'first-pass';
   modelNotes?: string[];
-  deliveryContract?: "local-dag" | "remote-stack-required";
+  deliveryContract?: "local-dag" | "candidate-only" | "remote-stack-required";
   contractLevel?: "strict" | "minimal";
   budget?: Budget;
   name?: string;

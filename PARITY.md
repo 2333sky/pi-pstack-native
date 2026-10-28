@@ -1,10 +1,10 @@
-# pstack 0.15.32 source integration on Pi 1.4
+# pstack 0.15.36 source integration on Pi 1.4
 
-The active source is `cursor/plugins` commit `99b609a72323b70204eab407c622f436e858e112` (pstack 0.15.32). Pi SDK 1.4.0 is locked and the peer minimum is `^1.4.0`. [Provenance](docs/upstream-provenance-0.15.32.json) verifies all 200 upstream blobs; [source counts](docs/upstream-sync-0.15.32.json) record 58 Skills and 23 playbooks.
+The active source is `cursor/plugins` commit `c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (pstack 0.15.36). Pi SDK 1.4.0 is locked and the peer minimum is `^1.4.0`. [Provenance](docs/upstream-provenance-0.15.36.json) verifies all 573 upstream blobs; [source counts](docs/upstream-sync-0.15.36.json) record 58 Skills and 23 playbooks.
 
-All upstream names are registered. The 57 supported Skills and all 23 playbooks are generated from unchanged upstream bodies plus a separate Pi adapter. `make-bot-ui` remains unsupported. Statechart includes all 27 upstream files, its CLI and external-tool requirements; see [statechart evidence](docs/STATECHART.md). The file inventory distinguishes local source, vendored source, unsupported operations and remaining platform-only work; name coverage is not full file or behavioral parity.
+All upstream names are registered. The 57 supported Skills and all 23 playbooks are generated from unchanged upstream bodies plus a separate Pi adapter. `make-bot-ui` remains unsupported. Statechart includes the 0.15.36 TypeScript runtime and test corpus, its CLI and external-tool requirements; see [statechart evidence](docs/STATECHART.md). The file inventory distinguishes local source, vendored source, unsupported operations and remaining platform-only work; name coverage is not full file or behavioral parity.
 
-The 0.15.17 snapshot is historical provenance, not the active Skill source. The source upgrade does not grant maintainer semantic approval or fabricate authenticated model evidence. See [the upgrade audit](docs/upstream-upgrade-0.15.32.md) and [current evidence boundary](docs/SEMANTIC-COMPATIBILITY.md).
+The 0.15.17 snapshot is historical provenance, not the active Skill source. The source upgrade does not grant maintainer semantic approval or fabricate authenticated model evidence. See [the upgrade audit](docs/upstream-upgrade-0.15.36.md) and [current evidence boundary](docs/SEMANTIC-COMPATIBILITY.md).
 
 ## Native additions 0.6.0-preview.1
 
@@ -130,7 +130,7 @@ Upstream pstack is by Lauren Tan under MIT terms. This port is independent and i
 
 ## Historical 0.15.23 candidate (superseded)
 
-This archived candidate predates the active 0.15.32 source integration. The restatement Skill,
+This archived candidate predates the current 0.15.36 source integration. The restatement Skill,
 chat catch-up/verification/Poteto rules, safe bundled-resource access,
 external evidence snapshots, linear PR-stack CLI, all-page review-thread
 checks and explicit-base worktree audit are candidate implementations.
@@ -151,6 +151,6 @@ All supported entrypoints retain the latest pinned upstream body; the eleven cor
 
 `npm run check:semantics` fails on unreviewed local source, adapter, implementation or bound-test drift. `npm run check:semantics -- --from /path/to/cursor-plugins --commit <full-sha>` reports file/step diffs and blocks only unreviewed relevant upstream changes. Explicit per-file, exact-commit sign-off receipts may acknowledge a change without advancing the baseline. Inventory scans cannot advance semantic approval.
 
-See [the evidence tiers and real-model procedure](docs/SEMANTIC-COMPATIBILITY.md). The active source and inventory target are both 0.15.32. Maintainer semantic sign-off remains separate from that source pin.
+See [the evidence tiers and real-model procedure](docs/SEMANTIC-COMPATIBILITY.md). The active source and inventory target are both 0.15.36. Maintainer semantic sign-off remains separate from that source pin.
 
 [PR #17](https://github.com/2333sky/pi-pstack-native/pull/17) has merged the core implementation. [Its CI](https://github.com/2333sky/pi-pstack-native/actions/runs/40299080693) passed on Node 22.19 and 24, including semantic checks and offline/fake-provider Pi SDK tests. This does not change `SEMANTICS.json.evidence.realModel.status = "not-run"` or `review.status = "pending-maintainer-signoff"`. See [the acceptance checklist](docs/SEMANTIC-COMPATIBILITY.md#completing-issue-16) for the remaining evidence and review record. Neither merging this implementation nor completing its CI advances the reviewed upstream baseline.

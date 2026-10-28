@@ -7,11 +7,11 @@ export const CORE_RESOURCES = [
 ];
 export const CAPABILITIES = {
     'model-effort-and-speed': { status: 'adapted-with-deviation', mapping: 'Pi thinkingLevel presets with reported supported-level fallback', reason: 'Pi effort levels replace Cursor slug rewriting; fast/standard slug selection is not inferred.' },
-    'statechart-toolchain': { status: 'adapted-with-deviation', mapping: 'Bundled upstream statechart scripts; external Java/TLC and PNG renderer', reason: 'TLA2TOOLS/JAVA select existing tools; Java, TLC and renderer packages are external prerequisites, never mocked as completed.' },
+    'statechart-toolchain': { status: 'adapted-with-deviation', mapping: 'Pinned pstack 0.15.36 statechart source and corpus, compiled for installed Node packages; external Java/TLC', reason: 'Node cannot strip TypeScript inside node_modules. TLA2TOOLS/JAVA select existing tools; Java, TLC and optional rendering are external prerequisites.' },
     'skill-frontmatter': { status: 'equivalent', mapping: 'Pi kebab-case resource name; upstream body unchanged', reason: 'The latest upstream uses valid kebab-case identifiers; the wrapper preserves bodies and invocation flags.' },
     'verifier-command-execution': { status: 'adapted-with-deviation', mapping: 'native verification runner plus separate read-only reviewer', reason: 'Reviewers cannot execute shell; commands run in an authorized writable lane or deterministic runner.' },
     'arena-cross-judge': { status: 'adapted-with-deviation', mapping: 'single read-only cross-judge over verified, confined candidate worktrees', reason: 'Native artifact gates and confined tools replace Cursor Task workspaces; the generated upstream phases remain the coordinator contract.' },
-    'swarm-mixed-first-pass-template': { status: 'unsupported', mapping: 'Use an explicit DAG and selection policy instead', reason: 'Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all.' },
+    'swarm-mixed-first-pass-template': { status: 'unsupported', mapping: 'Use an explicit DAG for mixed swarm', reason: 'Race templates support first-pass and rank-all; mixed partition/race still requires an explicit DAG.' },
     'autopilot-template': { status: 'adapted-with-deviation', mapping: 'local preparation DAG plus coordinator owner lifecycle', reason: 'Templates alone do not publish, babysit, countersign, propagate stop orders or deliver a remote PR stack.' },
     Task: { status: 'equivalent', mapping: 'pstack_agents; pstack_workflow', reason: 'Independent Pi AgentSessions with durable DAG dispatch.' },
     'cloud-agent': { status: 'adapted-with-deviation', mapping: 'Pi child with isolated worktree', reason: 'Local process, not a Cursor cloud VM or OS security boundary.' },
@@ -104,7 +104,7 @@ export function validatePanel(workflow, models, judge, options = {}) {
             throw new Error('EXPLICIT_MODEL_REQUIRED');
     if (workflow === 'interrogate' && new Set(models).size < 2 && !options.allowRepeatedModels)
         throw new Error('MODEL_DIVERSITY_REQUIRED');
-    if (['architect', 'arena'].includes(workflow) && (!judge || !options.independentJudgeSession && models.includes(judge)))
+    if (['architect', 'arena'].includes(workflow) && (!judge && !options.allowSkippedJudge || judge && !options.independentJudgeSession && models.includes(judge)))
         throw new Error('INDEPENDENT_JUDGE_REQUIRED');
-    return { workflow, models: [...models], judge, modelDiversity: new Set(models).size > 1, judgeIndependence: options.independentJudgeSession ? 'session-only' : 'different-model', dispatch: 'pstack_workflow', writers: 'isolated-worktrees', integration: 'explicit-integrator', evidence: 'not-run' };
+    return { workflow, models: [...models], judge, modelDiversity: new Set(models).size > 1, judgeIndependence: !judge ? 'skipped' : options.independentJudgeSession ? 'session-only' : 'different-model', dispatch: 'pstack_workflow', writers: 'isolated-worktrees', integration: 'explicit-integrator', evidence: 'not-run' };
 }

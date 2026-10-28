@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, rmSync, mkdirSync, writeFileSync, cpSync, symlinkSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync, mkdirSync, writeFileSync, cpSync, symlinkSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
@@ -84,6 +84,10 @@ test('semantic drift: edits to rules tests mappings and unreviewed relevant upst
     const bad=structuredClone(manifest);bad.workflows[0].units.pop();assert.throws(()=>checkSemantics(box,bad),/SEMANTIC_STEP_DRIFT/);
     const badRule=structuredClone(manifest);badRule.workflows[0].rules[0].tests[0].name=['nonexistent','test','binding'].join('-');assert.throws(()=>checkSemantics(box,badRule),/SEMANTIC_TEST_UNBOUND/);
     const repo=join(box,'candidate');mkdirSync(repo);cpSync(join(root,snapshotRoot,'pstack'),join(repo,'pstack'),{recursive:true});
+    const inventory=JSON.parse(readFileSync(join(root,JSON.parse(readFileSync(join(root,'PARITY.json'),'utf8')).coverage.targetInventory),'utf8'));
+    for(const entry of inventory.blobs.filter((v:any)=>v.path.startsWith('skills/statechart/scripts/test/'))) {
+      const out=join(repo,'pstack',entry.path);mkdirSync(join(out,'..'),{recursive:true});copyFileSync(join(root,entry.path),out);
+    }
     const git=(...args:string[])=>execFileSync('git',['-C',repo,...args],{encoding:'utf8'}).trim();git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');git('add','.');git('commit','-qm','snapshot');
     const irrelevant=join(repo,'pstack/skills/teach/SKILL.md');writeFileSync(irrelevant,readFileSync(irrelevant,'utf8')+'\nUnrelated change.\n');git('add','.');git('commit','-qm','irrelevant');assert.equal(drift(box,repo,git('rev-parse','HEAD')).status,'reviewed-or-irrelevant');
     const critical=join(repo,'pstack/skills/poteto-mode/playbooks/autopilot-full.md');writeFileSync(critical,readFileSync(critical,'utf8').replace('Green CI alone never authorizes a merge.','Merge without review.'));git('add','.');git('commit','-qm','critical');
@@ -108,6 +112,10 @@ test('semantic DAG: native dispatch isolates candidate writers and verifies the 
   assert.deepEqual(plan.nodes.filter(n=>n.profile==='cross-judge').map(n=>n.model),['p/j']);
   const legacy=buildTemplate({...t,judgeMode:'per-candidate'});
   assert.deepEqual(legacy.nodes.filter(n=>n.profile==='reviewer').map(n=>n.model),['p/j','p/j']);
-  assert.throws(()=>buildTemplate({...t,judgeModel:'p/a'}),/JUDGE_NOT_INDEPENDENT/);
+  const architect=buildTemplate({...t,kind:'architect'});
+  assert.deepEqual(architect.nodes.find(n=>n.key==='implement')?.dependsOn,['integrate']);
+  assert.deepEqual(architect.nodes.find(n=>n.key==='verify')?.dependsOn,['implement']);
+  assert.doesNotThrow(()=>buildTemplate({...t,judgeModel:'p/a'}));
+  assert.throws(()=>buildTemplate({...t,judgeModel:'p/a',independencePolicy:'different-model'}),/JUDGE_NOT_INDEPENDENT/);
   assert.throws(()=>planArtifacts(plan.nodes.filter(n=>n.key!=='integrate').map(n=>n.key==='verify'?{...n,dependsOn:['candidate-1','candidate-2']}:n)),/multiple unmerged writable artifacts/);
 });

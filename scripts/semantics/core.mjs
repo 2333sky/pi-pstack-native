@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { CORE_RESOURCES, CAPABILITIES } from '../../src/compatibility/adapter.ts';
 import { generateCore, generatedResources } from './generate.mjs';
 export const REVIEWED_FILES = ["src/compatibility/adapter.ts", "src/compatibility/source.ts", "src/compatibility/tool.ts", "src/agent/resources.ts", "src/extension.ts", "src/agent/profiles.ts", "src/agent/host.ts", "src/models/router.ts", "src/runtime/config.ts", "src/runtime/lock.ts", "src/contracts/brief.ts", "src/contracts/types.ts", "src/runtime/types.ts", "src/templates/build.ts", "src/workflow/engine.ts", "src/workflow/artifacts.ts", "src/verification/runner.ts", "src/delivery/frontier.ts", "docs/PI-SEMANTIC-ADAPTER.md", "scripts/upstream/cli.mjs", "scripts/check-semantics.mjs", "scripts/benchmark.mjs", "scripts/check-benchmark.mjs", "scripts/semantics/core.mjs", "scripts/semantics/generate.mjs", "test/semantic-compatibility.test.ts", "test/fixtures/semantics/scenarios.json", "scripts/semantics/real-pi-smoke.mjs", "test/e2e/workflow.test.ts", "test/e2e/shipping.test.ts", "test/protocol.test.ts", "test/verification.test.ts", "test/latest-upstream.test.ts", "test/statechart.test.ts", "test/model-router.test.ts", "test/setup-command.test.ts", "test/transaction.test.ts", "test/benchmark.test.ts", "scripts/check-statechart.mjs"];
-REVIEWED_FILES.push('src/tools/agents.ts', 'src/tools/workflow.ts', 'src/agent/candidates.ts', 'test/model-panels.test.ts', 'test/e2e/harness.ts', 'test/e2e/parent-context.ts', 'scripts/check-e2e.mjs');
+REVIEWED_FILES.push('src/tools/agents.ts', 'src/tools/workflow.ts', 'src/agent/candidates.ts', 'src/worktree/snapshot.ts', 'test/model-panels.test.ts', 'test/review-snapshot.test.ts', 'test/swarm-race.test.ts', 'test/e2e/harness.ts', 'test/e2e/parent-context.ts', 'scripts/check-e2e.mjs', 'scripts/build.mjs', 'scripts/build-statechart.mjs');
 export const digest = value => createHash('sha256').update(value).digest('hex');
 export const blob = bytes => createHash('sha1').update(`blob ${Buffer.byteLength(bytes)}\0`).update(bytes).digest('hex');
 export function units(body) {
@@ -78,16 +78,20 @@ export function drift(root, repository, commit) {
   const git=args=>execFileSync('git',['-C',repository,...args],{encoding:'utf8',maxBuffer:16*1024*1024});
   if(git(['rev-parse',`${commit}^{commit}`]).trim()!==commit)throw new Error('CANDIDATE_COMMIT_MISMATCH');
   const paths=git(['ls-tree','-r','--name-only',commit,'--','pstack/skills']).trim().split('\n');
+  const parity=JSON.parse(readFileSync(join(root,'PARITY.json'),'utf8'));
+  const inventory=JSON.parse(readFileSync(join(root,parity.coverage.targetInventory),'utf8'));
+  const testCorpus=new Map(inventory.blobs.filter(b=>b.path.startsWith('skills/statechart/scripts/test/')).map(b=>[`pstack/${b.path}`,{path:`pstack/${b.path}`,sha:b.blob}]));
   const relevant=p=>p.startsWith('pstack/skills/statechart/scripts/') || document.overrides.some(o=>o.upstream.path===p) || document.workflows.some(w=>p===`pstack/skills/${w.resource}`) || /^pstack\/skills\/(architect|interrogate|poteto-mode)\/references\/.*\.md$/.test(p);
-  const all=new Set([...document.snapshot.files.map(f=>f.path),...paths.filter(p=>p.endsWith('.md') || p.startsWith('pstack/skills/statechart/scripts/'))]);
+  const all=new Set([...document.snapshot.files.map(f=>f.path),...testCorpus.keys(),...paths.filter(p=>p.endsWith('.md') || p.startsWith('pstack/skills/statechart/scripts/'))]);
   const changes=[];
   for(const path of [...all].sort()) {
     if(!path.startsWith('pstack/skills/'))continue;
-    const entry=document.snapshot.files.find(f=>f.path===path);
+    const entry=document.snapshot.files.find(f=>f.path===path) ?? testCorpus.get(path);
     const after=paths.includes(path)?git(['show',`${commit}:${path}`]):null;
     if(entry?.sha=== (after===null?null:blob(after)))continue;
     if(!entry && after===null)continue;
-    const before=entry?readFileSync(join(root,document.snapshot.root,path),'utf8'):null;
+    const before=entry?readFileSync(testCorpus.has(path) ? join(root,path.slice('pstack/'.length)) : join(root,document.snapshot.root,path),'utf8'):null;
+    if (entry && blob(before)!==entry.sha) throw new Error(`SEMANTIC_SOURCE_DRIFT: ${path}`);
     const beforeBlob=entry?.sha??null,afterBlob=after===null?null:blob(after);
     const review=document.driftReviews.find(r=>r.commit===commit && r.path===path && r.before===beforeBlob && r.after===afterBlob && r.status==='signed-off' && r.reviewer && r.rationale && r.tests?.length && r.tests.every(t=>document.reviewedFiles[t]));
     changes.push({path,relevant:relevant(path),reviewed:Boolean(review),before:beforeBlob,after:afterBlob,beforeSteps:before===null?[]:units(before),afterSteps:after===null?[]:units(after),diff:after===before?'':{before,after}});

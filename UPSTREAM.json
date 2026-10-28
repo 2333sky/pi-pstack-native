@@ -1,21 +1,32 @@
 {
   "source": "cursor/plugins",
   "path": "pstack",
-  "version": "0.15.32",
-  "commit": "99b609a72323b70204eab407c622f436e858e112",
-  "syncedAt": "2026-10-26T10:21:55.785199Z",
-  "verification": "docs/upstream-provenance-0.15.32.json",
+  "version": "0.15.36",
+  "commit": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+  "syncedAt": "2026-10-28T03:10:17.052Z",
+  "verification": "docs/upstream-provenance-0.15.36.json",
   "strategy": "pinned-source-with-pi-adapter",
   "runtime": "Pi official APIs only",
   "previousBaseline": {
     "source": "cursor/plugins",
     "path": "pstack",
-    "version": "0.15.17",
-    "commit": "978ca6e9c0e012047cd5058b8e829240336e704e",
-    "syncedAt": "2026-10-12T11:34:30Z",
-    "verification": "docs/upstream-provenance-0.15.17.json",
-    "strategy": "semantic-native-port",
-    "runtime": "Pi official APIs only"
+    "version": "0.15.32",
+    "commit": "99b609a72323b70204eab407c622f436e858e112",
+    "syncedAt": "2026-10-26T10:21:55.785199Z",
+    "verification": "docs/upstream-provenance-0.15.32.json",
+    "strategy": "pinned-source-with-pi-adapter",
+    "runtime": "Pi official APIs only",
+    "previousBaseline": {
+      "source": "cursor/plugins",
+      "path": "pstack",
+      "version": "0.15.17",
+      "commit": "978ca6e9c0e012047cd5058b8e829240336e704e",
+      "syncedAt": "2026-10-12T11:34:30Z",
+      "verification": "docs/upstream-provenance-0.15.17.json",
+      "strategy": "semantic-native-port",
+      "runtime": "Pi official APIs only"
+    },
+    "semanticReview": "pending-maintainer-signoff"
   },
   "semanticReview": "pending-maintainer-signoff"
 }

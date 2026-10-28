@@ -39,7 +39,7 @@ const tiers = {
       },
       {
         file: 'test/e2e/workflow.test.ts',
-        tests: ['[fake-provider] a strict workflow runs two worktrees, an integrator and deterministic verification', '[fake-provider] a workflow resumes after SIGKILL without replaying completed calls or external effects', '[fake-provider] malformed task reports expose diagnostics and stay blocked', '[fake-provider] configured review panels dispatch distinct models through Pi sessions', '[fake-provider] panel model fallback is visible in the durable workflow', '[fake-provider] one cross-judge inspects isolated candidates before integration'].map((name) => ({ name, state: 'pass' })),
+        tests: ['[fake-provider] a strict workflow runs two worktrees, an integrator and deterministic verification', '[fake-provider] a workflow resumes after SIGKILL without replaying completed calls or external effects', '[fake-provider] malformed task reports expose diagnostics and stay blocked', '[fake-provider] configured review panels dispatch distinct models through Pi sessions', '[fake-provider] panel model fallback is visible in the durable workflow', '[fake-provider] one cross-judge inspects isolated candidates before integration', '[fake-provider] interrogate copies dirty changes and reruns findings in isolated sessions', '[fake-provider] swarm first-pass cancels an in-flight Pi session after verified acceptance'].map((name) => ({ name, state: 'pass' })),
       },
     ],
   },

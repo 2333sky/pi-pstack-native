@@ -1,7 +1,7 @@
 import { upstreamVersion } from "../runtime/upstream.ts";
 import { validateEvidencePackets, type EvidencePacket } from "../agent/resources.ts";
 import { loadModels } from "../runtime/config.ts";
-import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies, hasBlockingReportNotes } from "../contracts/brief.ts";
+import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies, hasBlockingReportNotes, findingsBackedByVerifiers } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
 import { fingerprint, ownerOf } from "../artifacts/fingerprint.ts";
 import { protocol, hash, transact } from "../runtime/protocol.ts";
@@ -60,6 +60,8 @@ export class WorkflowEngine {
 
   build(spec: WorkflowRunSpec, id: string = workflowId()): WorkflowRecord {
     validateGraph(spec.nodes);
+    if (spec.completionPolicy && (spec.completionPolicy !== 'first-pass' || spec.type !== 'swarm' || spec.nodes.length < 2 || spec.nodes.some(node => (node.profile ?? 'worker') !== 'worker' || node.isolation !== 'worktree' || node.dependsOn?.length))) throw new Error('INVALID_FIRST_PASS_RACE');
+    if (spec.deliveryContract === 'candidate-only' && (spec.type !== 'arena' || spec.nodes.some(node => (node.profile ?? 'worker') !== 'worker' || node.isolation !== 'worktree' || node.dependsOn?.length || node.brief?.contractLevel !== 'strict'))) throw new Error('INVALID_CANDIDATE_ONLY_PLAN');
     validateBudget(spec.budget); for(const node of spec.nodes) {validateBudget(node.budget); validateEvidencePackets(node.evidencePackets);}
     for (const node of spec.nodes) {
       if (spec.contractLevel === "strict" && !node.brief) throw new Error(`BRIEF_INCOMPLETE: ${node.key}.brief`);
@@ -69,11 +71,13 @@ export class WorkflowEngine {
     const createdAt = now();
     const calls: Record<string, WorkflowCall> = {};
     for (const node of spec.nodes) {
+      const routes = loadModels().workflows?.[spec.playbook ?? spec.type ?? 'graph'];
+      const model = node.model ?? (node.modelRole ? routes?.[node.modelRole] : undefined) ?? routes?.[node.profile ?? 'worker'];
       calls[node.key] = {
         evidencePackets: validateEvidencePackets(node.evidencePackets), brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
         key: node.key, profile: node.profile ?? "worker", task: node.task.trim(),
         state: "pending", dependsOn: [...(node.dependsOn ?? [])], attempt: 0,
-        ...(node.model || loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] ? { model: node.model ?? loadModels().workflows?.[spec.playbook ?? spec.type ?? "graph"]?.[node.profile ?? "worker"] } : {}),
+        ...(model ? { model } : {}),
         ...(node.isolation ? { isolation: node.isolation } : {}),
       };
     }
@@ -83,6 +87,7 @@ export class WorkflowEngine {
       type: spec.type ?? "graph",
       ...(spec.modelNotes?.length ? { modelNotes: [...spec.modelNotes] } : {}),
       deliveryContract: spec.deliveryContract, state: "created", createdAt, updatedAt: createdAt,
+      ...(spec.completionPolicy ? { completionPolicy: spec.completionPolicy } : {}),
       ...(spec.parentSessionId ? { parentSessionId: spec.parentSessionId } : {}),
       parentCwd: spec.cwd, calls, edges: dependencyEdges(spec.nodes),
       maxConcurrency: Math.max(1, Math.min(16, spec.maxConcurrency ?? loadConfig().defaultConcurrency)),
@@ -207,6 +212,7 @@ export class WorkflowEngine {
       if (["running", "cancelling"].includes(record.state)) throw new Error(`Workflow ${id} is ${record.state}; stop all agents before retry.`);
       const call = record.calls[key];
       if (!call) throw new Error(`Unknown workflow call: ${key}`);
+      if (call.excludedFromSelection) throw new Error('Excluded candidates cannot be retried in this settled comparison; create a new workflow.');
       if (!["failed", "cancelled", "skipped"].includes(call.state)) throw new Error(`Call ${key} is ${call.state}; retry only failed/cancelled/skipped calls.`);
       const clear = (target: WorkflowCall) => {
         target.state = "pending";
@@ -250,12 +256,13 @@ export class WorkflowEngine {
         latest.state = "running";
       });
       for (const call of Object.values(this.get(id)!.calls)) {
-        if (call.state === "completed" && call.brief && !this.accepted(call)) {
+        if (call.state === "completed" && !call.excludedFromSelection && call.brief && !this.accepted(call)) {
           const agent = call.agentId ? this.agents.get(call.agentId) : undefined;
           if(agent) await this.verifyCall(id,call.key,agent);
         }
       }
       const active = new Map<string, Promise<void>>();
+      const stopRequested = new Set<string>();
       const attachCall = (key: string, recovering = false): void => {
         const latest = this.change(id, recovering ? "call-resuming" : "call-started", (current) => {
           if (current.state !== "running") return;
@@ -363,12 +370,65 @@ export class WorkflowEngine {
           attachCall(key, true);
           record = this.get(id)!;
         }
+        if (record.completionPolicy === 'first-pass') {
+          const winners = Object.values(record.calls).filter(call => call.state === 'completed' && !active.has(call.key) && this.accepted(call))
+            .sort((a, b) => (protocol().ledgers[a.verification!.ledgerId!]?.verifiedAt ?? '').localeCompare(protocol().ledgers[b.verification!.ledgerId!]?.verifiedAt ?? '') || a.key.localeCompare(b.key));
+          const winner = record.firstPassWinner ?? winners[0]?.key;
+          if (winner) {
+            record = this.change(id, 'first-pass-winner', current => {
+              current.firstPassWinner ??= winner;
+              for (const call of Object.values(current.calls)) if (call.key !== current.firstPassWinner) {
+                call.excludedFromSelection = true;
+                if (['pending', 'ready', 'waiting'].includes(call.state)) { call.state = 'skipped'; call.finishedAt = now(); }
+              }
+            }, { winner });
+            for (const call of Object.values(record.calls)) if (call.key !== record.firstPassWinner && call.state === 'running' && call.agentId && !stopRequested.has(call.agentId)) {
+              stopRequested.add(call.agentId);
+              void this.agents.stop(call.agentId).catch(error => {
+                this.change(id, 'first-pass-stop-unconfirmed', current => {
+                  const target = current.calls[call.key];
+                  if (target?.state === 'running') target.error = durableError('CANCEL_NOT_CONFIRMED', error, true);
+                }, { key: call.key });
+              });
+            }
+          }
+        }
+        if (record.deliveryContract === 'candidate-only' && Object.values(record.calls).every(call => TERMINAL.has(call.state) && !active.has(call.key))) {
+          const retained = Object.values(record.calls).filter(call => call.state === 'completed' && this.accepted(call)).map(call => call.key);
+          const dropped = Object.values(record.calls).filter(call => !retained.includes(call.key) && !call.excludedFromSelection).map(call => call.key);
+          if (retained.length && dropped.length) record = this.change(id, 'candidate-dropout', current => {
+            for (const key of dropped) current.calls[key]!.excludedFromSelection = true;
+            (current.modelNotes ??= []).push(`Candidate dropout: ${dropped.join(', ')}; retained verified candidates: ${retained.join(', ')}.`);
+          }, { dropped, retained });
+        }
+        // A failed arena candidate is a dropout, not a reason to discard other verified candidates.
+        // Prune only after every candidate has settled and its verification has finished.
+        for (const judge of Object.values(record.calls).filter(call => call.profile === 'cross-judge' && ['pending', 'ready'].includes(call.state))) {
+          const deps = judge.dependsOn.map(key => record!.calls[key]!);
+          if (!deps.length || deps.some(dep => !TERMINAL.has(dep.state) || active.has(dep.key))) continue;
+          const retained = deps.filter(dep => dep.state === 'completed' && this.accepted(dep)).map(dep => dep.key);
+          const dropped = deps.filter(dep => !retained.includes(dep.key)).map(dep => dep.key);
+          if (!dropped.length || !retained.length || !judge.brief?.reportRequirements || judge.brief.reportRequirements.kind !== 'cross-evaluation') continue;
+          const brief: TaskBrief = { ...judge.brief, revision: judge.brief.revision + 1, reportRequirements: { ...judge.brief.reportRequirements, candidates: retained } };
+          saveBrief(brief, 'workflow-engine', 'candidate-dropout');
+          record = this.change(id, 'candidate-dropout', current => {
+            const target = current.calls[judge.key]!;
+            if (!['pending', 'ready'].includes(target.state)) return;
+            target.brief = brief;
+            target.dependsOn = retained;
+            for (const key of dropped) current.calls[key]!.excludedFromSelection = true;
+            for (const call of Object.values(current.calls)) if (call.profile === 'integrator' && call.dependsOn.includes(judge.key)) call.dependsOn = call.dependsOn.filter(key => !dropped.includes(key));
+            current.edges = dependencyEdges(Object.values(current.calls));
+            (current.modelNotes ??= []).push(`Candidate dropout: ${dropped.join(', ')}; retained verified candidates: ${retained.join(', ')}.`);
+          }, { dropped, retained });
+        }
         for (const key of Object.keys(record.calls)) {
           this.change(id, "dependency-checked", (current) => {
             if (current.state !== "running") return;
             const call = current.calls[key]!;
             if (!["pending", "ready"].includes(call.state)) return;
             const deps = call.dependsOn.map((dep) => current.calls[dep]!);
+            if (call.profile === 'cross-judge' && deps.some(dep => !TERMINAL.has(dep.state) || active.has(dep.key))) return;
             if (deps.some((dep) => ["failed", "cancelled", "skipped"].includes(dep.state))) {
               call.state = "skipped";
               call.finishedAt = now();
@@ -398,14 +458,14 @@ export class WorkflowEngine {
         if (calls.every((call) => TERMINAL.has(call.state)) && active.size === 0) {
           const result = this.change(id, "workflow-settled", (latest) => {
             if (latest.state !== "running") return;
-            const failures = Object.values(latest.calls).filter((call) => call.state !== "completed");
-            const rejected = Object.values(latest.calls).filter(call=>call.brief && !latest.edges.some(e=>e.from===call.key) && !this.accepted(call));
+            const failures = Object.values(latest.calls).filter((call) => call.state !== "completed" && !call.excludedFromSelection);
+            const rejected = Object.values(latest.calls).filter(call=>!call.excludedFromSelection && call.brief && !latest.edges.some(e=>e.from===call.key) && !this.accepted(call));
             if (!failures.length && rejected.length) {
               latest.state="blocked"; latest.verification="blocked";
               latest.error=durableError("ACCEPTANCE_BLOCKED", rejected.map(c=>`${c.key}: ${c.verification?.reason ?? c.verification?.status ?? "unverified"}`).join(", "),true);
             } else if (!failures.length) {
               latest.state = "completed";
-              latest.verification = Object.values(latest.calls).filter(c=>!latest.edges.some(e=>e.from===c.key)).every(c=>c.brief && this.accepted(c)) ? "verified" : "unknown";
+              latest.verification = Object.values(latest.calls).filter(c=>!c.excludedFromSelection && !latest.edges.some(e=>e.from===c.key)).every(c=>c.brief && this.accepted(c)) ? "verified" : "unknown";
               latest.result = Object.values(latest.calls).map((call) => `## ${call.key}\n${call.result ?? ""}`).join("\n\n");
             } else {
               latest.state = "failed";
@@ -426,7 +486,7 @@ export class WorkflowEngine {
   }
 
   acceptedWorkflow(record: WorkflowRecord): boolean {
-    return record.state === "completed" && Object.values(record.calls).filter(c=>!record.edges.some(e=>e.from===c.key)).every(c=>Boolean(c.brief) && this.accepted(c));
+    return record.state === "completed" && Object.values(record.calls).filter(c=>!c.excludedFromSelection && !record.edges.some(e=>e.from===c.key)).every(c=>Boolean(c.brief) && this.accepted(c));
   }
 
   accepted(call: WorkflowCall): boolean {
@@ -448,6 +508,11 @@ export class WorkflowEngine {
       let reason: string|undefined;
       if (call.brief.contractLevel === "strict") {
         if (!report || report.status!=="completed" || !reportSatisfies(call.brief, report) || hasBlockingReportNotes(report) || report.head!==ledger.fingerprint.commitSha || !agent.baseline || report.base!==agent.baseline.commitSha) reason="TASK_REPORT_INCOMPLETE_OR_MISMATCH";
+      }
+      if (!reason && report && call.profile === 'synthesizer' && call.brief.reportRequirements?.kind === 'repro-review') {
+        const workflow = this.get(id)!;
+        const verifiers = call.dependsOn.map(key => workflow.calls[key]).filter(dep => dep?.profile === 'repro-verifier' && dep.report).map(dep => dep!.report!);
+        if (verifiers.length !== call.dependsOn.length || !findingsBackedByVerifiers(report, verifiers)) reason = 'FINDING_NOT_IN_VERIFIER_REPORT';
       }
       if (!reason && ledger.status === "blocked") {
         const evidence = protocol().evidence;

@@ -26,7 +26,7 @@ try {
     } else {
       const inputs = {snapshot:readSnapshot(root),parity:readJSON(join(root,'PARITY.json')),localRoot:root};
       const inventory = validateInventory(buildInventory(inputs),inputs);
-      writeConfined(root,'docs/upstream-inventory-0.15.32.json',JSON.stringify(inventory,null,2)+'\n');
+      writeConfined(root,'docs/upstream-inventory-0.15.36.json',JSON.stringify(inventory,null,2)+'\n');
       console.log(JSON.stringify({status:'written',files:inventory.counts.files,pending:inventory.dispositionSummary.pending}));
     }
   } else if (command === 'scan') {

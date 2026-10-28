@@ -22,7 +22,7 @@
 | [Semantic compatibility](SEMANTIC-COMPATIBILITY.md) · [Parity](../PARITY.md) | Scope of adaptation, limitations, and evidence status. |
 | [Pi semantic adapter](PI-SEMANTIC-ADAPTER.md) | Platform substitutions and deliberate deviations. |
 | [Dependencies](DEPENDENCIES.md) · [Publishing](PUBLISHING.md) | Locked SDK, dependency review, and release preparation. |
-| [Upstream 0.15.32 upgrade](upstream-upgrade-0.15.32.md) | Source changes and review record for the current pin. |
+| [Upstream 0.15.36 upgrade](upstream-upgrade-0.15.36.md) · [PR #41 plan](PR-41-ALIGNMENT-PLAN.zh-CN.md) | Source changes, implementation plan, and evidence boundaries. |
 | [Changelog](../CHANGELOG.md) | Product changes and earlier version history. |
 
 ## Historical records

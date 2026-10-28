@@ -52,6 +52,7 @@ export declare function validatePanel(workflow: string, models: string[], judge?
     independentJudgeSession?: boolean;
     allowRepeatedModels?: boolean;
     allowSingleInterrogate?: boolean;
+    allowSkippedJudge?: boolean;
 }): {
     workflow: string;
     models: string[];

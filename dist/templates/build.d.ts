@@ -18,6 +18,7 @@ export interface TemplateSpec {
         task: string;
         brief: TaskBrief;
     }[];
+    selectionPolicy?: 'best-of' | 'first-pass' | 'rank-all';
     judgeMode?: 'cross' | 'per-candidate';
     independencePolicy?: 'different-model' | 'different-family' | 'explicit-waiver' | 'independent-session';
     modelFamilies?: Record<string, string>;
@@ -29,5 +30,6 @@ export declare function buildTemplate(input: TemplateSpec, ctx?: ExtensionContex
     estimatedAgents: number;
     budget: Budget | undefined;
     notes: string[];
-    deliveryContract: 'local-dag' | 'remote-stack-required';
+    deliveryContract: 'local-dag' | 'candidate-only' | 'remote-stack-required';
+    completionPolicy?: 'first-pass';
 };

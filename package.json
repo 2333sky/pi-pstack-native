@@ -63,6 +63,13 @@
     "docs/PI-SEMANTIC-ADAPTER.md",
     "docs/SEMANTIC-COMPATIBILITY.md",
     "docs/upstream-provenance-0.15.32.json",
+    "docs/upstream-provenance-0.15.36.json",
+    "docs/upstream-sync-0.15.36.json",
+    "docs/upstream-target-0.15.36.json",
+    "docs/upstream-dispositions-0.15.36.json",
+    "docs/upstream-inventory-0.15.36.json",
+    "docs/upstream-upgrade-0.15.36.md",
+    "docs/PR-41-ALIGNMENT-PLAN.zh-CN.md",
     "docs/upstream-sync-0.15.32.json",
     "docs/upstream-upgrade-0.15.32.md",
     "docs/STATECHART.md",
@@ -120,6 +127,7 @@
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "1.4.0",
     "@types/node": "^22.0.0",
+    "fast-check": "4.5.3",
     "typescript": "^5.8.0"
   },
   "bin": {

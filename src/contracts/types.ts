@@ -17,7 +17,7 @@ interface BriefFields {
   contextRefs: string[];
   verification: GateSpec[]; timeboxSeconds?: number; forbidden: string[];
   standingOrders: string[]; reportFormat: 'task-report-v1';
-  reportRequirements?: {kind:'evaluation'|'cross-evaluation'|'selection'|'review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
+  reportRequirements?: {kind:'evaluation'|'cross-evaluation'|'selection'|'ranking'|'review'|'repro-review'|'coverage'; criteria?:string[]; candidates?:string[]; slices?:string[]};
 }
 export type ReportNote = string | { severity: 'blocking' | 'advisory'; description: string };
 export interface TaskReport {
@@ -27,7 +27,8 @@ export interface TaskReport {
   evaluation?: {criterion:string;score:number;evidence:string[];weaknesses:string[];selectedParts:string[]}[];
   crossEvaluation?: {candidate:string;criterion:string;score:number;evidence:string[];weaknesses:string[];selectedParts:string[]}[];
   selection?: {candidates:string[];selectedParts:string[]};
-  findings?: {severity:'critical'|'high'|'medium'|'low';location:string;description:string;evidence:string}[];
+  ranking?: {candidate:string;rank:number;reason:string}[];
+  findings?: {severity:'critical'|'high'|'medium'|'low';location:string;description:string;evidence:string; reproduction?: {command:string[];observed:string;expected:string}}[];
   coverage?: {completed:string[];unresolved:string[]};
 }
 export interface Budget { maxTokens?: number; maxCost?: number; maxTimeSeconds?: number }

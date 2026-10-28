@@ -2,14 +2,15 @@ import { registerSemanticTool } from "./compatibility/tool.js";
 import { createResourceTools } from "./agent/resources.js";
 import { upstreamVersion } from "./runtime/upstream.js";
 import { registerProtocolTools } from "./tools/protocol.js";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AgentHost } from "./agent/host.js";
 import { LoopScheduler } from "./loop/scheduler.js";
 import { formatInterval, parseInterval } from "./loop/store.js";
-import { availableModelSelectors, lowerSupportedThinking, resolveModelSelector, supportsThinking } from "./models/router.js";
+import { availableModelSelectors, lowerSupportedThinking, resolveModelSelector, supportsThinking, suggestedPanels } from "./models/router.js";
 import { loadConfig, loadModels, saveConfig, saveModels } from "./runtime/config.js";
+import { modelConfigPath } from "./runtime/home.js";
 import { ensureHome } from "./runtime/store.js";
 import { registerAgentTool } from "./tools/agents.js";
 import { registerGraphTool } from "./tools/graph.js";
@@ -106,7 +107,7 @@ export default function piPstackNative(pi) {
             "- Prefer pstack_workflow for multi-agent dependency graphs and pstack_agents for one bounded child.",
             "- One writer may use the target checkout. Independent parallel writers use worktrees; multi-writer delivery converges through an integrator. Reviewers are read-only; verifiers follow the directly dependent artifact.",
             "- Workflow state is durable. Do not manually repeat a completed call after resume.",
-            "- When delegating a named task, pass its playbook name to pstack_agents or pstack_workflow so configured task-specific role models apply. For arena, architect and interrogate use the configured panels and inspect the planned seats before dispatch.",
+            "- When delegating a named task, pass its playbook name to pstack_agents or pstack_workflow so configured task-specific role models apply. For Reflect pass playbook reflect and modelRole tooling, judgment, divergent or synthesizer. For arena, architect and interrogate inspect planned seats and any judge-skip or fallback notes before dispatch.",
             "- Core pstack entrypoints retain the pinned upstream body. Read pi-adapter.md with pstack_skill for explicit overrides; resolve original references as upstream/skills/<skill>/... . No unavailable capability may silently count as completed. Use pstack_semantics to check model panels and round receipts; native ledger/Frontier gates still apply.",
             "- One simple writer may work in the target checkout. Independent parallel writers use worktrees. If several writer outputs form one deliverable, converge them through an integrator node before final verification.",
             potetoMode ? "- Poteto Mode is sticky for this session. Route non-trivial work through the matching pstack playbook and verify before declaring done." : "",
@@ -193,7 +194,19 @@ export default function piPstackNative(pi) {
                 ctx.ui.notify("Invalid fallback selection; nothing was written.", "error");
                 return;
             }
-            const next = { ...config, roles: { ...config.roles }, panels: { ...config.panels }, thinkingLevel, fallbackPolicy };
+            const next = { ...config, roles: { ...config.roles }, panels: { ...config.panels }, workflows: Object.fromEntries(Object.entries(config.workflows ?? {}).map(([key, values]) => [key, { ...values }])), thinkingLevel, fallbackPolicy };
+            for (const [name, seats] of Object.entries(suggestedPanels(ctx)))
+                next.panels[name] ??= seats;
+            if (!existsSync(modelConfigPath()) && available.length) {
+                const code = available.find(model => /(?:grok|composer)/i.test(model)) ?? available[0];
+                const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : '';
+                const judgment = available.find(model => /claude/i.test(model)) ?? (available.includes(parent) ? parent : available[0]);
+                next.roles.worker = code;
+                for (const role of ['architect', 'reviewer', 'verifier', 'synthesizer', 'integrator', 'poteto-agent', 'comment-sicko'])
+                    next.roles[role] = judgment;
+                next.roles.scout = code;
+                next.workflows.reflect = { tooling: code, judgment, divergent: judgment, synthesizer: judgment };
+            }
             const validateChoice = (role, value) => {
                 if (thinkingLevel === "inherit-parent")
                     return true;
@@ -220,97 +233,123 @@ export default function piPstackNative(pi) {
                 }
                 return true;
             };
-            for (const [role, description] of Object.entries(roles)) {
-                const current = next.roles[role] ?? "inherit-parent";
-                for (;;) {
-                    const selected = await ctx.ui.select(`${role} — ${description} (current: ${current})`, choices.map((choice) => choice.label));
-                    if (selected === undefined) {
-                        ctx.ui.notify("Setup cancelled; nothing was written.", "info");
-                        return;
-                    }
-                    const value = choices.find((choice) => choice.label === selected)?.value;
-                    if (!value) {
-                        ctx.ui.notify("Invalid model selection; nothing was written.", "error");
-                        return;
-                    }
-                    if (!validateChoice(role, value))
-                        continue;
-                    next.roles[role] = value;
-                    break;
-                }
-            }
-            const taskChoice = await ctx.ui.select("Task-specific model overrides", ["Keep current task models", "Configure task models"]);
-            if (taskChoice === undefined) {
-                ctx.ui.notify("Setup cancelled; nothing was written.", "info");
-                return;
-            }
-            if (taskChoice === "Configure task models") {
-                next.workflows = Object.fromEntries(Object.entries(config.workflows ?? {}).map(([key, values]) => [key, { ...values }]));
-                const taskRoles = [
-                    { names: ["feature", "refactoring"], profile: "worker", description: "feature and refactoring" },
-                    { names: ["bug-fix"], profile: "worker", description: "bug-fix" },
-                    { names: ["perf-issue"], profile: "worker", description: "performance issue" },
-                    { names: ["hillclimb"], profile: "worker", description: "hillclimb" },
-                    { names: ["how"], profile: "scout", description: "how explorer" },
-                    { names: ["how"], profile: "synthesizer", description: "how explainer" },
-                    { names: ["why"], profile: "scout", description: "why investigator" },
-                    { names: ["why"], profile: "synthesizer", description: "why synthesizer" },
-                    { names: ["swarm"], profile: "worker", description: "swarm worker" },
-                ];
-                for (const taskRole of taskRoles) {
-                    const inherit = `Use ${taskRole.profile} role default`;
-                    const current = next.workflows[taskRole.names[0]]?.[taskRole.profile] ?? inherit;
-                    for (;;) {
-                        const selected = await ctx.ui.select(`${taskRole.description} (current: ${current})`, [inherit, ...choices.map(choice => choice.label)]);
-                        if (selected === undefined) {
-                            ctx.ui.notify("Setup cancelled; nothing was written.", "info");
-                            return;
-                        }
-                        const value = selected === inherit ? undefined : choices.find(choice => choice.label === selected)?.value;
-                        if (selected !== inherit && !value) {
-                            ctx.ui.notify("Invalid model selection; nothing was written.", "error");
-                            return;
-                        }
-                        if (value && !validateChoice(taskRole.description, value))
-                            continue;
-                        for (const name of taskRole.names) {
-                            const mapped = { ...next.workflows[name] };
-                            if (value)
-                                mapped[taskRole.profile] = value;
-                            else
-                                delete mapped[taskRole.profile];
-                            if (Object.keys(mapped).length)
-                                next.workflows[name] = mapped;
-                            else
-                                delete next.workflows[name];
-                        }
-                        break;
-                    }
-                }
-            }
-            else if (taskChoice !== "Keep current task models") {
-                ctx.ui.notify("Invalid task model selection; nothing was written.", "error");
-                return;
-            }
+            const taskRoles = [
+                { names: ["feature", "refactoring"], profile: "worker", description: "feature and refactoring" },
+                { names: ["bug-fix"], profile: "worker", description: "bug-fix" },
+                { names: ["perf-issue"], profile: "worker", description: "performance issue" },
+                { names: ["hillclimb"], profile: "worker", description: "hillclimb" },
+                { names: ["how"], profile: "scout", description: "how explorer" },
+                { names: ["how"], profile: "synthesizer", description: "how explainer" },
+                { names: ["why"], profile: "scout", description: "why investigator" },
+                { names: ["why"], profile: "synthesizer", description: "why synthesizer" },
+                { names: ["swarm"], profile: "worker", description: "swarm worker" },
+                { names: ["reflect"], profile: "tooling", description: "reflect tooling" },
+                { names: ["reflect"], profile: "judgment", description: "reflect judgment" },
+                { names: ["reflect"], profile: "divergent", description: "reflect divergent" },
+                { names: ["reflect"], profile: "synthesizer", description: "reflect synthesizer" },
+            ];
             const panelRoles = [
                 { name: "arena", description: "arena runners", min: 2 },
                 { name: "arena-judges", description: "arena judge pool", min: 1 },
                 { name: "architect", description: "architect runners", min: 2 },
                 { name: "interrogate", description: "interrogate reviewers", min: 1 },
             ];
-            for (const panel of panelRoles) {
-                const current = next.panels[panel.name];
-                const keep = current?.length ? "Keep current panel" : "Leave panel unconfigured";
-                const edit = "Configure panel";
-                const action = await ctx.ui.select(`${panel.description} (current: ${current?.join(", ") || "not configured"})`, [keep, edit]);
+            for (;;) {
+                const summary = `Roles: ${Object.entries(next.roles).map(([key, value]) => `${key}=${value}`).join(', ')}\nTask overrides: ${JSON.stringify(next.workflows)}\nPanels: ${Object.entries(next.panels).map(([key, value]) => `${key}=[${value.join(', ')}]`).join('; ')}`;
+                const action = await ctx.ui.select(`Review pstack settings\n${summary}`, ["Save settings", "Edit a role", "Edit a task model", "Edit a panel"]);
                 if (action === undefined) {
                     ctx.ui.notify("Setup cancelled; nothing was written.", "info");
                     return;
                 }
-                if (action === keep)
+                if (action === 'Save settings') {
+                    const all = [...Object.entries(next.roles).map(([key, value]) => [key, value]), ...Object.entries(next.workflows).flatMap(([name, values]) => Object.entries(values).map(([key, value]) => [`${name}/${key}`, value])), ...Object.entries(next.panels).flatMap(([name, values]) => values.map(value => [name, value]))];
+                    if (!all.every(([name, value]) => validateChoice(name, value))) {
+                        ctx.ui.notify('Adjust incompatible models or the reasoning budget before saving.', 'error');
+                        return;
+                    }
+                    saveModels(next);
+                    const duplicate = Object.entries(next.panels).filter(([name, values]) => name !== 'arena-judges' && new Set(values).size < 2).map(([name]) => name);
+                    ctx.ui.notify(`Saved pstack-native models and panels.${duplicate.length ? ` Repeated model seats do not add model diversity: ${duplicate.join(', ')}.` : ''} Optional: use /skill:create-verification-skill or /skill:create-formal-verification-skill to add project verification.`, "info");
+                    return;
+                }
+                if (action === 'Edit a role') {
+                    const keys = Object.entries(roles).map(([key, description]) => `${key} — ${description} (current: ${next.roles[key] ?? 'inherit-parent'})`);
+                    const selected = await ctx.ui.select('Choose role to edit', keys);
+                    if (selected === undefined) {
+                        ctx.ui.notify('Setup cancelled; nothing was written.', 'info');
+                        return;
+                    }
+                    const index = keys.indexOf(selected);
+                    if (index < 0) {
+                        ctx.ui.notify('Invalid role selection; nothing was written.', 'error');
+                        return;
+                    }
+                    const key = Object.keys(roles)[index];
+                    const picked = await ctx.ui.select(`Model for ${key}`, choices.map(choice => choice.label));
+                    if (picked === undefined) {
+                        ctx.ui.notify('Setup cancelled; nothing was written.', 'info');
+                        return;
+                    }
+                    const value = choices.find(choice => choice.label === picked)?.value;
+                    if (!value) {
+                        ctx.ui.notify('Invalid model selection; nothing was written.', 'error');
+                        return;
+                    }
+                    if (validateChoice(key, value))
+                        next.roles[key] = value;
                     continue;
-                if (action !== edit) {
-                    ctx.ui.notify("Invalid panel selection; nothing was written.", "error");
+                }
+                if (action === 'Edit a task model') {
+                    const labels = taskRoles.map(role => `${role.description} (current: ${next.workflows[role.names[0]]?.[role.profile] ?? 'role default'})`);
+                    const picked = await ctx.ui.select('Choose task model to edit', labels);
+                    if (picked === undefined) {
+                        ctx.ui.notify('Setup cancelled; nothing was written.', 'info');
+                        return;
+                    }
+                    const taskRole = taskRoles[labels.indexOf(picked)];
+                    if (!taskRole) {
+                        ctx.ui.notify('Invalid task selection; nothing was written.', 'error');
+                        return;
+                    }
+                    const inherit = 'Use role default';
+                    const selected = await ctx.ui.select(`Model for ${taskRole.description}`, [inherit, ...choices.map(choice => choice.label)]);
+                    if (selected === undefined) {
+                        ctx.ui.notify('Setup cancelled; nothing was written.', 'info');
+                        return;
+                    }
+                    const value = selected === inherit ? undefined : choices.find(choice => choice.label === selected)?.value;
+                    if (selected !== inherit && !value) {
+                        ctx.ui.notify('Invalid model selection; nothing was written.', 'error');
+                        return;
+                    }
+                    if (value && !validateChoice(taskRole.description, value))
+                        continue;
+                    for (const name of taskRole.names) {
+                        const mapped = { ...next.workflows[name] };
+                        if (value)
+                            mapped[taskRole.profile] = value;
+                        else
+                            delete mapped[taskRole.profile];
+                        if (Object.keys(mapped).length)
+                            next.workflows[name] = mapped;
+                        else
+                            delete next.workflows[name];
+                    }
+                    continue;
+                }
+                if (action !== 'Edit a panel') {
+                    ctx.ui.notify('Invalid setup action; nothing was written.', 'error');
+                    return;
+                }
+                const labels = panelRoles.map(panel => `${panel.description} (current: ${next.panels[panel.name]?.join(', ') || 'none'})`);
+                const picked = await ctx.ui.select('Choose panel to edit', labels);
+                if (picked === undefined) {
+                    ctx.ui.notify('Setup cancelled; nothing was written.', 'info');
+                    return;
+                }
+                const panel = panelRoles[labels.indexOf(picked)];
+                if (!panel) {
+                    ctx.ui.notify('Invalid panel selection; nothing was written.', 'error');
                     return;
                 }
                 const seats = [];
@@ -341,8 +380,6 @@ export default function piPstackNative(pi) {
                 }
                 next.panels[panel.name] = seats;
             }
-            saveModels(next);
-            ctx.ui.notify("Saved pstack-native role models and panels. Unconfigured panels require setup before use.", "info");
         },
     });
     pi.registerCommand("pstack", {

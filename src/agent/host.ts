@@ -24,6 +24,7 @@ import { evaluateAssistantTurn } from "./outcome.ts";
 import type { AgentRecord, IsolationMode, WorkflowRecord } from "../runtime/types.ts";
 import { resolveRoleModel } from "../models/router.ts";
 import { createWorktree, removeWorktree, type WorktreeInfo } from "../worktree/manager.ts";
+import { copyReviewSnapshot } from '../worktree/snapshot.ts';
 import { getProfile } from "./profiles.ts";
 import { createResourceTools, validateEvidencePackets, type EvidencePacket } from "./resources.ts";
 import { createReadOnlyTools } from "./read-only-tools.ts";
@@ -94,7 +95,7 @@ export class AgentHost {
 
   private crossJudgeInputs(record: AgentRecord, workflow: WorkflowRecord | undefined, cwd: string): CandidateInput[] {
     const call = workflow?.calls[record.callKey ?? ''];
-    if (!workflow || !record.workflowId || !call || call.profile !== 'cross-judge' || !record.brief || call.dependsOn.length < 2) {
+    if (!workflow || !record.workflowId || !call || call.profile !== 'cross-judge' || !record.brief || call.dependsOn.length < 1) {
       throw new Error('CROSS_JUDGE_REQUIRES_VERIFIED_WORKFLOW_CANDIDATES');
     }
     const repoId = fingerprint(cwd).repoId;
@@ -286,6 +287,8 @@ export class AgentHost {
         worktree = await createWorktree(record.cwd, record.id);
         cwd = worktree.path;
         record = { ...record, cwd, worktree: worktree.path, branch: worktree.branch, worktreeRepoRoot: worktree.repoRoot, worktreeBaseRef: worktree.baseRef };
+        record = this.change(record.id, latest => { if (!['cancelling', 'cancelled'].includes(latest.state)) Object.assign(latest, record); });
+        if (profile.name === 'adversary') copyReviewSnapshot(worktree.repoRoot, cwd);
       } else if (record.worktree) {
         cwd = record.worktree;
       }
@@ -305,6 +308,13 @@ export class AgentHost {
       // Reload the authoritative contract on every spawn/recovery; never trust stale session text.
       const ownerWorkflow = record.workflowId ? readJson<WorkflowRecord | undefined>(workflowPath(record.workflowId), undefined) : undefined;
       const currentBrief = ownerWorkflow?.calls[record.callKey ?? ""]?.brief ?? spec.brief ?? record.brief;
+      if (profile.name === 'repro-verifier') {
+        const call = ownerWorkflow?.calls[record.callKey ?? ''];
+        const source = call?.dependsOn.length === 1 ? ownerWorkflow?.calls[call.dependsOn[0]!] : undefined;
+        const agent = source?.agentId ? this.get(source.agentId) : undefined;
+        const managedRoot = realpathSync(worktreeRoot());
+        if (!ownerWorkflow || !source || source.profile !== 'adversary' || source.state !== 'completed' || !agent?.worktree || agent.workflowId !== ownerWorkflow.id || realpathSync(agent.worktree) !== realpathSync(cwd) || !realpathSync(cwd).startsWith(`${managedRoot}${sep}`)) throw new Error('REPRO_VERIFIER_REQUIRES_OWNED_WORKTREE');
+      }
       if (record.workflowId) {
         const veto = dispatchVeto(record.workflowId, ownerWorkflow);
         if (veto) throw new Error(`${veto}: workflow ${record.workflowId} cannot start a child under the current dispatch record`);
@@ -317,7 +327,7 @@ export class AgentHost {
       if (currentBrief) {
         validateBrief(currentBrief);
         const current = fingerprint(cwd);
-        if(ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint,current))throw new Error("FIXED_REVIEW_ARTIFACT_CHANGED");
+        if(ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint, profile.name === 'repro-verifier' ? fingerprint(ownerWorkflow.parentCwd) : current))throw new Error("FIXED_REVIEW_ARTIFACT_CHANGED");
         const baseline = record.baseline ?? capture(cwd, record.id, [], 'working', {kind:'baseline', owner: ownerOf(currentBrief, {workflowId: record.workflowId, callKey: record.callKey})}).fingerprint;
         if (baseline.repoId !== currentBrief.scope.repoId) throw new Error("REPOSITORY_MISMATCH");
         record = this.change(record.id, a=>{a.brief=currentBrief;a.baseline=baseline;});
@@ -394,6 +404,7 @@ export class AgentHost {
         }
       }, 100);
       await session.prompt(prompt + (record.brief ? briefPrompt(record.brief) : ""));
+      if (ownerWorkflow?.reviewFingerprint && !sameFingerprint(ownerWorkflow.reviewFingerprint, fingerprint(ownerWorkflow.parentCwd))) throw new Error('FIXED_REVIEW_ARTIFACT_CHANGED');
       for (const input of record.candidateInputs ?? []) assertCandidateCurrent(input);
       const stats = session.getSessionStats();
       this.change(record.id, a=>{a.usage={tokens:stats.tokens.total,cost:stats.cost,elapsedMs:Date.now()-budgetStart};});

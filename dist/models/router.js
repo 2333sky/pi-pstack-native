@@ -26,7 +26,7 @@ export function lowerSupportedThinking(model, level) {
     return index < 0 ? undefined : EFFORTS.slice(index + 1).find(candidate => supportsThinking(model, candidate));
 }
 /** Identify only recognizable model families; provider names alone do not establish family. */
-function modelFamily(selector) {
+export function modelFamily(selector) {
     const id = parseSelector(selector)?.id.toLowerCase() ?? '';
     for (const [family, pattern] of [
         ['claude', /(?:^|[\/_-])claude(?:[\d_-]|$)/],
@@ -61,7 +61,12 @@ function sameFamilyFallback(ctx, selector) {
 export function selectJudgeFromPool(ctx, pool) {
     const notes = [];
     const choices = [];
-    for (const selector of pool) {
+    const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+    const parentFamily = parent ? modelFamily(parent) : undefined;
+    const eligible = (candidate) => parentFamily ? Boolean(modelFamily(candidate) && modelFamily(candidate) !== parentFamily) : candidate !== parent;
+    const resolve = (selector) => {
+        if (selector === 'inherit-parent' || selector === 'auto')
+            return;
         try {
             const resolved = resolveRoleModel(ctx, 'judge', selector);
             if (!resolved.model)
@@ -72,15 +77,19 @@ export function selectJudgeFromPool(ctx, pool) {
         catch (error) {
             notes.push(`Judge pool entry ${selector} unavailable: ${error instanceof Error ? error.message : String(error)}`);
         }
+    };
+    for (const selector of pool)
+        resolve(selector);
+    if (!choices.some(eligible) && typeof ctx.modelRegistry.getAvailable === 'function') {
+        for (const selector of availableModelSelectors(ctx))
+            if (!pool.includes(selector))
+                resolve(selector);
     }
-    if (!choices.length)
-        throw new Error(`NO_AVAILABLE_JUDGE: ${notes.join(' ')}`);
-    const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
-    const parentFamily = parent ? modelFamily(parent) : undefined;
-    const differentFamily = parentFamily ? choices.find(candidate => modelFamily(candidate) && modelFamily(candidate) !== parentFamily) : undefined;
-    const selected = differentFamily ?? choices.find(candidate => candidate !== parent) ?? choices[0];
-    if (!differentFamily)
-        notes.push('A judge from a different model family than the parent could not be established.');
+    const selected = choices.find(eligible);
+    if (!parentFamily)
+        notes.push('The parent model family is unknown; judge family independence cannot be established.');
+    if (!selected)
+        notes.push('No eligible cross-judge is available; the coordinator must compare and select the base.');
     return { model: selected, notes };
 }
 export function resolveModelSelector(ctx, role, selector) {
@@ -127,4 +136,46 @@ export function resolveRoleModel(ctx, role, explicit, taskThinking) {
 export function availableModelSelectors(ctx) {
     const source = ctx.scopedModels.length ? ctx.scopedModels.map((x) => x.model) : ctx.modelRegistry.getAvailable();
     return [...new Set(source.map((m) => `${m.provider}/${m.id}`))].sort();
+}
+/** Suggest only models visible to this Pi session. Repeated seats are explicitly reported. */
+export function suggestedPanels(ctx) {
+    const available = availableModelSelectors(ctx);
+    const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+    const first = parent && available.includes(parent) ? parent : available[0] ?? 'inherit-parent';
+    const family = modelFamily(first);
+    const second = available.find(item => item !== first && family && modelFamily(item) && modelFamily(item) !== family)
+        ?? available.find(item => item !== first) ?? first;
+    const runners = [first, second];
+    const judges = available.length ? available : ['inherit-parent'];
+    return { arena: [...runners], architect: [...runners], interrogate: [...runners], 'arena-judges': [...judges] };
+}
+/** Drop unavailable configured seats, then retain the upstream minimum using a real survivor or parent. */
+export function resolvePanelSeats(ctx, selectors, minimum, notes) {
+    const models = selectors.flatMap(selector => {
+        try {
+            const resolved = resolveRoleModel(ctx, 'panel', selector);
+            notes.push(...resolved.notes);
+            if (!resolved.model)
+                throw new Error(`PARENT_MODEL_UNAVAILABLE: ${selector}`);
+            return [`${resolved.model.provider}/${resolved.model.id}`];
+        }
+        catch (error) {
+            notes.push(`Panel seat ${selector} was dropped: ${error instanceof Error ? error.message : String(error)}`);
+            return [];
+        }
+    });
+    if (!models.length && ctx.model) {
+        const parent = resolveRoleModel(ctx, 'panel', 'inherit-parent');
+        if (parent.model) {
+            models.push(`${parent.model.provider}/${parent.model.id}`);
+            notes.push(`No configured panel seats resolved; using parent model ${models[0]}.`);
+        }
+    }
+    if (!models.length)
+        throw new Error('NO_AVAILABLE_PANEL_MODELS');
+    while (models.length < minimum) {
+        models.push(models[0]);
+        notes.push('Repeated the remaining model to replace a dropped seat; model diversity is not established.');
+    }
+    return models;
 }

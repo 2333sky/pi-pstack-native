@@ -11,4 +11,4 @@ This project does not claim authorship of upstream pstack. Upstream copyright an
 
 The baseline skill Markdown and references under `vendor/upstream/0.15.17/pstack/` are copied verbatim from cursor/plugins commit `978ca6e9c0e012047cd5058b8e829240336e704e`. The upstream MIT notice is retained at `vendor/upstream/0.15.17/pstack/LICENSE`. Core entrypoints are mechanically generated from this source plus the separate Pi adapter.
 
-The active source snapshot is `vendor/upstream/0.15.32/pstack/` at cursor/plugins commit `99b609a72323b70204eab407c622f436e858e112`. It retains the upstream MIT license and includes Skill Markdown, references and the statechart toolchain. Generated supported entrypoints retain those upstream bodies. The earlier 0.15.17 snapshot is kept for historical provenance.
+The active source snapshot is `vendor/upstream/0.15.36/pstack/` at cursor/plugins commit `c742dd61706fbacc1b95f1a20b7b988cf096ce6c`. It retains the upstream MIT license and includes Skill Markdown, references and the statechart toolchain. Generated supported entrypoints retain those upstream bodies. The earlier 0.15.17 snapshot is kept for historical provenance.

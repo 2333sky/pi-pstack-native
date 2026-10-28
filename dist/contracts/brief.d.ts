@@ -15,3 +15,5 @@ export declare function parseReport(text: string): TaskReport;
 export declare function briefPrompt(brief: TaskBrief): string;
 export declare function validateBudget(budget?: import('./types.js').Budget): void;
 export declare function reportSatisfies(brief: TaskBrief, report: TaskReport): boolean;
+/** Synthesis may paraphrase a finding, but its reproduction must appear in a verifier report. */
+export declare function findingsBackedByVerifiers(report: TaskReport, verifiers: TaskReport[]): boolean;

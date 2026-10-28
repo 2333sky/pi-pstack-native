@@ -42,7 +42,7 @@ interface BriefFields {
     standingOrders: string[];
     reportFormat: 'task-report-v1';
     reportRequirements?: {
-        kind: 'evaluation' | 'cross-evaluation' | 'selection' | 'review' | 'coverage';
+        kind: 'evaluation' | 'cross-evaluation' | 'selection' | 'ranking' | 'review' | 'repro-review' | 'coverage';
         criteria?: string[];
         candidates?: string[];
         slices?: string[];
@@ -81,11 +81,21 @@ export interface TaskReport {
         candidates: string[];
         selectedParts: string[];
     };
+    ranking?: {
+        candidate: string;
+        rank: number;
+        reason: string;
+    }[];
     findings?: {
         severity: 'critical' | 'high' | 'medium' | 'low';
         location: string;
         description: string;
         evidence: string;
+        reproduction?: {
+            command: string[];
+            observed: string;
+            expected: string;
+        };
     }[];
     coverage?: {
         completed: string[];

@@ -44,9 +44,9 @@ In Pi, choose role models and a child reasoning level:
 /poteto-mode Fix the login bug, run relevant tests, and report the evidence.
 ```
 
-Setup offers reasoning-budget presets, an explicit fallback policy, default models for each native role, optional task-specific overrides, and model lists for arena runners, arena judges, architect runners and interrogate reviewers. Each list entry starts a separate child. Both model aliases, `inherit-parent` and `auto`, use the parent session's model. Explicit reasoning levels are checked against selected models; support varies by model. Cancel setup at any prompt to leave the configuration unchanged. Other existing panel and workflow overrides are retained.
+Setup previews a reasoning budget, role and task models, and suggested model panels drawn from the models available to this Pi session. Accept the table or edit only selected choices. Existing settings are retained; cancelling leaves the file unchanged. `inherit-parent` and `auto` use the parent model. Repeated seats are separate sessions, not model diversity.
 
-Configured panels are used by the corresponding `pstack_workflow` templates; the agent can plan first to display the resolved models. Arena and architect use a single cross-judge with confined read-only access to the verified candidates. No model family or fallback is silently substituted. See [model setup and routing](docs/REFERENCE.md#model-setup-and-routing) for usage and limitations.
+Arena and architect use a cross-judge with confined read-only access to verified candidates when an eligible different-family model is available. Otherwise they return candidates for the coordinator to inspect and select. Interrogate uses isolated adversaries and separate reproduction sessions; the coordinator must inspect actual command evidence. See [model setup and routing](docs/REFERENCE.md#model-setup-and-routing) for usage and limitations.
 
 Poteto Mode remains active for the current session until `/poteto-mode off`. You can ask Pi naturally to use child agents for exploration, implementation, or review. Whether agents are launched depends on the request and model's tool calls.
 
@@ -69,7 +69,7 @@ Workflow state defaults to `~/.pi/agent/pstack-native/`; set `PSTACK_NATIVE_HOME
 
 ## Validation and compatibility
 
-The active source snapshot is Cursor pstack **0.15.32** at `99b609a72323b70204eab407c622f436e858e112`; the SDK lock is **1.4.0**. Inventory coverage, source provenance, deterministic tests, fake-provider tests, authenticated model runs, and maintainer semantic sign-off are different forms of evidence. Current records do not claim full behavioral parity or maintainer sign-off. See [upstream provenance](docs/upstream-provenance-0.15.32.json) and [semantic compatibility](docs/SEMANTIC-COMPATIBILITY.md).
+The active source snapshot is Cursor pstack **0.15.36** at `c742dd61706fbacc1b95f1a20b7b988cf096ce6c`; the SDK lock is **1.4.0**. Inventory coverage, source provenance, deterministic tests, fake-provider tests, authenticated model runs, and maintainer semantic sign-off are different forms of evidence. Current records do not claim full behavioral parity or maintainer sign-off. See [upstream provenance](docs/upstream-provenance-0.15.36.json) and [semantic compatibility](docs/SEMANTIC-COMPATIBILITY.md).
 
 The GitHub workflow runs Node 22/24 checks and focused Windows state/build tests. A user reported real-model Windows testing at commit `4d75ea0b`: 20/20 cases passed an independent test rerun, while workflow acceptance was 13/20. These measure different outcomes. See the [Windows test record](docs/WINDOWS-MODEL-TEST.zh-CN.md). For local development:
 

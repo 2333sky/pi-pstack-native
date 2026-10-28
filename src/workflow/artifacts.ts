@@ -29,6 +29,7 @@ export function planArtifacts(nodes: WorkflowNodeSpec[]): ArtifactPlan {
       throw new Error(`Integrator ${key} must run in the target checkout with shared isolation.`);
     }
     const deps = node.dependsOn ?? [];
+    if (profile.name === 'repro-verifier' && (node.isolation !== 'shared' || deps.length !== 1 || byKey.get(deps[0]!)?.profile !== 'adversary')) throw new Error(`Repro verifier ${key} must continue exactly one adversary worktree.`);
     const prior = new Set<string>();
     const parents = new Set<string>();
     for (const dep of deps) {
@@ -57,7 +58,7 @@ export function planArtifacts(nodes: WorkflowNodeSpec[]): ArtifactPlan {
       if (["reviewer", "verifier"].includes(profile.name) && prior.size > 1) {
         throw new Error(`${profile.name} call ${key} sees multiple unmerged writable artifacts (${[...prior].join(", ")}). Add an integrator node first, then verify/review the integrated checkout.`);
       }
-      if (profile.name === 'cross-judge' && (deps.length < 2 || prior.size !== deps.length || deps.some(dep => {
+      if (profile.name === 'cross-judge' && (deps.length < 1 || prior.size !== deps.length || deps.some(dep => {
         const candidate = byKey.get(dep)!;
         return (candidate.profile ?? 'worker') !== 'worker' || candidate.isolation !== 'worktree' || (candidate.dependsOn?.length ?? 0) !== 0 || origin.get(dep)?.size !== 1;
       }))) throw new Error(`Cross-judge ${key} requires distinct root worker worktrees as direct dependencies.`);
@@ -88,7 +89,7 @@ export function planArtifacts(nodes: WorkflowNodeSpec[]): ArtifactPlan {
     const profile = getProfile(node.profile ?? "worker");
     if (profile.name === "integrator") continue;
     const lane = [...origin.get(node.key)!][0]!;
-    if (isolated.has(lane) && node.isolation === "shared") {
+    if (isolated.has(lane) && node.isolation === "shared" && profile.name !== 'repro-verifier') {
       throw new Error(`Writable call ${node.key} requires a worktree: shared isolation would collide with an independent writer.`);
     }
   }

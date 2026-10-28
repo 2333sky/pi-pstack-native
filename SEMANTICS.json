@@ -2,25 +2,20 @@
   "schemaVersion": 1,
   "snapshot": {
     "repository": "cursor/plugins",
-    "version": "0.15.32",
-    "commit": "99b609a72323b70204eab407c622f436e858e112",
-    "root": "vendor/upstream/0.15.32",
-    "scope": "All latest Skill Markdown and references, statechart scripts, manifest and upstream license; no Cursor platform runtime",
+    "version": "0.15.36",
+    "commit": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+    "root": "vendor/upstream/0.15.36",
+    "scope": "Skill and playbook Markdown, references, statechart runtime, manifest and license; no Cursor platform runtime",
     "files": [
       {
         "path": "pstack/.cursor-plugin/plugin.json",
-        "sha": "2d5accfaed9959e5a15226df48b17a59a16a4132",
+        "sha": "1295f46878218d568a037344877f0b603a887696",
         "size": 722
       },
       {
         "path": "pstack/LICENSE",
         "sha": "6b5400237fdf6545be0b8fae370d6f2fcff8fb25",
         "size": 1067
-      },
-      {
-        "path": "pstack/skills/architect/SKILL.md",
-        "sha": "88e23ca105b89e67f4085d0e676c40d4b170a623",
-        "size": 5469
       },
       {
         "path": "pstack/skills/architect/references/design-red-flags.md",
@@ -38,9 +33,14 @@
         "size": 3092
       },
       {
+        "path": "pstack/skills/architect/SKILL.md",
+        "sha": "88e23ca105b89e67f4085d0e676c40d4b170a623",
+        "size": 5469
+      },
+      {
         "path": "pstack/skills/arena/SKILL.md",
-        "sha": "b198b9e425c6b3e6ff01ca789b97ca5b4abb7ce2",
-        "size": 4511
+        "sha": "7580c3c9a7770d81b9dd7a537d9caa7362c04279",
+        "size": 5598
       },
       {
         "path": "pstack/skills/automate-me/SKILL.md",
@@ -69,18 +69,8 @@
       },
       {
         "path": "pstack/skills/create-formal-verification-skill/SKILL.md",
-        "sha": "37d73f9044b6bcc0132a0e703f70d13be5ded7c3",
-        "size": 5672
-      },
-      {
-        "path": "pstack/skills/create-verification-skill/SKILL.md",
-        "sha": "140d033a001e8d27acd14b06004506c43053b199",
-        "size": 6533
-      },
-      {
-        "path": "pstack/skills/create-verification-skill/references/feature-map-example/README.md",
-        "sha": "fb64570cfab3bbe672fe80925651933ebd57aa33",
-        "size": 2601
+        "sha": "92f7aa4fa966b857dd7fcc994b3c59650767c878",
+        "size": 5626
       },
       {
         "path": "pstack/skills/create-verification-skill/references/feature-map-example/create-note.md",
@@ -88,19 +78,24 @@
         "size": 2926
       },
       {
+        "path": "pstack/skills/create-verification-skill/references/feature-map-example/README.md",
+        "sha": "fb64570cfab3bbe672fe80925651933ebd57aa33",
+        "size": 2601
+      },
+      {
         "path": "pstack/skills/create-verification-skill/references/feature-map-example/search.md",
         "sha": "1f8e57d3aaf19cf27a9464d55fa72e46bcbc8b0f",
         "size": 3478
       },
       {
+        "path": "pstack/skills/create-verification-skill/SKILL.md",
+        "sha": "140d033a001e8d27acd14b06004506c43053b199",
+        "size": 6533
+      },
+      {
         "path": "pstack/skills/figure-it-out/SKILL.md",
         "sha": "0d04c2e69b75b22ff1a9a1d8ab339580a5fbbfed",
         "size": 4111
-      },
-      {
-        "path": "pstack/skills/how/SKILL.md",
-        "sha": "67edc340d4d8a9c7ab0b9e08c663e0e63b8d9125",
-        "size": 2651
       },
       {
         "path": "pstack/skills/how/references/explainer-prompt.md",
@@ -113,44 +108,29 @@
         "size": 1135
       },
       {
+        "path": "pstack/skills/how/SKILL.md",
+        "sha": "67edc340d4d8a9c7ab0b9e08c663e0e63b8d9125",
+        "size": 2651
+      },
+      {
         "path": "pstack/skills/in-your-own-words/SKILL.md",
         "sha": "4b2a476a9017863032c8dba9d12f0a2026943292",
         "size": 315
       },
       {
         "path": "pstack/skills/interrogate/SKILL.md",
-        "sha": "94946d22d8bf896bfcc2c54d363df5af3d17b4ca",
-        "size": 4548
+        "sha": "169f5b478f4cb53a4c5ab6046576034b4b07cfe8",
+        "size": 2314
       },
       {
-        "path": "pstack/skills/interrogate/references/code-quality-review.md",
-        "sha": "16581250d81044c7e80fe234c4970a3f7b7fc98a",
-        "size": 5217
-      },
-      {
-        "path": "pstack/skills/interrogate/references/lead-judgment.md",
-        "sha": "3b41346c9c3f5c35453d34f1c77374b7e9346aa9",
-        "size": 2283
-      },
-      {
-        "path": "pstack/skills/interrogate/references/reviewer-prompt.md",
-        "sha": "ef7bff3d77c35a0af2a9947187ccee15465657f4",
-        "size": 2275
-      },
-      {
-        "path": "pstack/skills/interrogate/references/rubric.md",
-        "sha": "8dab195ab840554bfe5e74e9b5ca0d9edbe9b496",
-        "size": 4772
+        "path": "pstack/skills/ketchup-video/SKILL.md",
+        "sha": "c0c614288dea9f413a418064d7e7d37791dd9e5e",
+        "size": 3887
       },
       {
         "path": "pstack/skills/ketchup/SKILL.md",
         "sha": "9eef27f92f8029137a7bfa7378305b075df9dc4f",
         "size": 6426
-      },
-      {
-        "path": "pstack/skills/ketchup-video/SKILL.md",
-        "sha": "69aa72aba763ae1836f8440d88e03e2928eb3719",
-        "size": 2880
       },
       {
         "path": "pstack/skills/maintain-formal-verification-skill/SKILL.md",
@@ -173,24 +153,19 @@
         "size": 2693
       },
       {
-        "path": "pstack/skills/poteto-help/SKILL.md",
-        "sha": "9d68a7a72da3a9712f77cc06d4a6bead90222b95",
-        "size": 15804
-      },
-      {
         "path": "pstack/skills/poteto-help/references/prompting.md",
         "sha": "6b72b2e6081fdb78a3261bd77cf7334596d1ee20",
         "size": 3166
       },
       {
         "path": "pstack/skills/poteto-help/references/recipes.md",
-        "sha": "048e0750451aa801a4cf7ed59fa9ed4624c0f1ec",
-        "size": 3674
+        "sha": "cc7a4e6828f5bfc3bcbf5954876358074718f45c",
+        "size": 3661
       },
       {
-        "path": "pstack/skills/poteto-mode/SKILL.md",
-        "sha": "21993f546032ca37671d5f1caf39c9a82ab4fa9d",
-        "size": 20362
+        "path": "pstack/skills/poteto-help/SKILL.md",
+        "sha": "a0604c9c4e63c7f798f19f33acd8a74ccb5b8531",
+        "size": 15745
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/authoring-a-skill.md",
@@ -199,23 +174,23 @@
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/autonomous-run.md",
-        "sha": "e6b88703cf327a76bcdd424429345ac0efeca67e",
-        "size": 1982
+        "sha": "af3bf11609a24020f678f859f13a65710ab67fbd",
+        "size": 2004
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
-        "sha": "068882379d9bdc2298052e7762d67ac795715baf",
-        "size": 6596
+        "sha": "bbc5b3751ad789cfbd92f8937a2e84de365509ad",
+        "size": 6701
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
-        "sha": "d7bdc289e045e8bc7da97b4ddfccc8d6c9ed0800",
-        "size": 2205
+        "sha": "819862c8fe7b756c8571eed410a30a09625673d9",
+        "size": 877
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/babysit.md",
-        "sha": "51549ab2da11e5905342bbb3aadb93685c8ac348",
-        "size": 7619
+        "sha": "14d5783d447ba3530d038c9dffa514f2492a54e0",
+        "size": 7594
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/bug-fix.md",
@@ -244,18 +219,18 @@
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
-        "sha": "27e99947bd20575e2ff503dbfba985a4f0fa298e",
-        "size": 13217
+        "sha": "7101aa71dbc08f2b84baa227a7bd589f800f13e8",
+        "size": 13418
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
-        "sha": "d729a7a06c5b67e406b081e1777114bc03b66f4a",
-        "size": 5669
+        "sha": "4a92c501f184ea24392d59a9889ce2f08e8e9201",
+        "size": 5621
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/orchestrate.md",
-        "sha": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
-        "size": 17127
+        "sha": "b6e5f5661a1e6b4778845de53f331cee3486905b",
+        "size": 4585
       },
       {
         "path": "pstack/skills/poteto-mode/playbooks/pause-safely.md",
@@ -313,6 +288,11 @@
         "size": 9629
       },
       {
+        "path": "pstack/skills/poteto-mode/SKILL.md",
+        "sha": "2dd5e76fde228141d3fe78b0b09ca68456b49531",
+        "size": 21670
+      },
+      {
         "path": "pstack/skills/principle-attack-the-premise/SKILL.md",
         "sha": "e9a6d499606992edd9963b80f8f8f57feaccb221",
         "size": 1916
@@ -344,8 +324,8 @@
       },
       {
         "path": "pstack/skills/principle-explain-the-number/SKILL.md",
-        "sha": "1e180c14aefe49a3b2a515320398e08c3ebeb57d",
-        "size": 1663
+        "sha": "3948ad34092437918f366e2cbb270e9ae31977fb",
+        "size": 1922
       },
       {
         "path": "pstack/skills/principle-fix-root-causes/SKILL.md",
@@ -438,11 +418,6 @@
         "size": 5345
       },
       {
-        "path": "pstack/skills/reflect/SKILL.md",
-        "sha": "9bb153bd2121e49d73a7af7d55ef372079889e62",
-        "size": 4995
-      },
-      {
         "path": "pstack/skills/reflect/references/divergent-reviewer.md",
         "sha": "1e070a2a3754f4dc0ddbaec4450a56179b81c92f",
         "size": 3668
@@ -463,9 +438,14 @@
         "size": 4448
       },
       {
+        "path": "pstack/skills/reflect/SKILL.md",
+        "sha": "9bb153bd2121e49d73a7af7d55ef372079889e62",
+        "size": 4995
+      },
+      {
         "path": "pstack/skills/setup-pstack/SKILL.md",
-        "sha": "cb61b8d3ee5d2a1b8fa403d8b99ed8d2e18f77df",
-        "size": 6305
+        "sha": "91f1127f8b14415fef9698b02a64d3d0bdef4f54",
+        "size": 6387
       },
       {
         "path": "pstack/skills/sharpen/SKILL.md",
@@ -478,139 +458,159 @@
         "size": 6551
       },
       {
+        "path": "pstack/skills/statechart/references/render.md",
+        "sha": "5ef0519d6f7ae97ef7befceaf174f94f52dd42f5",
+        "size": 3716
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/backends/cfg.ts",
+        "sha": "dec8b2f6671f2d110cd880f7af8d2c714cdf23a3",
+        "size": 1230
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/backends/mermaid.ts",
+        "sha": "327220cad69baa1d4fa5aa1cfe03f3cf9e13c133",
+        "size": 7437
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/backends/plain-text.ts",
+        "sha": "1ece33e8c45995493e84bc948ad613fce15481ab",
+        "size": 2343
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/backends/report.ts",
+        "sha": "62e2a853375a1141491ef54fed8fd0d81a1bcd3c",
+        "size": 7060
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/config.ts",
+        "sha": "4f6ade5a9a74c8e74a58125dc7a5d035ea2ca36b",
+        "size": 10698
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/dot.ts",
+        "sha": "003dfc89d4925c6aed3e59073b6a9414da78117b",
+        "size": 2484
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/marks.ts",
+        "sha": "9b1eda59f12861b8fb981d6046741417cd1be667",
+        "size": 3257
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/messages.ts",
+        "sha": "e835b065e775a1b822eede5b1515d0401ce8356b",
+        "size": 1842
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/spec.ts",
+        "sha": "3fbe34f1a6b344c56cfd5afba3b90fe9a397c405",
+        "size": 4198
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/trace.ts",
+        "sha": "43387c12b314c343d7a046de2fd095a3950b0026",
+        "size": 988
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/value.ts",
+        "sha": "d73ddec9ee3fa6077c644625002707a96d0938a1",
+        "size": 4757
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/verdict.ts",
+        "sha": "4f2ddd925332773b68918c40e62fc79a3a32571b",
+        "size": 1756
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/frontends/view.ts",
+        "sha": "ed8a1b5f9f0b4104a901a966bdfd66f13102d5ce",
+        "size": 4354
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/ir.ts",
+        "sha": "80fd403fe3c231b0986f239ba8c74a60b52c05f7",
+        "size": 15141
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/package.json",
+        "sha": "16bd68507bac879f00d9efb90f6a5df689dbbd3a",
+        "size": 233
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/annotate.ts",
+        "sha": "7d95d4fb57311c26bbbaca42eb283421f56140e0",
+        "size": 3738
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/label.ts",
+        "sha": "cc8c197726137a0875462702e39cd07cbf55d547",
+        "size": 8555
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/lift.ts",
+        "sha": "15db7deda016faee9c0da33c2c419be51e528ed6",
+        "size": 2888
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/loop-check.ts",
+        "sha": "7e5a3825adde46e8a625ad9e167cb0ce6b712174",
+        "size": 2149
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/paths.ts",
+        "sha": "632a5c4ae6d6101c89f46803605c09b6a96f9b6f",
+        "size": 1900
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/reach.ts",
+        "sha": "d5b6a521dc970f888d615d41caf692d0f7bcb2ec",
+        "size": 4063
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/region-check.ts",
+        "sha": "ae499230f5ba441d704386bd24df73cad3c92af7",
+        "size": 3525
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/passes/regions.ts",
+        "sha": "bb7aea062410be42c25c779ca748c2b52c3e5a82",
+        "size": 9475
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/pipeline.ts",
+        "sha": "f12a2e07f6e4fe283cfd1b2fc0d3f83dd3d75758",
+        "size": 2931
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/run.ts",
+        "sha": "4efd368e5bcd0b4ef7cf8d8cfd1e511483c720aa",
+        "size": 17319
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/statechart",
+        "sha": "7d3aeb8c219bf20aea4cbc321892fca9cbd582f1",
+        "size": 991
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/statechart.ts",
+        "sha": "4e2967e680895875d7d5352bfe997a4c08c2d1fc",
+        "size": 6044
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/tsconfig.json",
+        "sha": "9b16905d0a049715f942bdbe4bf3a3a80be02bad",
+        "size": 225
+      },
+      {
+        "path": "pstack/skills/statechart/scripts/worker.ts",
+        "sha": "9559314668f6573e17db7c278d05f5776b235ebc",
+        "size": 1095
+      },
+      {
         "path": "pstack/skills/statechart/SKILL.md",
-        "sha": "66670ebd1856621ef5307bb73eed09e60133212b",
-        "size": 7690
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/bug-states.mjs",
-        "sha": "3c8e9f21f6046393903a5b496e65c5e93bf4727a",
-        "size": 3122
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/chart-edges.mjs",
-        "sha": "0f0db11dc51dbf10ab20715820861a682893789f",
-        "size": 2498
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/chart-parts.mjs",
-        "sha": "eaa391d4e634b096d3625337f288627afb2e3427",
-        "size": 612
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/chart-to-tla.mjs",
-        "sha": "911c58698d7abf8c459134f0112a47750d317c1c",
-        "size": 7859
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/compare-charts.mjs",
-        "sha": "730698be4e1dfadb4866ff5f61e6cba2b37fe6ce",
-        "size": 2293
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/lib.mjs",
-        "sha": "238f1745e561aa5668cd09ec7a694836bf6b7156",
-        "size": 34169
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/map-view.mjs",
-        "sha": "e7e844b6d1fd6534408e94ac7f96fd7384ca5650",
-        "size": 3445
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/property-loop.mjs",
-        "sha": "47bf0372f89f27251e8639445ef1716dd243ea94",
-        "size": 2390
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/read-check.mjs",
-        "sha": "18c52b6d1447583c0d3b4e0dbd01c0ffc701e47b",
-        "size": 2872
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/regions-chart.mjs",
-        "sha": "95d746021468883e6a4adab5d82dc34d4f2c4082",
-        "size": 10920
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/render.mjs",
-        "sha": "4c90c58531d8f99ccb28fa659df1e85e868e0c9c",
-        "size": 19149
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/rule-book.mjs",
-        "sha": "3ea545228f7908394f903734b40157a23565e6b4",
-        "size": 3339
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/second-replay.mjs",
-        "sha": "1dba571c2c23d4648f0f15ffcf9359558e8de1be",
-        "size": 4855
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/snapshot.mjs",
-        "sha": "ebaf35573fb2208d9f3f29aca81669602d25171c",
-        "size": 2031
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/spec-text.mjs",
-        "sha": "ddfc8d10c9b22dd6bae3a4e4d950384bd0033574",
-        "size": 5875
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/statechart-help.mjs",
-        "sha": "1a900fc51f985a0e9b774bfc0fc6e0c4e484ff04",
-        "size": 26502
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/statechart.mjs",
-        "sha": "555f10b8c83d98e7e5de07224b99cc339ba75935",
-        "size": 36109
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/test/band.mmd",
-        "sha": "83af5860141f7d6ed4d0f323d1b3eef4303954ee",
-        "size": 316
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/test/regions.mmd",
-        "sha": "d241e24ff73c292e5fc62a81fd7ff17c189a5354",
-        "size": 2452
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/test/statechart.test.mjs",
-        "sha": "543fe8d67e3c7f5da3d54b678a48b05c8f7de820",
-        "size": 260592
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/test/sync.mmd",
-        "sha": "c780c2e4336925b66e79c2bd107c045c69e54355",
-        "size": 597
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/test/upload.mmd",
-        "sha": "dcfafa73793e4475427a6897466debd40c4e3f8f",
-        "size": 507
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/tlc-to-chart-args.mjs",
-        "sha": "a2e0a3124641af13770fd7e4dc3e76c17f1ce347",
-        "size": 2136
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/tlc-to-chart.mjs",
-        "sha": "7aefe44be6e60425fd061d04379adb256b06f75d",
-        "size": 30156
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/tlc-tools.mjs",
-        "sha": "09d46de4a62173348de802643944bd54a1298e71",
-        "size": 3362
-      },
-      {
-        "path": "pstack/skills/statechart/scripts/ways-in.mjs",
-        "sha": "e94658c804f62065b7bf4c7e0ae8c6854d1f0d69",
-        "size": 3077
+        "sha": "f5a64a8db4b8a5957ac5e76e051b1823cecd4d5e",
+        "size": 9100
       },
       {
         "path": "pstack/skills/swarm/SKILL.md",
@@ -633,24 +633,19 @@
         "size": 9093
       },
       {
-        "path": "pstack/skills/typescript-best-practices/SKILL.md",
-        "sha": "e1e5aa7c97ed39c425d60d933a96424a3f14539e",
-        "size": 2765
-      },
-      {
         "path": "pstack/skills/typescript-best-practices/references/patterns.md",
         "sha": "f8dd99b63ecb469a090b8fa0a7e235d3239cb9ec",
         "size": 9287
       },
       {
+        "path": "pstack/skills/typescript-best-practices/SKILL.md",
+        "sha": "e1e5aa7c97ed39c425d60d933a96424a3f14539e",
+        "size": 2765
+      },
+      {
         "path": "pstack/skills/unslop/SKILL.md",
         "sha": "97f5b6412148fa5b2a2fe478836fe8923ffa5cbb",
         "size": 5827
-      },
-      {
-        "path": "pstack/skills/why/SKILL.md",
-        "sha": "b5fe93f8b78f58b06e0bf245a6b5b8faae4300e8",
-        "size": 8903
       },
       {
         "path": "pstack/skills/why/references/epistemics.md",
@@ -711,13 +706,21 @@
         "path": "pstack/skills/why/references/synthesizer-prompt.md",
         "sha": "287a350c925c28b44f0e0dc687bb09a843e11100",
         "size": 7146
+      },
+      {
+        "path": "pstack/skills/why/SKILL.md",
+        "sha": "b5fe93f8b78f58b06e0bf245a6b5b8faae4300e8",
+        "size": 8903
       }
     ]
   },
   "baselineAdvancement": "requires-explicit-semantic-signoff",
   "review": {
     "status": "pending-maintainer-signoff",
-    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.32; maintainer approval and real-model evidence remain separate"
+    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.32; maintainer approval and real-model evidence remain separate",
+    "reviewer": null,
+    "at": null,
+    "rationale": null
   },
   "workflows": [
     {
@@ -742,51 +745,51 @@
         {
           "id": "L13",
           "start": 13,
-          "end": 37,
+          "end": 38,
           "label": "## Non-negotiables",
-          "hash": "68717e9fc9a8353c3d0758438c6f5b8d8341d0023234fc0ff18c859d494d453b"
+          "hash": "711be00d1661335f4cab90a1c778585d174a4fab660531614895dee5f827622a"
         },
         {
-          "id": "L38",
-          "start": 38,
-          "end": 80,
+          "id": "L39",
+          "start": 39,
+          "end": 81,
           "label": "## Principles",
-          "hash": "a337c5e1cb1ee3855fec8e9c17ddb40c95214e7dc5dc9285b82c727ca0a6636f"
+          "hash": "c1dd514fabc3890e5792491d00260873592510b57e8d2cd489e5d1f24cbdd182"
         },
         {
-          "id": "L81",
-          "start": 81,
-          "end": 90,
+          "id": "L82",
+          "start": 82,
+          "end": 91,
           "label": "## Autonomy",
           "hash": "95439b2fabd392cb3895dae36291a3fa09a1a36b0a23945e10944bcd3e47bebe"
         },
         {
-          "id": "L91",
-          "start": 91,
-          "end": 102,
+          "id": "L92",
+          "start": 92,
+          "end": 103,
           "label": "## Subagents",
-          "hash": "1968484284dc50de01958e437773464247ecdc7cf3be1f31ac2dc466432f468e"
+          "hash": "c1bf3bc54126afba8fb29f793d409e4cb2f7add6d4d16015b6e146b313e8fb80"
         },
         {
-          "id": "L103",
-          "start": 103,
-          "end": 116,
+          "id": "L104",
+          "start": 104,
+          "end": 117,
           "label": "## Writing the reply",
           "hash": "cd0aacf248ec7c144229529cf6c1dc752a0011ff2964b855dd4c32623b8f0b1f"
         },
         {
-          "id": "L117",
-          "start": 117,
-          "end": 120,
+          "id": "L118",
+          "start": 118,
+          "end": 121,
           "label": "## Comments",
           "hash": "d75a87b9aaa0f2c5ebf53adacef54ce4e6677c20f048dc0cc6aea412fc41c753"
         },
         {
-          "id": "L121",
-          "start": 121,
-          "end": 150,
+          "id": "L122",
+          "start": 122,
+          "end": 151,
           "label": "## Playbooks",
-          "hash": "1cb462bc465e98860435856088dbc5d0c75980692a5849045d39730938255525"
+          "hash": "0c117292cd90320597a0d72cc1c1aaf446e6280ffb1a60b3ab21e3b919816d42"
         }
       ],
       "rules": [
@@ -794,8 +797,8 @@
           "id": "poteto-mode.rule-1",
           "upstream": {
             "path": "pstack/skills/poteto-mode/SKILL.md",
-            "start": 123,
-            "end": 123,
+            "start": 124,
+            "end": 124,
             "quote": "Open a todolist whose first items",
             "hash": "3863f36924b99a822977fee0bac003972ac3775a87a1ad5867d28a9df394cd6b"
           },
@@ -814,8 +817,8 @@
           "id": "poteto-mode.rule-2",
           "upstream": {
             "path": "pstack/skills/poteto-mode/SKILL.md",
-            "start": 93,
-            "end": 93,
+            "start": 94,
+            "end": 94,
             "quote": "Use `subagent_type: \"poteto-agent\"`",
             "hash": "52f833ea1a0e18a4bcbe652795d331faf27e8f63e3944389a55658d420584438"
           },
@@ -834,8 +837,8 @@
           "id": "poteto-mode.rule-3",
           "upstream": {
             "path": "pstack/skills/poteto-mode/SKILL.md",
-            "start": 81,
-            "end": 81,
+            "start": 82,
+            "end": 82,
             "quote": "## Autonomy",
             "hash": "bd2716de5ce6dabb1fe5314c94a7d60f05a5ab724b00ba107e52f4c312a03cc9"
           },
@@ -1091,8 +1094,8 @@
           "id": "L17",
           "start": 17,
           "end": 17,
-          "label": "3. Pick the runners. Use the `arena runners` line in `~/.cursor/rules/pstack-models.mdc`. If the rule or that line is missing, default to one each on `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`. An `auto` or `inherit-parent` entry in this line or the cross-judge line means the parent model, so omit `model` for it. If the Task tool rejects a configured entry, run that seat on its family's default and say so. Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`. With no family match, use `claude-opus-5-5-xhigh`. If it rejects a default, use the closest valid slug of the same family from its error message. Spawn more runners when the arena covers multiple design directions. Use the same model N times when the work is generation-bound rather than judgment-sensitive. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.",
-          "hash": "efb61a22fe16780549c5e67b21724e1636b1404b85a530a2d8831fcce4d9535b"
+          "label": "3. Pick the runners. Use the `arena runners` line in `~/.cursor/rules/pstack-models.mdc`. If the rule or that line is missing, default to one each on `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`. An `auto` or `inherit-parent` entry in this line means the parent model, so omit `model` for it. If the Task tool rejects a configured entry, run that seat on its family's default and say so. Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`. If the family has no default, or the Task tool rejects that default, use the closest valid slug of the same family from its error message, or drop the seat and say so when there is none. If dropped seats leave fewer than two runners, add runners until there are two, or one when the line has one entry. Run each added runner on a remaining runner's model, or omit `model` so it runs on the parent model when none remain, and say so. Spawn more runners when the arena covers multiple design directions. Use the same model N times when the work is generation-bound rather than judgment-sensitive. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.",
+          "hash": "7c111459a716e0a28446ba44aababff89f6e918100f70ba5905771e398226786"
         },
         {
           "id": "L18",
@@ -1113,14 +1116,14 @@
           "start": 26,
           "end": 29,
           "label": "## Phase C: Cross-judge",
-          "hash": "e8f9696ddb8d8e87fbb06b1d08b52dfc4dbb700b039bd1017e12be6f643b7b26"
+          "hash": "dbb74924cf419fcd5c72cd6d57cfac5f28b56a4ba265c929c3f5bafc637ec9c9"
         },
         {
           "id": "L30",
           "start": 30,
           "end": 35,
           "label": "## Phase D: Pick a base",
-          "hash": "bcbce3a1c1f1d40cae03902c187d0de50a5c3ac212ef868490a1803078a45891"
+          "hash": "a1089b8aa1fb74bea700f747744c8c770924ab47e39050cc8d70202d456ec18f"
         },
         {
           "id": "L36",
@@ -1141,7 +1144,7 @@
           "start": 46,
           "end": 49,
           "label": "## Outputs",
-          "hash": "947aecd4de2b86a7672dc0c73bc1b54e121b05ef6717caa2a61d842bee2e2c45"
+          "hash": "8339df6a8be2ae79298b641cc6f63b2aef83e171e5aa4c1629f24720048cb541"
         }
       ],
       "rules": [
@@ -1172,7 +1175,7 @@
             "start": 28,
             "end": 28,
             "quote": "Don't spawn it while candidates are still writing.",
-            "hash": "3beef0b001053c332ac9981947f48997959dd884704e75649cfb97403af996d7"
+            "hash": "58640ec1e89341baeac03f8033aafc6501350000d15adc43715ef1234d66082f"
           },
           "status": "not-yet-verified",
           "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; pstack_skill original Markdown and native DAG dispatch",
@@ -1391,105 +1394,42 @@
           "start": 1,
           "end": 6,
           "label": "---",
-          "hash": "f79bb8386e073fdc9dcfd9fa385f84d68412dfed9ee79a36a29a4a67d097e6d2"
+          "hash": "66ddabf9a64c6890c18404f59e1fde158733609570b74229e2b6e8433e7e20ca"
         },
         {
           "id": "L7",
           "start": 7,
           "end": 10,
           "label": "# Interrogate",
-          "hash": "c735096ceed31d98fc81242786442fb77825179b84da96e9093fe8e3e22f2f28"
+          "hash": "45141c6b02e029da62f9017e8d0725cd1009ac0c1172de4b4b0380c5b076a05c"
         },
         {
           "id": "L11",
           "start": 11,
+          "end": 14,
+          "label": "## Frame",
+          "hash": "8af203f65530dd0e5c0e93e918e770f3c8a19f543ffa3d4f9dc7a281acbdc655"
+        },
+        {
+          "id": "L15",
+          "start": 15,
           "end": 20,
-          "label": "## Step 1, Scope",
-          "hash": "ee84e6e42c2fd928995ff3b8574aac6e80977443b16d3456f55e874996d997b9"
+          "label": "## Fan out",
+          "hash": "f776e1b451c89953558fa283379466fb027089cc47510e740c2a180245c1dbdf"
         },
         {
           "id": "L21",
           "start": 21,
-          "end": 24,
-          "label": "## Step 2, Intent",
-          "hash": "1543e20d7df41722d1925462c3a82a9a14fa0c67dc0b26aa7724073f3a477cfa"
+          "end": 26,
+          "label": "## Verify",
+          "hash": "1fdb641fbcbacd2f172b399cacb7e3ee599d7f2122c378b1e1cbab95b124f45f"
         },
         {
-          "id": "L25",
-          "start": 25,
-          "end": 39,
-          "label": "## Step 3, Spawn Reviewers",
-          "hash": "befdc72352fc5b8172ef7298c3eb283fee6137ca8571e074434c86e0cbe2332f"
-        },
-        {
-          "id": "L40",
-          "start": 40,
-          "end": 43,
-          "label": "## Step 4, Synthesize",
-          "hash": "a625073820e97cb792cb0b3d15ebce3d65963cf5db7e85675318245cb37ba699"
-        },
-        {
-          "id": "L44",
-          "start": 44,
-          "end": 52,
-          "label": "## Step 5, Lead Judgment",
-          "hash": "5094578ff9e921d84136f2b0e681502e123abc5fe7a13e773f219d5281498c14"
-        },
-        {
-          "id": "L53",
-          "start": 53,
-          "end": 54,
-          "label": "## Output Format",
-          "hash": "e793a4843722024f9b1367cbf7fdaec9559ae8107291c3cf25755c2558879470"
-        },
-        {
-          "id": "L55",
-          "start": 55,
-          "end": 57,
-          "label": "### Intent",
-          "hash": "22e92938608891f0c8bbe3915f41fa1691341ab5e86fe07fdabc2ea8dbac54d7"
-        },
-        {
-          "id": "L58",
-          "start": 58,
-          "end": 60,
-          "label": "### Reviewers",
-          "hash": "b94ca463851aba73edbad745da8523439e4379c09cb5a6ee7042b6ed92b65c0e"
-        },
-        {
-          "id": "L61",
-          "start": 61,
-          "end": 63,
-          "label": "### Act On",
-          "hash": "3885329551d10f8be5c9059a436d58a0982b863a47c12945d1573525a3b350dc"
-        },
-        {
-          "id": "L64",
-          "start": 64,
-          "end": 66,
-          "label": "### Consider",
-          "hash": "3c6f1596a6072d61ce6db059bfe19b4e2965f75e28f46cf2b575317f00d6872d"
-        },
-        {
-          "id": "L67",
-          "start": 67,
-          "end": 69,
-          "label": "### Noted",
-          "hash": "804e16a3958e8d6e2c1395272b6a5d8287cc537e9272ebf480762a0be048d69f"
-        },
-        {
-          "id": "L70",
-          "start": 70,
-          "end": 72,
-          "label": "### Dismissed",
-          "hash": "4583b50db10dfa76b02cefdf20491d3a40ced0d7a85f6833efaeb8813171caed"
-        },
-        {
-          "id": "L73",
-          "start": 73,
-          "end": 75,
-          "label": "### Agreement Map",
-          "hash": "536cae8fe339ad8f52b2b050a112814e5e351225fb6e53b4d3d4a2f267966a59"
+          "id": "L27",
+          "start": 27,
+          "end": 32,
+          "label": "## Output",
+          "hash": "d5240286b52c8914352ec6f8aa178e1d363fd86d096735588fc11c61abb24544"
         }
       ],
       "rules": [
@@ -1497,15 +1437,15 @@
           "id": "interrogate.rule-1",
           "upstream": {
             "path": "pstack/skills/interrogate/SKILL.md",
-            "start": 27,
-            "end": 27,
-            "quote": "one per entry",
-            "hash": "341a35d859a28279334238d71520851e5aa04d0deeedb0c9e1c4791b2b6e3d1a"
+            "start": 17,
+            "end": 17,
+            "quote": "Read the `interrogate reviewers` line",
+            "hash": "396b0b06eb523387e1626424728efcf8ac2523ccf901c73a222c6a0d4977452d"
           },
-          "status": "adapted-with-deviation",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; src/compatibility/adapter.ts receipt/panel checks",
-          "rationale": "Pi mappings and stricter re-verification are explicit; see adapter overrides.",
-          "scope": "critical-rule offline adapter contract; actual runtime surface evidence required separately",
+          "status": "not-yet-verified",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -1519,13 +1459,13 @@
             "path": "pstack/skills/interrogate/SKILL.md",
             "start": 9,
             "end": 9,
-            "quote": "Do NOT auto-apply changes.",
-            "hash": "70076496428d04c252f3f0ffc9da20613761c35882ae6226d5ca4cdc7cc9aca1"
+            "quote": "Do not apply fixes.",
+            "hash": "e6b3dbc24b24a9659f3b35a23ba810ddacf5f01f8cdcde0a6b1399f6c17c72fb"
           },
           "status": "not-yet-verified",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; pstack_skill original Markdown and native DAG dispatch",
-          "rationale": "Rule retained verbatim; deterministic checks cover only declared receipts, not model compliance.",
-          "scope": "critical-rule source preservation; model behavior unexercised",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -1537,15 +1477,15 @@
           "id": "interrogate.rule-3",
           "upstream": {
             "path": "pstack/skills/interrogate/SKILL.md",
-            "start": 46,
-            "end": 46,
-            "quote": "four buckets",
-            "hash": "a05ef0c46024b633ba4627bf28d4da62bcecaf18c7b8b76d46dfe89bf09e8ab1"
+            "start": 23,
+            "end": 23,
+            "quote": "Verify each finding per arena Phase F by rerunning its command.",
+            "hash": "d9d9405f584ecfdaa2f65538b33bfa8363677ac880950f31da95907e20add924"
           },
           "status": "not-yet-verified",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; pstack_skill original Markdown and native DAG dispatch",
-          "rationale": "Rule retained verbatim; deterministic checks cover only declared receipts, not model compliance.",
-          "scope": "critical-rule source preservation; model behavior unexercised",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -1829,7 +1769,7 @@
           "start": 8,
           "end": 12,
           "label": "2. **Spawn one owner per PR, and keep its work where a replacement can find it.** Resolve the forge once for the program. GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin can resolve the repository, use `origin pr` for every PR operation. Otherwise stay on `gh` and record the fallback. Never require Graphite (`gt`). Each owner is a Cursor cloud agent that builds, opens its PR per `playbooks/opening-a-pr.md`, proves the change on the real artifact, babysits to green per `playbooks/babysit.md`, and merges once steps 4 and 5 clear it.",
-          "hash": "aaabe3920f340ed34423ddf889e5d7048b7a347d7b8681b55f540de13ff1a985"
+          "hash": "9b891d3f8a9f0e580212f6555b0c0dd98738eabac6b710180d4817b93e8c97c0"
         },
         {
           "id": "L13",
@@ -1842,8 +1782,8 @@
           "id": "L14",
           "start": 14,
           "end": 16,
-          "label": "4. **Swarm-verify once.** A full swarm runs once, at the code-ready head. Another full swarm runs only for new behavior, a redesign, or a large new diff. A rebase, a merge-conflict resolution, or a minor fix gets a single verifier at the new head. Fan out independent verifiers at the code-ready SHA per the **swarm** skill. They re-run the gates, prove the load-bearing behavior live on the real surface through its control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`) or a named driver, and audit the diff. The verdict is not clean without the live lane, or before you audit the merge-ready report's receipts, because no lane trusts a claim it has not checked.",
-          "hash": "dbf0e527732fec7a151846e75d8bf26becb9aeb1ac6d2b419b8d885dd96b30f3"
+          "label": "4. **Swarm-verify once.** A full swarm runs once, at the code-ready head. Another full swarm runs only for new behavior, a redesign, or a large new diff. A rebase, a merge-conflict resolution, or a minor fix gets a single verifier at the new head, and a wording-only change gets none. Fan out independent verifiers at the code-ready SHA per the **swarm** skill. They re-run the gates, prove the load-bearing behavior live on the real surface through its control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`) or a named driver, and audit the diff. The verdict is not clean without the live lane, or before you audit the merge-ready report's receipts, because no lane trusts a claim it has not checked.",
+          "hash": "1dd3c23c08b0acd318ffbc550df729da5ee7fa74a7ea28ef95b2d76a23811f97"
         },
         {
           "id": "L17",
@@ -1864,7 +1804,7 @@
           "start": 23,
           "end": 26,
           "label": "7. **Stand down at once on the operator's stop.** A hold reaches every owner as a zero-writes order. Each reports where it stands and keeps its brief until the operator releases it.",
-          "hash": "287e47750548c620466f4ce04af8e725019c6444c785ff2fbcc69eb995a5271e"
+          "hash": "63e029eeae16969a7f4375b1e855af2fffccde3f61a1d562b5351549b41b42b3"
         }
       ],
       "rules": [
@@ -1960,35 +1900,21 @@
           "start": 1,
           "end": 4,
           "label": "### Autopilot-stack",
-          "hash": "85a3316d044af131042026dc9b67ddb9eb2ff28f15a412c1640c3a39af9104c7"
+          "hash": "712a5befdce6887336fa6eee427a538b7bcc8e049e1d940651fb005d21e5b88e"
         },
         {
           "id": "L5",
           "start": 5,
           "end": 5,
-          "label": "1. **Run Autopilot-full's owners, minus the landing.** Owners report STACK-READY in place of merge-ready. They never rebase onto another branch, trunk included, and never retarget, merge, close a PR, or arm auto-merge, because the root owns the chain's topology and the operator owns the landing. When an item depends on another, its owner branches from that item's branch, not from trunk.",
-          "hash": "a6d2c4cd9daa2a16813c65c7a4b2d7257956792d92a1b216a7418002754ff5d5"
+          "label": "1. **In place of step 5, stop at verified.** Stop when each PR is verified and green at its current head, then hand the PRs to the operator. After the handoff, nobody pushes without the operator's go. Every loop tick prompt names this file, so each tick sees the no-merge rule.",
+          "hash": "657b2089a1c5236a0a11b4a2e333bc230a1c15ac4d9f8aaeaa3f3687b3e950f9"
         },
         {
           "id": "L6",
           "start": 6,
-          "end": 6,
-          "label": "2. **Give the topology one writer.** Owners push only their own branches and report each tip and its intended parent. Only you rebase or retarget a link, because two writers on one chain undo each other. Append each clean PR in dependency order, with its base set to its parent's branch (`origin pr edit <pr> --base <parent-branch>` or `gh pr edit <pr> --base <parent-branch>`). Never require `gt`. An owner takes your push as its new base and lease, and on a conflict resolves its own slice for you to push.",
-          "hash": "fd00e298d50d4a8b546521ae098c8532317c7250d8029b02f368d34f323643cc"
-        },
-        {
-          "id": "L7",
-          "start": 7,
-          "end": 7,
-          "label": "3. **Absorb drift at the root.** Until landing starts, apply Autopilot-full step 5's test to each link and rebase the chain bottom-up where it calls for one. Then apply the patch-id rule link by link, since a link's base is its parent.",
-          "hash": "f004b9fe77e17d7b9408e3a6711ea8aeb8fe8229a58245a919b9d6bc384d4c90"
-        },
-        {
-          "id": "L8",
-          "start": 8,
-          "end": 13,
-          "label": "4. **Deliver the chain, then keep your hands off it.** Each link carries its verdict in its PR. Once landing starts, nobody writes to the chain except the post-merge retarget that `playbooks/shipping.md` sanctions, because a second writer breaks a landing in flight. A mid-landing problem goes through you to the operator, and any fix waits for the operator's go.",
-          "hash": "8483b5a0d1703d51b3bead18e65e5667f69b9253c05fa9fea3f096653dd62b16"
+          "end": 9,
+          "label": "2. **Stack a PR only when it builds on another PR.** This is the one exception to step 3. Base the PR on the other PR's branch in place of trunk, per **Size and stacks** in `playbooks/opening-a-pr.md`. In place of step 2's rebase onto trunk, each PR rebases onto its parent PR's branch, and the stack root rebases onto trunk. A new head on the lower PR restacks the PRs above it, and a PR whose `git patch-id` the restack leaves unchanged keeps its verdict.",
+          "hash": "c0d873158af0d5b1f78cc489703f4baa268eac4b7fc7517749b6b48dea817305"
         }
       ],
       "rules": [
@@ -1998,13 +1924,13 @@
             "path": "pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
             "start": 5,
             "end": 5,
-            "quote": "operator owns the landing",
-            "hash": "a6d2c4cd9daa2a16813c65c7a4b2d7257956792d92a1b216a7418002754ff5d5"
+            "quote": "stop at verified",
+            "hash": "657b2089a1c5236a0a11b4a2e333bc230a1c15ac4d9f8aaeaa3f3687b3e950f9"
           },
-          "status": "equivalent",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; src/compatibility/adapter.ts receipt/panel checks",
-          "rationale": "Rule retained verbatim; deterministic checks cover only declared receipts, not model compliance.",
-          "scope": "critical-rule offline adapter contract; actual runtime surface evidence required separately",
+          "status": "not-yet-verified",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -2018,13 +1944,13 @@
             "path": "pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
             "start": 6,
             "end": 6,
-            "quote": "Only you rebase",
-            "hash": "fd00e298d50d4a8b546521ae098c8532317c7250d8029b02f368d34f323643cc"
+            "quote": "each PR rebases onto its parent PR",
+            "hash": "024f6532ece78121e7d43865b84675cb66c37a8a16d23af22219d03ca9afc5bc"
           },
           "status": "not-yet-verified",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; pstack_skill original Markdown and native DAG dispatch",
-          "rationale": "Rule retained verbatim; deterministic checks cover only declared receipts, not model compliance.",
-          "scope": "critical-rule source preservation; model behavior unexercised",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -2036,15 +1962,15 @@
           "id": "autopilot-stack.md.rule-3",
           "upstream": {
             "path": "pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
-            "start": 7,
-            "end": 7,
-            "quote": "patch-id rule link by link",
-            "hash": "f004b9fe77e17d7b9408e3a6711ea8aeb8fe8229a58245a919b9d6bc384d4c90"
+            "start": 6,
+            "end": 6,
+            "quote": "a PR whose `git patch-id`",
+            "hash": "024f6532ece78121e7d43865b84675cb66c37a8a16d23af22219d03ca9afc5bc"
           },
-          "status": "equivalent",
-          "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; src/compatibility/adapter.ts receipt/panel checks",
-          "rationale": "Rule retained verbatim; deterministic checks cover only declared receipts, not model compliance.",
-          "scope": "critical-rule offline adapter contract; actual runtime surface evidence required separately",
+          "status": "not-yet-verified",
+          "mapping": "Pinned 0.15.36 instructions plus the Pi adapter; implementation and live behavior require further verification.",
+          "rationale": "This rule changed upstream; source preservation is not behavioral equivalence.",
+          "scope": "source mapping only; runtime/model evidence not yet established",
           "tests": [
             {
               "file": "test/semantic-compatibility.test.ts",
@@ -2091,8 +2017,8 @@
           "id": "L10",
           "start": 10,
           "end": 10,
-          "label": "4. **Never mutate stack topology.** No base retarget, rebase, stack-wide submit, or force-push from inside a babysit. Fix on the owning branch, report anything rebase-shaped upward, and let the owner do it. An Autopilot-full owner babysitting its own PR is that owner. Where this playbook says to report a rebase, that owner rebases its own branch and publishes it with `git push --force-with-lease` per `playbooks/autopilot-full.md` step 2. In Autopilot-stack, the root is that owner. The one sanctioned creation: when a fix's owning PR has already merged, it becomes a new PR on top of the remaining stack, never a rewrite of merged history, and it is the single case where the frozen queue list of step 6 changes.",
-          "hash": "01e3af918ed7de5f1f56c2c30f996918e8aa92ecb308e329d1b393eeb38d2bc8"
+          "label": "4. **Never mutate stack topology.** No base retarget, rebase, stack-wide submit, or force-push from inside a babysit. Fix on the owning branch, report anything rebase-shaped upward, and let the owner do it. An Autopilot-full or Autopilot-stack owner babysitting its own PR is that owner. Where this playbook says to report a rebase, that owner rebases its own branch and publishes it with `git push --force-with-lease` per `playbooks/autopilot-full.md` step 2. The one sanctioned creation: when a fix's owning PR has already merged, it becomes a new PR on top of the remaining stack, never a rewrite of merged history, and it is the single case where the frozen queue list of step 6 changes.",
+          "hash": "aa4ae3e2cb0f74c83e2971762d4d37cc6d683d6979420771dc299d5611650513"
         },
         {
           "id": "L11",
@@ -2158,7 +2084,7 @@
             "start": 10,
             "end": 10,
             "quote": "Never mutate stack topology.",
-            "hash": "01e3af918ed7de5f1f56c2c30f996918e8aa92ecb308e329d1b393eeb38d2bc8"
+            "hash": "aa4ae3e2cb0f74c83e2971762d4d37cc6d683d6979420771dc299d5611650513"
           },
           "status": "not-yet-verified",
           "mapping": "Generated pinned body + docs/PI-SEMANTIC-ADAPTER.md; pstack_skill original Markdown and native DAG dispatch",
@@ -2340,8 +2266,8 @@
     },
     "statechart-toolchain": {
       "status": "adapted-with-deviation",
-      "mapping": "Bundled upstream statechart scripts; external Java/TLC and PNG renderer",
-      "reason": "TLA2TOOLS/JAVA select existing tools; Java, TLC and renderer packages are external prerequisites, never mocked as completed."
+      "mapping": "Pinned pstack 0.15.36 statechart source and corpus, compiled for installed Node packages; external Java/TLC",
+      "reason": "Node cannot strip TypeScript inside node_modules. TLA2TOOLS/JAVA select existing tools; Java, TLC and optional rendering are external prerequisites."
     },
     "skill-frontmatter": {
       "status": "equivalent",
@@ -2360,8 +2286,8 @@
     },
     "swarm-mixed-first-pass-template": {
       "status": "unsupported",
-      "mapping": "Use an explicit DAG and selection policy instead",
-      "reason": "Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all."
+      "mapping": "Use an explicit DAG for mixed swarm",
+      "reason": "Race templates support first-pass and rank-all; mixed partition/race still requires an explicit DAG."
     },
     "autopilot-template": {
       "status": "adapted-with-deviation",
@@ -2415,52 +2341,57 @@
     }
   },
   "reviewedFiles": {
-    "src/compatibility/adapter.ts": "90e0be97083e1e43beaaec8ab08d6904c045abdc37e4142323c11e58b90bdf29",
+    "src/compatibility/adapter.ts": "54888f0a748a8a8fa4ec79545bfdc3d493608dc063a0513be1d9f2aee3cec447",
     "src/compatibility/source.ts": "b12cf67fa03b3043b2e80b849416ade2ccf9ef972b93f387e829b24ec9812a2e",
-    "src/compatibility/tool.ts": "4298d5148bdbdc560da3e8aef7c45fd7b9dcbd946368bdfeb9678fc66cb6b467",
+    "src/compatibility/tool.ts": "d1b83e38e08efa3e3d763b2a54b4da65729ab81cfd33aa59421a3e1de0566d9b",
     "src/agent/resources.ts": "840f5953c1c3d8e85ecced0eaba2dffdb8f843a3c02ae0dc41d9b16e3b992c7c",
-    "src/extension.ts": "33c58ec6413937cd7217bcf242fd71e1236e20631ba314b6c7685e0e585bfd0e",
-    "src/agent/profiles.ts": "6895fbf9f6b60b62bb02ee22a78951983bca79a1f98c513ce2c1875cd1abbbf1",
-    "src/agent/host.ts": "c750d874f567c3e43ef9fc0aa02cafde9cb627e04411c4d58bcfdd2eedcb806c",
-    "src/models/router.ts": "1067ab7822d19b623a79f81b32ccf62d5112bdcbc53d88188c4ad5fb7a0325a9",
-    "src/templates/build.ts": "c00651a4fa8843f05ad50a2847283dce4ad73e93dc05d3a6a012b3dec43e6053",
-    "src/workflow/engine.ts": "6e362b6a6f23b502e4550df0d2f59b25be7dff12148102c7972ecf12d88899bb",
-    "src/workflow/artifacts.ts": "be49513427635761c8f0c907d68560e2dd8dff4d0dea5f1ad6036d82fe6b2c24",
+    "src/extension.ts": "e1bf2a0b5e17732a343d08f098a8e00ac576372867214ccffbe0dbb5f5af7533",
+    "src/agent/profiles.ts": "8c845fa35a3db95319202ba9be73162c21323525d106eebddd9a5d72a49596ae",
+    "src/agent/host.ts": "bdc2b76f56c1c533ad2367da6e2016bf53d6b3739b424021735a84e25fbd8416",
+    "src/models/router.ts": "8cc6ce250a1678bfdf85409efacc6b163d40fde0b0b710481e0a2017eb69fcb1",
+    "src/runtime/config.ts": "fd9178d910169de0bef7eb91f5fc80000fb3b96ecd7d65cd022b33780aed89b8",
+    "src/runtime/lock.ts": "f7b68acb71d1e46d208f1720716143102ac2373beaee05c4ed8e2899c9e5af83",
+    "src/contracts/brief.ts": "56241c23f75109eee0d9ad74f7d4f9743e0ce0dab7c1dcdf38345ba7c880a759",
+    "src/contracts/types.ts": "846f5e68693ad3645999fdff71d580a9df704e6365abb9c46c7a44d9f8e32adc",
+    "src/runtime/types.ts": "64f0be85e152e898daedfcda17674886c2d079dc26f96cbdc122961c4e2dc2e1",
+    "src/templates/build.ts": "b870d506dbc99f9588b08e0ef2100f17ee72c157e414727a87343702f3a6c4a4",
+    "src/workflow/engine.ts": "a258b7d456d386443f578877d9c754e995de5d89855978bf52f57526d5b39903",
+    "src/workflow/artifacts.ts": "e470c58383982f6cd7cab25d381497e132bca13fcb7edc7524ac584423a0dbd9",
     "src/verification/runner.ts": "392e5eac32fd42fbfff678b5023ead59b5dd0be177dc7fd1eb6af1669d9fd3a6",
     "src/delivery/frontier.ts": "3eb79a830b1433d5bf2ba5dfd9e459430cce41df99c666f12005ece4f1f88dde",
-    "docs/PI-SEMANTIC-ADAPTER.md": "4e4890f98943aada896267fa40d282c375296e32a1885903eb8f0dbbe66a8f2f",
-    "scripts/upstream/cli.mjs": "32f8d80da18c5ae4d0f32f614611c1ebbd98af5d8eaf196c13d4230e5d0a29cf",
+    "docs/PI-SEMANTIC-ADAPTER.md": "41c838af6e181c0e1c9deab923f37a60967e99d8395468e8d8a442b2bd0c0fe3",
+    "scripts/upstream/cli.mjs": "aadc373bb44d20477735520b4e2ce7ee2b116647d2a278f1f6416f97dcf8976a",
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
-    "scripts/semantics/core.mjs": "6f288de05f8e7360ccbbe5cdb6871a1071d22624b5b093822ee5ede3f72c4cb6",
-    "scripts/semantics/generate.mjs": "41cd06bce98a2b65bb6fae813bf3f584ce92ea0534883e1e3d74bdb6a8c646b2",
-    "test/semantic-compatibility.test.ts": "df739b2936065d4e176d3d0c5f46ec117ce7b25eeafed7b70cc4feaaec0cdf8e",
-    "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
-    "scripts/semantics/real-pi-smoke.mjs": "4b89e94521017e2bd10bc575ccc507f8e2cad7e03809f83f9bec9fb2405896c3",
-    "test/e2e/workflow.test.ts": "d347903fb8bc29a952c9953bb2c8a5e45999a109c3bf4793476259c00115c52f",
-    "test/e2e/shipping.test.ts": "4f056def8c44c86dccb07a7a2797065a3521a84e253dccbb6f51ff1cef816680",
-    "test/protocol.test.ts": "4c8e0f55e781a4f249f634d89a0584510b5de51844e7f4bffed1d7305f396ba2",
-    "test/verification.test.ts": "0b5490574f15768e72b15e08113960416ea7ef9b730bd4d373515b36a6bc0882",
-    "test/latest-upstream.test.ts": "0d0d4bd8f5b2c91c348f16968ec8ed91cf01e38ea3281839911a2351afeda0c6",
-    "test/statechart.test.ts": "3cf9230db9f65624097c644248f925e89931bbe2c3c62178dbb12b08f18c9080",
-    "scripts/check-statechart.mjs": "c02f3ebe704e2db53b489721e8b31756c8c227d1504136afca15129fe66024d7",
-    "src/runtime/config.ts": "fd9178d910169de0bef7eb91f5fc80000fb3b96ecd7d65cd022b33780aed89b8",
-    "test/model-router.test.ts": "7dd8e305ace5cdcb7556f3df781675da22a64103df89bac20c9b19acdc75d58b",
-    "test/setup-command.test.ts": "cd1df06675e307013f196e61fd01fd7fb5b6ad16999d81872a250ae13405feae",
-    "src/contracts/brief.ts": "74a54bddf1baf961a707a992130eb97427138b9e1e3d6cec5c02dcf94da82a90",
-    "src/runtime/types.ts": "42ad20dc07a561fc549525205cc0bdb3e623d901ca2da65206dfc8b9f5e9e522",
-    "src/runtime/lock.ts": "f7b68acb71d1e46d208f1720716143102ac2373beaee05c4ed8e2899c9e5af83",
-    "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e",
-    "src/contracts/types.ts": "afc7ef471950e4cd2d363fd26b5a715b7f32709f9851d77df7c830d6105558a0",
     "scripts/benchmark.mjs": "cc1fec3114bff79192629f241608e4a77af5fe2a9a46334826cfe22157558fb8",
     "scripts/check-benchmark.mjs": "dc03b3db1aa8172ec45ff49727d0cd2af9688a466e7653bffa5be2291617ad57",
+    "scripts/semantics/core.mjs": "a882693bcb29803450a10ccf68124847e35b31a7ecaeb6a748f6acbc823a4876",
+    "scripts/semantics/generate.mjs": "ef32984c5e1fc25ed989a4be3ef834f7988ab73251f333ae08597b722b9331b6",
+    "test/semantic-compatibility.test.ts": "243c8396681026ef7cd5cae2be5da97edbef9a08472e59f14800212501d68543",
+    "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
+    "scripts/semantics/real-pi-smoke.mjs": "4b89e94521017e2bd10bc575ccc507f8e2cad7e03809f83f9bec9fb2405896c3",
+    "test/e2e/workflow.test.ts": "6fadb8a1d9cc4d38e92e7a6824c1bf2d6235919f491b1c79aeab16d0dd83b250",
+    "test/e2e/shipping.test.ts": "4f056def8c44c86dccb07a7a2797065a3521a84e253dccbb6f51ff1cef816680",
+    "test/protocol.test.ts": "a370be57ed721d22113926d3a15f6c50130889ae2fdd229cef0c53a98f98f620",
+    "test/verification.test.ts": "0b5490574f15768e72b15e08113960416ea7ef9b730bd4d373515b36a6bc0882",
+    "test/latest-upstream.test.ts": "a66f9c6ec5e1991247570a7acb3394905fbe57b0a68c3ceb3a6abb0a9e69b370",
+    "test/statechart.test.ts": "ef48f8de33f769e30b1091e92f0b23742b014fb844eceaf1221005ac6f9a5757",
+    "test/model-router.test.ts": "e2117cc4ab2e8b917267a0c3c05914a252f11cd7b3c15f9db6f1a29c557cc97a",
+    "test/setup-command.test.ts": "0ac35325430fa7276316f333d49ce23ad35890a8dd9d5cb44b9ab032f36a4a81",
+    "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e",
     "test/benchmark.test.ts": "c8b40b94ec8778dabfd73b9282932e0c5e575e4964bcc50576fbb7c854e964f0",
-    "src/tools/agents.ts": "62f12400db72d537b166bfadbfdf7b0801cbe165d255591506b6a7f5f25087e0",
-    "src/tools/workflow.ts": "096e8c267f544335255dfa7a929a8e0c8c31c52cadab9d150059eea249bb8805",
-    "test/model-panels.test.ts": "c00103951aef2e14bd6043e83262dcf1b9640473ef9bbd416efb43f4f3ff2cb4",
+    "scripts/check-statechart.mjs": "3e6fbf7cc00b623298a2d2ad0728b9762eae950f1fd2435d14a4c3ac6d38b2f1",
+    "src/tools/agents.ts": "46df8764f1a2c77367909c42d99f5d10a878f0d3750d14e57fe956a1269769a2",
+    "src/tools/workflow.ts": "942da3e7229938716660efd013b21218fd127305de38e030cc46325a1b8ac191",
+    "src/agent/candidates.ts": "c8f3ef5f83fe44203894d8c370e5dea0f520c24e1c20dbf9d8add2ac682bb1ce",
+    "src/worktree/snapshot.ts": "3e2691076b095b143a42bddf6bc38cd9a89ac3dcc91dbc90dadc820ba8acd799",
+    "test/model-panels.test.ts": "b4506fdfd05ffd0ea91e9736ae42a6694534fb53c4b976a2f7a35f8922b87b70",
+    "test/review-snapshot.test.ts": "cc93d43a402ed7a327ebc3ae734861e1fafc95968a6482e6810657705c57c937",
+    "test/swarm-race.test.ts": "00447c4342ffd809f91cf37f3b0dfda8a88aa97e767e36de0f6ad365f02e2d69",
     "test/e2e/harness.ts": "9363a5beb9b41cbf4b74e6912544968dfecf4e5f0a5ab4829d30d78f13111618",
     "test/e2e/parent-context.ts": "686e295dc806e1f7e0bb13230de6653951092084a8a4f55a39de2d6066b0f0de",
-    "scripts/check-e2e.mjs": "4587fe8758daae8fde3f8d92516d7e30e2fd9a08a9875652ec27cae4fe6e1d3a",
-    "src/agent/candidates.ts": "c8f3ef5f83fe44203894d8c370e5dea0f520c24e1c20dbf9d8add2ac682bb1ce"
+    "scripts/check-e2e.mjs": "f8a3332d01fe09fd18215a54da569f37e7955c39c5e4fbacb606c64df30e7c95",
+    "scripts/build.mjs": "4c1ef7c3a43cdb0cf76be0440d06885770b1d38bd7f77a056cd6439de6bc15ac",
+    "scripts/build-statechart.mjs": "4c30f6b1cb106d0c7d4031412331ad5473d947846cc4868bbac1fe6f14807c16"
   },
   "driftReviews": [],
   "evidence": {
@@ -2478,10 +2409,10 @@
       "status": "adapted-with-deviation",
       "upstream": {
         "path": "pstack/skills/poteto-mode/SKILL.md",
-        "start": 97,
-        "end": 97,
+        "start": 98,
+        "end": 98,
         "quote": "Match the model to the job.",
-        "hash": "74fb1b31c08c0e0f2f1810005c664663854e84370da160ab0b83c276a5c36b81"
+        "hash": "316506346dc15ddacea9a40bd78724b57545c6e616802ec8bc4cf349978bdebe"
       },
       "mapping": "Pi thinkingLevel presets with reported supported-level fallback",
       "rationale": "Pi effort levels replace Cursor slug rewriting; fast/standard slug selection is not inferred.",
@@ -2489,7 +2420,7 @@
       "tests": [
         {
           "file": "test/latest-upstream.test.ts",
-          "name": "latest source: every supported 0.15.32 Skill and playbook retains its pinned body and loads on Pi 1.4"
+          "name": "latest source: every supported 0.15.36 Skill and playbook retains its pinned body and loads on Pi 1.4"
         },
         {
           "file": "test/model-router.test.ts",
@@ -2502,13 +2433,13 @@
       "status": "adapted-with-deviation",
       "upstream": {
         "path": "pstack/skills/statechart/SKILL.md",
-        "start": 11,
-        "end": 11,
+        "start": 21,
+        "end": 21,
         "quote": "The first run installs TLC",
-        "hash": "27e937e109509e1012070f2d9e6b27dde8312789ef56a8ae8eb98275e5ed0e60"
+        "hash": "c5f4ccc62174ea2d3d821db23d3611939d00c92ebcae28502d1f740eb7b2e7af"
       },
-      "mapping": "Bundled upstream statechart scripts; external Java/TLC and PNG renderer",
-      "rationale": "TLA2TOOLS/JAVA select existing tools; Java, TLC and renderer packages are external prerequisites, never mocked as completed.",
+      "mapping": "Pinned pstack 0.15.36 statechart source and corpus, compiled for installed Node packages; external Java/TLC",
+      "rationale": "Node cannot strip TypeScript inside node_modules. TLA2TOOLS/JAVA select existing tools; Java, TLC and optional rendering are external prerequisites.",
       "scope": "Explicit Pi platform mapping; source preservation and scoped offline checks do not establish full model or external-platform parity.",
       "tests": [
         {
@@ -2545,7 +2476,7 @@
         "start": 14,
         "end": 14,
         "quote": "re-run the gates",
-        "hash": "642e4bd8e8b379415e9c8730f1322cb38ec7be24123ea4d6c14828488860f76f"
+        "hash": "fa3317e8bcd83c8d41838fb9e4fe07aab03318de531614345fd6af0d626180bc"
       },
       "mapping": "native verification runner plus separate read-only reviewer",
       "rationale": "Reviewers cannot execute shell; commands run in an authorized writable lane or deterministic runner.",
@@ -2565,7 +2496,7 @@
         "start": 28,
         "end": 28,
         "quote": "Spawn one readonly judge subagent",
-        "hash": "3beef0b001053c332ac9981947f48997959dd884704e75649cfb97403af996d7"
+        "hash": "58640ec1e89341baeac03f8033aafc6501350000d15adc43715ef1234d66082f"
       },
       "mapping": "single read-only cross-judge over verified, confined candidate worktrees",
       "rationale": "Native artifact gates and confined tools replace Cursor Task workspaces; the generated upstream phases remain the coordinator contract.",
@@ -2595,8 +2526,8 @@
         "quote": "first pass",
         "hash": "c317ed1af4e5cb5c83e7e51870c2f6578bf711e75b6e311fd9e14d63159510a2"
       },
-      "mapping": "Use an explicit DAG and selection policy instead",
-      "rationale": "Native specialized templates support partition/best-of, not automatic mixed/first-pass/rank-all.",
+      "mapping": "Use an explicit DAG for mixed swarm",
+      "rationale": "Race templates support first-pass and rank-all; mixed partition/race still requires an explicit DAG.",
       "scope": "Explicit Pi platform mapping; source preservation and scoped offline checks do not establish full model or external-platform parity.",
       "tests": [
         {
@@ -2630,8 +2561,8 @@
       "status": "equivalent",
       "upstream": {
         "path": "pstack/skills/poteto-mode/SKILL.md",
-        "start": 91,
-        "end": 91,
+        "start": 92,
+        "end": 92,
         "quote": "## Subagents",
         "hash": "b4d366567488cd08285fcb89fa8b49414ad647f347666f31ec2060752429c911"
       },
@@ -2673,7 +2604,7 @@
         "start": 17,
         "end": 17,
         "quote": "Pick the runners.",
-        "hash": "efb61a22fe16780549c5e67b21724e1636b1404b85a530a2d8831fcce4d9535b"
+        "hash": "7c111459a716e0a28446ba44aababff89f6e918100f70ba5905771e398226786"
       },
       "mapping": "models.json configured role, task and model panels",
       "rationale": "Optional same-provider recognized-family fallback is reported; unknown families and unsupported cases fail explicitly.",

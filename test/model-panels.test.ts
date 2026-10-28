@@ -51,7 +51,7 @@ test('configured review panels resolve models, plan, and dispatch one reviewer p
     },
   };
   try {
-    saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, workflows: { feature: { worker: 'b/two' }, swarm: { worker: 'b/two' } }, panels: {
+    saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, workflows: { feature: { worker: 'b/two' }, swarm: { worker: 'b/two' }, reflect: { tooling: 'b/two', judgment: 'a/one' } }, panels: {
       interrogate: ['inherit-parent', 'b/two'], arena: ['inherit-parent', 'b/two'],
       architect: ['inherit-parent', 'b/two'], 'arena-judges': ['inherit-parent', 'b/two'],
     } });
@@ -67,6 +67,10 @@ test('configured review panels resolve models, plan, and dispatch one reviewer p
     assert.equal(child.details.model, 'b/two');
     const override = await agentTool.execute('x', { action: 'run', profile: 'worker', playbook: 'feature', model: 'a/one', task: 'implement' }, undefined, undefined, ctx);
     assert.equal(override.details.model, 'a/one');
+    const reflect = await agentTool.execute('x', { action: 'run', profile: 'reviewer', playbook: 'reflect', modelRole: 'tooling', task: 'review tooling' }, undefined, undefined, ctx);
+    assert.equal(reflect.details.model, 'b/two');
+    const reflectPlan = await workflow.execute('x', { action: 'plan', playbook: 'reflect', nodes: [{ key: 'lens', profile: 'reviewer', modelRole: 'judgment', task: 'review judgment' }] }, undefined, undefined, ctx);
+    assert.equal(reflectPlan.details.nodes[0].model, 'a/one');
     const taskPlan = await workflow.execute('x', { action: 'plan', playbook: 'feature', nodes: [{ key: 'work', task: 'implement' }] }, undefined, undefined, ctx);
     assert.equal(taskPlan.details.nodes[0].model, 'b/two');
     const explicitPlan = await workflow.execute('x', { action: 'plan', playbook: 'feature', nodes: [{ key: 'work', task: 'implement', model: 'a/one' }] }, undefined, undefined, ctx);
@@ -75,10 +79,10 @@ test('configured review panels resolve models, plan, and dispatch one reviewer p
     assert.deepEqual(preflight.details.models, ['a/one', 'b/two']);
     const request = { action: 'plan', template: { kind: 'interrogate', brief } };
     const planned = await workflow.execute('x', structuredClone(request), undefined, undefined, ctx);
-    assert.deepEqual(planned.details.nodes.filter((n: any) => n.profile === 'reviewer').map((n: any) => n.model), ['a/one', 'b/two']);
+    assert.deepEqual(planned.details.nodes.filter((n: any) => n.profile === 'adversary').map((n: any) => n.model), ['a/one', 'b/two']);
     const done = await workflow.execute('x', { ...request, action: 'run' }, undefined, undefined, ctx);
     assert.equal(done.details.state, 'completed');
-    assert.deepEqual(dispatched.filter(n => n.profile === 'reviewer').map(n => n.model).sort(), ['a/one', 'b/two']);
+    assert.deepEqual(dispatched.filter(n => n.profile === 'adversary').map(n => n.model).sort(), ['a/one', 'b/two']);
     assert.equal(done.details.type, 'review');
     const arena = buildTemplate({ kind: 'arena', brief, rubric: [{ criterion: 'correctness', weight: 1 }] }, ctx);
     assert.deepEqual(arena.nodes.filter(n => n.key.startsWith('candidate-')).map(n => n.model), ['a/one', 'b/two']);
@@ -87,8 +91,10 @@ test('configured review panels resolve models, plan, and dispatch one reviewer p
     assert.deepEqual(arena.nodes.find(n => n.key === 'integrate')?.dependsOn, ['candidate-1', 'candidate-2', 'cross-judge']);
     const swarm = buildTemplate({ kind: 'swarm', swarmMode: 'race', candidateCount: 2, brief, judgeModel: 'a/one', rubric: [{ criterion: 'correctness', weight: 1 }] }, ctx);
     assert.deepEqual(swarm.nodes.filter(n => n.key.startsWith('candidate-')).map(n => n.model), ['b/two', 'b/two']);
-    assert.throws(() => buildTemplate({ kind: 'interrogate', brief }, { ...ctx, modelRegistry: { find: () => undefined } }), /not available/);
-    assert.equal(dispatched.filter(n => n.profile === 'reviewer').length, 2);
+    const recovered = buildTemplate({ kind: 'interrogate', brief }, { ...ctx, modelRegistry: { find: () => undefined } });
+    assert(recovered.notes.some(n => n.includes('dropped')));
+    assert.deepEqual(recovered.nodes.filter(n => n.profile === 'adversary').map(n => n.model), ['a/one', 'a/one']);
+    assert.equal(dispatched.filter(n => n.profile === 'adversary').length, 2);
     saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, panels: { interrogate: ['auto', 'inherit-parent'] } });
     const same = await semantic.execute('x', { action: 'panel', name: 'interrogate' }, undefined, undefined, ctx);
     assert.equal(same.details.modelDiversity, false);
@@ -121,7 +127,8 @@ test('cross-judge requires distinct directly owned candidate worktrees', () => {
   assert.doesNotThrow(() => planArtifacts(nodes));
   assert.throws(() => planArtifacts(nodes.map(n => n.key === 'b' ? { ...n, isolation: 'shared' } : n)), /requires distinct root worker worktrees/);
   assert.throws(() => planArtifacts(nodes.map(n => n.key === 'b' ? { ...n, profile: 'reviewer' } : n)), /requires distinct root worker worktrees/);
-  assert.throws(() => planArtifacts(nodes.map(n => n.key === 'judge' ? { ...n, dependsOn: ['a'] } : n)), /requires distinct root worker worktrees/);
+  assert.doesNotThrow(() => planArtifacts(nodes.map(n => n.key === 'judge' ? { ...n, dependsOn: ['a'] } : n)));
+  assert.throws(() => planArtifacts(nodes.map(n => n.key === 'judge' ? { ...n, dependsOn: [] } : n)), /requires distinct root worker worktrees/);
 });
 
 test('candidate inspection rejects workspace escapes and stale verified artifacts', async () => {
@@ -161,4 +168,70 @@ test('candidate inspection rejects workspace escapes and stale verified artifact
     if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old;
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('arena continues with verified survivors and records a failed candidate dropout', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'pstack-dropout-'));
+  const old = process.env.PSTACK_NATIVE_HOME;
+  process.env.PSTACK_NATIVE_HOME = join(root, 'home');
+  const cwd = join(root, 'repo'); mkdirSync(cwd);
+  const git = (...args: string[]) => execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8' }).trim();
+  git('init', '-q'); git('config', 'user.email', 'test@example.invalid'); git('config', 'user.name', 'Test');
+  writeFileSync(join(cwd, 'source.txt'), 'baseline\n'); git('add', '.'); git('commit', '-qm', 'baseline');
+  const a = { provider: 'p', id: 'claude-opus', reasoning: true }, b = { provider: 'p', id: 'grok-4', reasoning: true };
+  const ctx: any = { cwd, model: a, thinkingLevel: 'off', scopedModels: [], sessionManager: { getSessionId: () => 'parent' }, modelRegistry: { getAvailable: () => [a, b], find: (_p: string, id: string) => [a, b].find(m => m.id === id) } };
+  const brief: TaskBrief = { id: 'dropout', revision: 1, contractLevel: 'strict', goal: 'Create a candidate', scope: { repoId: fingerprint(cwd).repoId, include: ['**'], exclude: [] }, contextRefs: [], acceptance: [{ id: 'present', description: 'source exists', required: true, gateIds: ['file'] }], verification: [{ id: 'file', kind: 'file', path: 'source.txt', pattern: 'baseline' }], forbidden: [], standingOrders: [], reportFormat: 'task-report-v1', timeboxSeconds: 30 };
+  const agents = new Map<string, any>();
+  const host: any = { get: (id: string) => agents.get(id), async run(spec: any) {
+    if (spec.callKey === 'candidate-2') { const result = { ...spec, state: 'failed', error: { code: 'DROPPED', message: 'candidate failed', retryable: false } }; agents.set(spec.id, result); return result; }
+    const base = capture(spec.cwd, undefined, [], 'working', { kind: 'baseline', owner: ownerOf(spec.brief, { workflowId: spec.workflowId, callKey: spec.callKey }) }).fingerprint;
+    const report: any = { status: 'completed', base: base.commitSha, head: base.commitSha, artifactRefs: [], commandsRun: [], evidenceRefs: [], deviations: [], unresolved: [], nextActions: [] };
+    if (spec.profile === 'cross-judge') {
+      assert.deepEqual(spec.brief.reportRequirements.candidates, ['candidate-1']);
+      report.crossEvaluation = [{ candidate: 'candidate-1', criterion: 'correctness', score: 8, evidence: ['source.txt:1'], weaknesses: [], selectedParts: [] }];
+      report.selection = { candidates: ['candidate-1'], selectedParts: [] };
+    }
+    const result = { ...spec, cwd: spec.cwd, state: 'completed', baseline: base, report, result: 'done' };
+    agents.set(spec.id, result); return result;
+  } };
+  try {
+    saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, panels: { arena: ['p/claude-opus', 'p/grok-4'], 'arena-judges': ['p/grok-4'] } });
+    const plan = buildTemplate({ kind: 'arena', brief, rubric: [{ criterion: 'correctness', weight: 1 }] }, ctx);
+    const engine = new WorkflowEngine(host);
+    const created = engine.create({ type: 'arena', cwd, nodes: plan.nodes, parentSessionId: 'parent' });
+    const done = await engine.run(created.id, ctx);
+    assert.equal(done.state, 'completed');
+    assert.equal(done.calls['candidate-2'].excludedFromSelection, true);
+    assert.deepEqual(done.calls['cross-judge'].dependsOn, ['candidate-1']);
+    assert(done.modelNotes?.some(note => note.includes('candidate-2')));
+    assert.equal(done.calls.integrate.state, 'completed');
+    assert.throws(() => engine.retry(done.id, 'candidate-2'), /Excluded candidates/);
+    saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, panels: { arena: ['p/claude-opus', 'p/claude-opus'], 'arena-judges': ['p/claude-opus'] } });
+    const sameFamilyCtx = { ...ctx, modelRegistry: { getAvailable: () => [a], find: (_p: string, id: string) => id === a.id ? a : undefined } };
+    const noJudgePlan = buildTemplate({ kind: 'arena', brief: { ...brief, id: 'dropout-no-judge' }, rubric: [{ criterion: 'correctness', weight: 1 }] }, sameFamilyCtx);
+    const candidateOnly = engine.create({ type: 'arena', deliveryContract: noJudgePlan.deliveryContract, cwd, nodes: noJudgePlan.nodes, parentSessionId: 'parent' });
+    const result = await engine.run(candidateOnly.id, sameFamilyCtx);
+    assert.equal(result.state, 'completed');
+    assert.equal(result.deliveryContract, 'candidate-only');
+    assert(result.modelNotes?.some(note => note.includes('candidate-2')));
+  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(root, { recursive: true, force: true }); }
+});
+
+test('arena without an independent family returns candidates for coordinator selection', () => {
+  const root = mkdtempSync(join(tmpdir(), 'pstack-no-judge-')); const old = process.env.PSTACK_NATIVE_HOME; process.env.PSTACK_NATIVE_HOME = root;
+  const parent = { provider: 'p', id: 'claude-opus', reasoning: true };
+  const ctx: any = { model: parent, thinkingLevel: 'off', scopedModels: [], modelRegistry: { getAvailable: () => [parent], find: () => parent } };
+  const brief: any = { id: 'single-family', revision: 1, contractLevel: 'strict', goal: 'Create candidates', scope: { repoId: 'repo', include: ['**'], exclude: [] }, contextRefs: [], acceptance: [{ id: 'ok', description: 'ok', required: true, gateIds: ['file'] }], verification: [{ id: 'file', kind: 'file', path: 'source.txt' }], forbidden: [], standingOrders: [], reportFormat: 'task-report-v1', timeboxSeconds: 30 };
+  try {
+    saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, panels: { arena: ['p/claude-opus', 'p/claude-opus'], 'arena-judges': ['inherit-parent', 'p/claude-opus'] } });
+    const plan = buildTemplate({ kind: 'arena', brief, rubric: [{ criterion: 'correctness', weight: 1 }] }, ctx);
+    assert.equal(plan.nodes.length, 2);
+    assert.equal(plan.deliveryContract, 'candidate-only');
+    assert(plan.nodes.every(node => node.profile === 'worker'));
+    assert(plan.notes.some(note => note.includes('coordinator must inspect')));
+    const unknown = { provider: 'p', id: 'unknown-model', reasoning: true };
+    const unknownCtx = { ...ctx, modelRegistry: { getAvailable: () => [parent, unknown], find: (_provider: string, id: string) => [parent, unknown].find(m => m.id === id) } };
+    const uncertain = buildTemplate({ kind: 'arena', brief, judgeModel: 'p/unknown-model', rubric: [{ criterion: 'correctness', weight: 1 }] }, unknownCtx);
+    assert.equal(uncertain.deliveryContract, 'candidate-only');
+  } finally { if (old === undefined) delete process.env.PSTACK_NATIVE_HOME; else process.env.PSTACK_NATIVE_HOME = old; rmSync(root, { recursive: true, force: true }); }
 });

@@ -94,3 +94,6 @@ jobs:
           node skills/statechart/scripts/statechart.mjs from-chart skills/statechart/scripts/test/regions.mmd --out "$RUNNER_TEMP/statechart-smoke" --png
           test -s "$RUNNER_TEMP/statechart-smoke/chart.png"
           test -s "$RUNNER_TEMP/statechart-smoke/summary.json"
+          node dist/statechart/statechart.js skills/statechart/scripts/test/corpus/Counter/Counter.tla --out "$RUNNER_TEMP/statechart-0.15.36"
+          test -s "$RUNNER_TEMP/statechart-0.15.36/report.md"
+          test -s "$RUNNER_TEMP/statechart-0.15.36/chart.mmd"

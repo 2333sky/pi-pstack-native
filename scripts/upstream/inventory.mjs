@@ -4,8 +4,8 @@ import { basename, extname, join, sep } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { digest, readJSON, safePath } from './core.mjs';
 
-const snapshotPath = 'docs/upstream-target-0.15.32.json';
-const dispositionsPath = 'docs/upstream-dispositions-0.15.32.json';
+const snapshotPath = 'docs/upstream-target-0.15.36.json';
+const dispositionsPath = 'docs/upstream-dispositions-0.15.36.json';
 const sha = /^[a-f0-9]{40}$/;
 const categoryRules = [
   ['manifest', /^(?:\.cursor-plugin\/)?plugin\.json$/],

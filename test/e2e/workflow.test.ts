@@ -243,7 +243,7 @@ test(`${FAKE_PROVIDER} configured review panels dispatch distinct models through
     registerWorkflowTool({ registerTool: (value: any) => { tool = value; } } as any, engine);
     const result = await tool.execute('panel', { action: 'run', template: { kind: 'interrogate', brief } }, undefined, undefined, { ...parent.ctx, cwd: w.checkout });
     assert.equal(result.details.state, 'completed');
-    assert.deepEqual([result.details.calls['review-1'].model, result.details.calls['review-2'].model], [`loopback/${MODEL}`, `loopback/${other}`]);
+    assert.deepEqual([result.details.calls['adversary-1'].model, result.details.calls['adversary-2'].model], [`loopback/${MODEL}`, `loopback/${other}`]);
     assert(model.calls.some(call => call.model === MODEL));
     assert(model.calls.some(call => call.model === other));
   } finally { parent.dispose(); await model.close(); w.restoreEnv(); w.dispose(); }
@@ -271,7 +271,7 @@ test(`${FAKE_PROVIDER} panel model fallback is visible in the durable workflow`,
     registerWorkflowTool({ registerTool: (value: any) => { tool = value; } } as any, engine);
     const result = await tool.execute('panel', { action: 'run', template: { kind: 'interrogate', brief } }, undefined, undefined, { ...parent.ctx, cwd: w.checkout });
     assert.equal(result.details.state, 'completed');
-    assert.equal(result.details.calls['review-1'].model, `loopback/${first}`);
+    assert.equal(result.details.calls['adversary-1'].model, `loopback/${first}`);
     assert(result.details.modelNotes.some((note: string) => note.includes('loopback/claude-opus-5') && note.includes(`loopback/${first}`)));
     assert(engine.get(result.details.id)?.modelNotes?.some(note => note.includes('same-family')));
     assert(model.calls.some(call => call.model === first));
@@ -300,7 +300,7 @@ test(`${FAKE_PROVIDER} one cross-judge inspects isolated candidates before integ
         { candidate: 'candidate-2', criterion: 'correctness', score: 8, evidence: ['candidate.txt:1'], weaknesses: [], selectedParts: [] },
       ], selection: { candidates: ['candidate-1'], selectedParts: [] } }) };
     }
-    if (prompt.includes('Integrate only selected parts')) {
+    if (prompt.includes('Read each candidate and independently compare')) {
       if (call.step === 0) return { tool: { name: 'write', args: { path: 'integrated.txt', content: 'integrated\n' } } };
       return { text: reportText() };
     }
@@ -347,5 +347,62 @@ test(`${FAKE_PROVIDER} one cross-judge inspects isolated candidates before integ
     assert.equal(stale.state, 'failed');
     assert.match(JSON.stringify(stale.error), /CANDIDATE_ARTIFACT_CHANGED/);
     assert.equal(model.calls.length, requestsBefore);
+  } finally { parent.dispose(); await model.close(); w.restoreEnv(); w.dispose(); }
+});
+
+test(`${FAKE_PROVIDER} interrogate copies dirty changes and reruns findings in isolated sessions`, { timeout: 90_000 }, async () => {
+  const w = workspace();
+  const sha = git(w.checkout, ['rev-parse', 'HEAD']);
+  writeFileSync(join(w.checkout, 'base.txt'), 'base with uncommitted change\n');
+  writeFileSync(join(w.checkout, 'untracked.txt'), 'local context\n');
+  const finding = { severity: 'high', location: 'base.txt', description: 'The value differs from intent', evidence: 'cat base.txt', reproduction: { command: ['cat', 'base.txt'], observed: 'base with uncommitted change', expected: 'base' } };
+  const output = (findings: any[]) => '```json\n' + JSON.stringify({ status: 'completed', base: sha, head: sha, artifactRefs: [], commandsRun: [['cat', 'base.txt']], evidenceRefs: [], deviations: [], unresolved: [], nextActions: [], findings }) + '\n```';
+  const model = await startModelServer(call => {
+    const prompt = lastUserText(call);
+    if (prompt.includes('Break the stated change') || prompt.includes('Independently rerun each reported command')) {
+      if (call.step === 0) return { tool: { name: 'bash', args: { command: 'cat base.txt && cat untracked.txt' } } };
+      return { text: output([finding]) };
+    }
+    return { text: output([]) };
+  });
+  const other = 'loopback-model-two';
+  const parent = await openParentContext({ agentDir: w.agentDir, cwd: w.checkout, modelPort: model.port, sessionDir: w.sessionDir, modelIds: [MODEL, other] });
+  try {
+    saveModels({ version: 1, roles: {}, thinkingLevel: 'off', panels: { interrogate: [`loopback/${MODEL}`, `loopback/${other}`] } });
+    const brief: any = { id: 'repro-e2e', revision: 1, contractLevel: 'strict', goal: 'Review base.txt', scope: { repoId: fingerprint(w.checkout).repoId, include: ['**'], exclude: [] }, contextRefs: [], acceptance: [{ id: 'file', description: 'base exists', required: true, gateIds: ['file'] }], verification: [{ id: 'file', kind: 'file', path: 'base.txt', pattern: 'base' }], forbidden: [], standingOrders: [], reportFormat: 'task-report-v1', timeboxSeconds: 30 };
+    const host = new AgentHost({ agentDir: w.agentDir, modelRuntime: parent.session.modelRuntime });
+    const engine = new WorkflowEngine(host); let tool: any;
+    registerWorkflowTool({ registerTool: (value: any) => { tool = value; } } as any, engine);
+    const result = await tool.execute('repro', { action: 'run', template: { kind: 'interrogate', brief } }, undefined, undefined, { ...parent.ctx, cwd: w.checkout });
+    assert.equal(result.details.state, 'completed', JSON.stringify(result.details.calls));
+    const runs = model.calls.filter(call => call.step === 1 && call.tools.includes('bash'));
+    assert.equal(runs.length, 4);
+    for (const call of runs) { assert.match(toolResultText(call.messages), /base with uncommitted change/); assert.match(toolResultText(call.messages), /local context/); }
+    assert.equal(readFileSync(join(w.checkout, 'base.txt'), 'utf8'), 'base with uncommitted change\n');
+    for (const name of ['adversary-1', 'adversary-2']) assert(host.get(result.details.calls[name].agentId)?.worktree);
+  } finally { parent.dispose(); await model.close(); w.restoreEnv(); w.dispose(); }
+});
+
+test(`${FAKE_PROVIDER} swarm first-pass cancels an in-flight Pi session after verified acceptance`, { timeout: 90_000 }, async () => {
+  const w = workspace(); const sha = git(w.checkout, ['rev-parse', 'HEAD']); const other = 'loopback-model-two';
+  const output = '```json\n' + JSON.stringify({ status: 'completed', base: sha, head: sha, artifactRefs: [], commandsRun: [], evidenceRefs: [], deviations: [], unresolved: [], nextActions: [] }) + '\n```';
+  const model = await startModelServer(call => {
+    if (call.model === other) return { hold: true };
+    if (call.step === 0) return { tool: { name: 'bash', args: { command: 'node -e "setTimeout(() => console.log(\'ready\'), 500)"' } } };
+    return { text: output };
+  });
+  const parent = await openParentContext({ agentDir: w.agentDir, cwd: w.checkout, modelPort: model.port, sessionDir: w.sessionDir, modelIds: [MODEL, other] });
+  try {
+    saveModels({ version: 1, roles: {}, thinkingLevel: 'off' });
+    const brief: any = { id: 'first-pass-e2e', revision: 1, contractLevel: 'strict', goal: 'Find the first passing candidate', scope: { repoId: fingerprint(w.checkout).repoId, include: ['**'], exclude: [] }, contextRefs: [], acceptance: [{ id: 'file', description: 'base exists', required: true, gateIds: ['file'] }], verification: [{ id: 'file', kind: 'file', path: 'base.txt', pattern: 'base' }], forbidden: [], standingOrders: [], reportFormat: 'task-report-v1', timeboxSeconds: 30 };
+    const host = new AgentHost({ agentDir: w.agentDir, modelRuntime: parent.session.modelRuntime }); const engine = new WorkflowEngine(host); let tool: any;
+    registerWorkflowTool({ registerTool: (value: any) => { tool = value; } } as any, engine);
+    const result = await tool.execute('race', { action: 'run', template: { kind: 'swarm', swarmMode: 'race', selectionPolicy: 'first-pass', candidateCount: 2, models: [`loopback/${MODEL}`, `loopback/${other}`], brief } }, undefined, undefined, { ...parent.ctx, cwd: w.checkout });
+    assert.equal(result.details.state, 'completed', JSON.stringify(result.details.calls));
+    assert.equal(result.details.firstPassWinner, 'candidate-1');
+    assert.equal(result.details.calls['candidate-1'].verification.status, 'passed');
+    assert.equal(result.details.calls['candidate-2'].state, 'cancelled');
+    assert.equal(result.details.calls['candidate-2'].excludedFromSelection, true);
+    assert(model.calls.some(call => call.model === other));
   } finally { parent.dispose(); await model.close(); w.restoreEnv(); w.dispose(); }
 });

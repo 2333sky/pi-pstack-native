@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
@@ -42,6 +42,9 @@ assert.ok(mlRead.details.lines.some(line => line.text.includes("leakage")), "ins
 const statechartHelp = spawnSync(process.execPath, [join(installedDir, "skills/statechart/scripts/statechart.mjs"), "--help"], { encoding: "utf8" });
 assert.equal(statechartHelp.status, 0, statechartHelp.stderr);
 assert.match(statechartHelp.stdout, /from-spec/);
+const statechartLatest = spawnSync(process.execPath, [join(installedDir, "dist/statechart/statechart.js")], { encoding: "utf8" });
+assert.equal(statechartLatest.status, 2, statechartLatest.stderr);
+assert.match(statechartLatest.stderr, /Usage: statechart SPEC\.tla/);
 
 const testRoot = mkdtempSync(join(process.cwd(), ".installed-package-smoke-"));
 const agentDir = join(testRoot, "pi-agent");
@@ -50,6 +53,13 @@ const pstackHome = join(testRoot, "pstack-native");
 mkdirSync(agentDir, { recursive: true });
 mkdirSync(cwd, { recursive: true });
 mkdirSync(pstackHome, { recursive: true });
+if (process.env.TLA2TOOLS) {
+  const spec = join(installedDir, 'skills/statechart/scripts/test/corpus/Counter/Counter.tla');
+  const out = join(testRoot, 'statechart-output');
+  const checked = spawnSync(process.execPath, [join(installedDir, 'dist/statechart/statechart.js'), spec, '--out', out], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(checked.status, 0, checked.stderr);
+  assert.ok(existsSync(join(out, 'report.md')) && existsSync(join(out, 'chart.mmd')));
+}
 process.env.PI_CODING_AGENT_DIR = agentDir;
 process.env.PSTACK_NATIVE_HOME = pstackHome;
 writeFileSync(join(cwd, "sample.txt"), "baseline\n");

@@ -6,7 +6,7 @@ pi-pstack-native 是将 [pstack](https://github.com/cursor/plugins/tree/main/pst
 
 本文提供中文使用说明；扩展的命令名、部分界面选项和错误信息目前仍为英文。
 
-项目由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.32；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
+项目由社区独立维护，与 Cursor 及上游 pstack 维护者无隶属或背书关系。当前上游源码基线为 pstack 0.15.36；具体兼容范围和未完成的语义审查见 [PARITY.md](PARITY.md) 和 [语义兼容说明](docs/SEMANTIC-COMPATIBILITY.md)。
 
 ## 项目亮点
 
@@ -45,9 +45,9 @@ pi remove git:github.com/2333sky/pi-pstack-native
 /setup-pstack
 ```
 
-命令设置推理预算、模型回退策略和各通用角色的默认模型，也可以设置按任务覆盖的模型，以及 Arena 候选、Arena 裁判、Architect 候选和 Interrogate 审查的模型列表。列表中每一项对应一个子代理会话。`inherit-parent` 和 `auto` 都使用父会话的模型；推理等级的 `inherit-parent` 使用父会话的等级。启用同家族回退时，扩展会报告实际使用的模型或较低推理等级；无法找到适用回退时会阻断。任一步取消都不会写入配置。
+命令先展示推理预算、角色和任务模型，以及根据当前 Pi 可用模型建议的面板。可以直接保存，也可以只修改某个角色、任务或面板；已有自定义设置会保留，取消则不写入。一个面板席位对应一个独立子会话；多个席位使用相同模型不代表模型多样性。`inherit-parent` 和 `auto` 使用父会话模型。
 
-对应工作流模板会读取已配置的模型列表，可以先计划并检查每个节点的模型。Arena 和 Architect 默认使用一个交叉裁判，通过受限只读工具检查已验证的候选工作区；不可用模型不会被静默替换。详见[模型配置与路由](docs/REFERENCE.md#model-setup-and-routing)。
+Arena 和 Architect 在有可用异家族模型时使用交叉裁判；否则返回候选，由协调者选择和整合。Interrogate 在隔离工作区执行对抗调查，并由独立会话复跑；协调者仍须核对实际命令证据。详见[模型配置与路由](docs/REFERENCE.md#model-setup-and-routing)。
 
 在 Git 项目中，可以用中文描述任务和验收要求：
 
@@ -84,7 +84,7 @@ Poteto Mode 在当前会话中保持开启；使用 `/poteto-mode off` 关闭。
 
 ## 子代理和工作流
 
-子代理是通过 Pi 的 `AgentSession` 创建的独立会话。扩展提供 `worker`、`architect`、`reviewer`、`scout`、`verifier`、`synthesizer`、`integrator`、`poteto-agent` 和 `comment-sicko` 九种内置角色。
+子代理是通过 Pi 的 `AgentSession` 创建的独立会话。扩展提供 `worker`、`architect`、`reviewer`、`adversary`、`repro-verifier`、`scout`、`verifier`、`synthesizer`、`integrator`、`poteto-agent` 和 `comment-sicko` 等内置角色。
 
 可写代理可执行和修改文件；reviewer、scout、verifier 等只读角色使用受限的读取工具。并行写入通常使用独立 worktree，多个写入结果由 integrator 合并后再验证。工作流默认最多同时运行 4 个节点，可在调用时设置为 1–16。
 

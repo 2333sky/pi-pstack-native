@@ -3,9 +3,11 @@
 ## Unreleased
 
 - Rename the repository and package to `pi-pstack-native` and document direct Pi Git installation.
-- Retain the pstack 0.15.32 source snapshot and Pi 1.4.0 SDK baseline; keep maintainer semantic approval and authenticated model evidence separate.
+- Upgrade the pinned pstack source to 0.15.36 and retain the 0.15.32 snapshot; keep maintainer semantic approval and authenticated-model evidence separate.
 - Preserve panel and workflow configuration during setup and validate role-model reasoning selections.
-- Configure task-specific models, reported same-family fallbacks and multi-model arena, architect and interrogate panels in `/setup-pstack`; resolve those selections in native workflow plans and dispatch. Arena and architect use one confined read-only cross-judge by default.
+- Preview available-model defaults and edit individual roles, task overrides and panels in `/setup-pstack`; route Reflect lens models with `modelRole`. Arena and Architect use an eligible cross-judge or return candidates for coordinator selection, and preserve verified candidates after a dropout.
+- Use isolated adversary and independent reproduction sessions for Interrogate; copy staged, unstaged and untracked target changes and never integrate review worktrees automatically. Reports require command evidence and remain subject to coordinator inspection.
+- Add first-pass and rank-all Swarm race templates and an Architect implementation phase. Include the pstack 0.15.36 Statechart TypeScript source and test corpus, plus a compiled runtime that works inside installed Node packages.
 - Fix Windows atomic state writes, build paths, and lock contention; improve task-report diagnostics and benchmark controls.
 
 Earlier entries below describe their original snapshots and may retain historical package names or validation boundaries.
