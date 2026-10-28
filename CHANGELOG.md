@@ -27,6 +27,7 @@ Earlier entries below describe their original snapshots and may retain historica
 - Register `in-your-own-words` and `sharpen`, and port `ketchup-video`, `create-formal-verification-skill` and `maintain-formal-verification-skill` with their platform seams and dependency checks.
 - Make the parity manifest able to say it is short of the pinned target: the pending set and its reasons are checked against the target snapshot, so a gap cannot disappear silently.
 - Add behavior contracts for all 23 playbooks, derived from each playbook's numbered steps and roles, with `evidence: not_run` and a drift check in `npm run check`.
+- Add a generated per-record registry for all 81 registered names, carrying source, port, requirements, contracts and evidence, with a validator that refuses a claim its own fields do not support.
 
 
 ## Earlier releases

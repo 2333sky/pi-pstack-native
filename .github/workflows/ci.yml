@@ -32,6 +32,12 @@ jobs:
         run: npm run check:types
       - name: Build
         run: npm run build
+      - name: Check committed build artifacts
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all -- dist)" ]; then
+            git status --short --untracked-files=all -- dist
+            exit 1
+          fi
       - name: Pi SDK smoke (no live LLM)
         run: npm run check:host
       - name: Offline benchmark integrity smoke

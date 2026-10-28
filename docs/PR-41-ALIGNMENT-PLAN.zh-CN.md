@@ -23,6 +23,7 @@
 ## 本次落地与剩余边界
 
 - 已固定并核对 0.15.36 上游树；新增 Statechart 编译产物，确保安装到 `node_modules` 后仍可由 Node 启动。
+- 已合入主分支新增的逐条注册表协议，并将当前记录及校验切换到 0.15.36；0.15.32 记录作为历史保留。
 - 已增加可审阅的默认配置、局部编辑和 Reflect 角色路由；Arena 支持异家族裁判、无裁判交由协调者选择、候选掉队后保留已验证结果。
 - 已增加隔离的 Interrogate 对抗与复跑会话、Architect 的后续实现节点，以及 Swarm 的 `first-pass` 和 `rank-all`。Interrogate 的模型报告仍须由协调者核对实际执行证据。
 - Swarm 混合分片/竞赛仍需显式 DAG；Autopilot 的远程 PR 生命周期仍由协调者完成。Cursor 云代理、私有 watcher、自动化事件、实时 MCP 转发和独立云调度没有被冒充为 Pi 原生能力。
