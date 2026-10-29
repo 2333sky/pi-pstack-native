@@ -50,7 +50,9 @@ In Pi, choose role models and a child reasoning level:
 /poteto-mode Fix the login bug, run relevant tests, and report the evidence.
 ```
 
-Setup previews a reasoning budget, role and task models, and suggested model panels drawn from the models available to this Pi session. Accept the table or edit only selected choices. Existing settings are retained; cancelling leaves the file unchanged. `inherit-parent` and `auto` use the parent model. Repeated seats are separate sessions, not model diversity.
+Setup starts with a reasoning budget and previews role and task models and suggested panels from the models available to this Pi session. Page through the table, save it, or edit individual choices and panel seats. Existing settings are retained; cancelling before saving leaves the file unchanged. Unavailable models and unsupported reasoning are marked so they can be fixed in the same setup. `inherit-parent` and `auto` use the parent model. Repeated seats are separate sessions, not model diversity.
+
+After saving, setup starts a model turn to inspect real-app and formal verification capabilities and offer to create missing project-local Skills. The agent is instructed to ask before creating a Skill; the follow-up depends on the selected model.
 
 Arena and architect use a cross-judge with confined read-only access to verified candidates when an eligible different-family model is available. Otherwise they return candidates for the coordinator to inspect and select. Interrogate uses isolated adversaries and separate reproduction sessions; the coordinator must inspect actual command evidence. See [model setup and routing](docs/REFERENCE.md#model-setup-and-routing) for usage and limitations.
 
