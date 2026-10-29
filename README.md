@@ -96,6 +96,7 @@ npm run check:e2e
 - [中文说明](README.zh-CN.md) — installation, daily use, and troubleshooting.
 - [Documentation index](docs/README.md) — user, maintainer, and historical documents.
 - [Runtime reference](docs/REFERENCE.md) — workflow, verification, recovery, and advanced operations.
+- [Upstream upgrades and Poteto engineering checkpoints](docs/SEMANTIC-COMPATIBILITY.md#maintaining-pi-local-poteto-engineering-checkpoints) — preserve the Pi-local overlay when updating the pinned pstack source.
 - [Examples](examples/README.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md).
 
 MIT licensed; retain upstream attribution and notices. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
