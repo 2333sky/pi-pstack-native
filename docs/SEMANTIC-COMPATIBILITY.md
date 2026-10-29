@@ -34,6 +34,32 @@ node --experimental-strip-types scripts/semantics/generate.mjs --write
 npm run upstream:contracts
 ```
 
+## Maintaining Pi-local Poteto engineering checkpoints
+
+Poteto Mode has a **Pi-local engineering overlay** in `scripts/semantics/generate.mjs` (the `engineeringOverlay` branch for `poteto-mode/SKILL.md`). It supplies **First make it work → Then make it right → Practice**, failed-premise recovery, subagent handoff and evidence-reporting guidance. The generated `skills/poteto-mode/SKILL.md` combines the Pi adapter, this local overlay and the pinned upstream Markdown. **Do not edit the generated Skill to maintain these checkpoints**: regeneration would replace manual edits. This overlay is prompt-level guidance; it does not override native verification gates or authorize remote writes.
+
+When a new upstream `cursor/plugins` pstack revision is available:
+
+1. **Start from a branch containing the local overlay**, after its change has been merged. Run `npm run upstream:scan` to compare the pinned revision with the upstream candidate. Review the recorded report under `docs/upstream-sync/`. Exit code 3 indicates relevant semantic drift needing review, not permission to skip it. For a reviewed report, `npm run upstream:plan -- --report <report-path>` exports the task plan; upgrades should use an isolated branch/worktree.
+2. **Port and review the upstream changes**. Update the pinned `vendor/upstream/` snapshot and matching `UPSTREAM.json`, `PARITY.json`, `SEMANTICS.json`, provenance/inventory, relevant Pi mappings, tests and versioned documentation as appropriate. The scan/plan commands do not advance this baseline automatically. Check changed Poteto instructions, TDD/bug-fix/refactoring principles, and any renamed Skill entrypoint for duplication or conflict with the overlay; adjust the local generator only if needed. Keep the new pinned upstream instructions verbatim.
+3. **Regenerate, review, and validate** from the upgraded checkout:
+
+   ```sh
+   node --experimental-strip-types scripts/semantics/generate.mjs --write
+   npm run upstream:contracts
+   npm run check:semantics
+   npm run test:semantics
+   npm run check
+   npm run check:types
+   npm run build
+   npm run check:e2e
+   ```
+
+4. **Check the generated boundary before merging**: `skills/poteto-mode/SKILL.md` must contain `## Pi engineering checkpoints for code-changing tasks` **exactly once**, followed by `## Pinned upstream instructions` from the upgraded snapshot. Review the generated diff: confirm no new contradictory or redundant rules, and that the checkpoints still reach code-writing subagents and integrated-artifact verification. If upstream renames or removes the Poteto entrypoint, intentionally update the generator's resource match and affected mappings/tests instead of silently dropping the overlay.
+5. **Preserve provenance and review status**. When reviewed local files (including the generator) change, update their SHA-256 entries in `SEMANTICS.json.reviewedFiles` alongside the actual review and relevant tests. A refreshed digest, passing CI, or a regenerated file does **not** constitute maintainer semantic sign-off. Record genuine review, and separately label offline/fake-provider and authenticated-model evidence. Submit and review the upgrade as its own PR; do not automatically push, publish or merge.
+
+For a new upstream revision that does not modify Poteto or related engineering instructions, the overlay should regenerate unchanged, but the checks above still protect its placement and semantics. A model following these checkpoints in a live coding task requires separate behavioral evaluation; the static checks only validate source generation and compatibility records.
+
 Read-only children and the parent can read original Markdown with `pstack_skill`, including `upstream/skills/poteto-mode/playbooks/shipping.md` and original `references/` paths. Reads are paginated; every page is required. Script execution and arbitrary paths are rejected. The snapshot is not a separately discovered Skill tree.
 
 `pstack_semantics` checks explicit capability requests, maps declared task intents to playbooks, preflights independent model panels, and evaluates supplied round receipts. Its checks are deterministic and do not attest that an evidence file is true. Native AgentSession/DAG execution, verification ledgers, Frontier checks and human merge authorization remain the execution gates. The adapter does not execute, publish or merge anything itself.
