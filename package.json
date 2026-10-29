@@ -5,6 +5,12 @@
   "type": "module",
   "license": "MIT",
   "author": "2333sky",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2333sky/pi-pstack-native.git"
+  },
+  "bugs": "https://github.com/2333sky/pi-pstack-native/issues",
+  "homepage": "https://github.com/2333sky/pi-pstack-native#readme",
   "private": false,
   "keywords": [
     "pi-package",

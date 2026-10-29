@@ -22,4 +22,6 @@ The release chain includes source and semantic checks, tests, typecheck, build, 
 3. Choose whether a GitHub release or npm publication is appropriate and accurately describe the version and validation evidence.
 4. Create a tag, GitHub release, or npm publication only when the maintainer explicitly authorizes that external action. Registry ownership and availability must be checked at publication time.
 
+For the `0.6.0-preview.1` npm preview, a maintainer with npm publishing permission can publish from the reviewed release commit using `npm publish --tag next`. The default npm tag is `latest`; using `next` keeps this preview on an explicit preview channel. After publishing, check the registry version and tag before documenting it as available. npm authentication and its applicable two-factor requirement are prerequisites.
+
 Earlier installation and release results are historical records: [installation check](../INSTALLATION-CHECK.md) and [release validation](VALIDATION.md).

@@ -33,7 +33,13 @@ pi remove git:github.com/2333sky/pi-pstack-native
 
 Add `--local` to install for one trusted project. An unpinned Git source follows the default branch on update; append a tag or commit with `@` to pin it.
 
-The npm package name is `pi-pstack-native`, but it has not been published to npm. For source development, clone the repository, run `npm ci` and `npm run build`, then run `pi install .` from the checkout.
+Once the npm preview is published under the `next` tag, it can also be installed with:
+
+```bash
+pi install npm:pi-pstack-native@next
+```
+
+For source development, clone the repository, run `npm ci` and `npm run build`, then run `pi install .` from the checkout.
 
 ## Get started
 
