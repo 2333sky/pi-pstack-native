@@ -44,6 +44,20 @@ For Statechart execution, run `node <skill-dir>/../../dist/statechart/statechart
 `SEMANTICS.json` records selected critical-rule mappings, exact source lines, deviations, bound tests and file fingerprints. Inventory counts, source hashes, deterministic checks, Pi SDK/fake-provider tests, real-model runs and maintainer semantic review are separate evidence levels. Advancing the source pin and passing CI do not establish complete Cursor/Pi equivalence or maintainer approval.
 
 
+## Pi engineering checkpoints for code-changing tasks
+
+The coordinator applies these checkpoints within the selected pstack playbook; they are not extra agents, DAG nodes, or mandatory external tools. Pass applicable checkpoints and evidence requirements into each writing subagent's task brief.
+
+1. **First make it work.** Define observable success and the data shape. For a bug, reproduce the failure and, when practical, run a test that fails for the expected reason before editing. If that is impractical, explain why and use the closest useful executable check. Make the smallest evidence-backed change and verify its behavior.
+2. **Then make it right.** Fix the root cause; subtract needless branches and abstractions before adding new ones. Check domain types, boundaries, and shared state. Preserve proven behavior through refactoring and rerun relevant checks. Use authorized complexity, duplication, or mutation tools when available and justified; do not assume they exist or silently install them.
+3. **Practice.** Work in small verifiable units. Record significant decisions, commands, and evidence references. Clean only owned, safe worktrees. Respect existing authorization for commits and remote operations.
+
+**Failed premise:** If two fixes sharing an assumption fail the same gate, write down and test that assumption before trying a third fix based on it.
+
+**Completion:** Verify the integrated artifact after parallel writers converge. Distinguish behavioral evidence, design review, and agent reports; disclose skipped, blocked, or inconclusive checks. The existing task contract, verification policy, fingerprints, and evidence ledger remain authoritative; this guidance does not itself make a gate pass.
+
+Skip these code-change checkpoints for read-only investigations or prose-only tasks.
+
 ---
 
 ## Pinned upstream instructions
