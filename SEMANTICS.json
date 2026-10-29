@@ -2365,7 +2365,7 @@
     "scripts/benchmark.mjs": "cc1fec3114bff79192629f241608e4a77af5fe2a9a46334826cfe22157558fb8",
     "scripts/check-benchmark.mjs": "dc03b3db1aa8172ec45ff49727d0cd2af9688a466e7653bffa5be2291617ad57",
     "scripts/semantics/core.mjs": "212370981020e453546b8a7b1681720b9cee3826dbd93fe1a738c1b0b6f19ebf",
-    "scripts/semantics/generate.mjs": "ef32984c5e1fc25ed989a4be3ef834f7988ab73251f333ae08597b722b9331b6",
+    "scripts/semantics/generate.mjs": "3cf9ac858c2c4314786d316029a4cf1214777cc83c31dafcd7436b734618b140",
     "test/semantic-compatibility.test.ts": "243c8396681026ef7cd5cae2be5da97edbef9a08472e59f14800212501d68543",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
     "scripts/semantics/real-pi-smoke.mjs": "4b89e94521017e2bd10bc575ccc507f8e2cad7e03809f83f9bec9fb2405896c3",
