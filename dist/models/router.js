@@ -146,7 +146,9 @@ export function suggestedPanels(ctx) {
     const second = available.find(item => item !== first && family && modelFamily(item) && modelFamily(item) !== family)
         ?? available.find(item => item !== first) ?? first;
     const runners = [first, second];
-    const judges = available.length ? available : ['inherit-parent'];
+    // A judge pool is ordered by preference, not a copy of the entire registry.
+    // Keep it bounded even when the user has hundreds of available models.
+    const judges = available.length ? [...new Set(runners)] : ['inherit-parent'];
     return { arena: [...runners], architect: [...runners], interrogate: [...runners], 'arena-judges': [...judges] };
 }
 /** Drop unavailable configured seats, then retain the upstream minimum using a real survivor or parent. */

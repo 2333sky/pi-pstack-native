@@ -2,16 +2,15 @@ import { registerSemanticTool } from './compatibility/tool.ts';
 import { createResourceTools } from './agent/resources.ts';
 import { upstreamVersion } from "./runtime/upstream.ts";
 import { registerProtocolTools } from "./tools/protocol.ts";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { AgentHost } from "./agent/host.ts";
 import { LoopScheduler } from "./loop/scheduler.ts";
 import { formatInterval, parseInterval } from "./loop/store.ts";
-import { availableModelSelectors, lowerSupportedThinking, resolveModelSelector, supportsThinking, suggestedPanels } from "./models/router.ts";
-import { loadConfig, loadModels, saveConfig, saveModels } from "./runtime/config.ts";
-import { modelConfigPath } from "./runtime/home.ts";
+import { loadConfig, saveConfig } from "./runtime/config.ts";
+import { runSetup } from "./setup/command.ts";
 import { ensureHome } from "./runtime/store.ts";
 import { registerAgentTool } from "./tools/agents.ts";
 import { registerGraphTool } from "./tools/graph.ts";
@@ -140,159 +139,7 @@ export default function piPstackNative(pi: ExtensionAPI): void {
 
   pi.registerCommand("setup-pstack", {
     description: "Map pstack roles to models available in this Pi session.",
-    handler: async (_args, ctx) => {
-      if (!ctx.hasUI) { ctx.ui.notify("/setup-pstack requires an interactive UI.", "error"); return; }
-      const available = availableModelSelectors(ctx);
-      const choices = [
-        { value: "inherit-parent", label: "inherit-parent — use the parent session's model" },
-        { value: "auto", label: "auto — use the parent session's model" },
-        ...available.map((value) => ({ value, label: `${value} — use this available model` })),
-      ];
-      let config: ReturnType<typeof loadModels>;
-      try { config = loadModels(); }
-      catch (error) { ctx.ui.notify(error instanceof Error ? error.message : String(error), "error"); return; }
-      const roles = {
-        worker: "implementation", architect: "design and implementation", reviewer: "read-only review",
-        scout: "read-only exploration", verifier: "read-only verification", synthesizer: "reconcile results",
-        integrator: "combine work", "poteto-agent": "delegated Poteto task", "comment-sicko": "comment and workaround review",
-      };
-      const thinkingChoices = [
-        { value: "inherit-parent", label: "inherit-parent — use the parent session's reasoning level" },
-        { value: "max", label: "unlimited — max reasoning" },
-        { value: "xhigh", label: "large — extra-high reasoning" },
-        { value: "high", label: "medium budget — high reasoning" },
-        { value: "medium", label: "small budget — medium reasoning" },
-        { value: "off", label: "off — disable reasoning" },
-        { value: "minimal", label: "minimal — least reasoning effort, if supported" },
-        { value: "low", label: "low — lower reasoning effort, if supported" },
-      ] as const;
-      const thinkingLabel = await ctx.ui.select(`child reasoning budget (current level: ${config.thinkingLevel})`, thinkingChoices.map((choice) => choice.label));
-      if (thinkingLabel === undefined) { ctx.ui.notify("Setup cancelled; nothing was written.", "info"); return; }
-      const thinkingLevel = thinkingChoices.find((choice) => choice.label === thinkingLabel)?.value;
-      if (!thinkingLevel) { ctx.ui.notify("Invalid reasoning selection; nothing was written.", "error"); return; }
-      const fallbackChoices = [
-        { value: 'disabled', label: 'disabled — block unavailable models or unsupported reasoning' },
-        { value: 'same-family', label: 'same-family — use a matching model from the same provider or lower supported reasoning and report it' },
-      ] as const;
-      const orderedFallbackChoices = [...fallbackChoices].sort((a, b) => Number(b.value === config.fallbackPolicy) - Number(a.value === config.fallbackPolicy));
-      const fallbackLabel = await ctx.ui.select(`model fallback policy (current: ${config.fallbackPolicy ?? 'disabled'})`, orderedFallbackChoices.map(choice => choice.label));
-      if (fallbackLabel === undefined) { ctx.ui.notify("Setup cancelled; nothing was written.", "info"); return; }
-      const fallbackPolicy = fallbackChoices.find(choice => choice.label === fallbackLabel)?.value;
-      if (!fallbackPolicy) { ctx.ui.notify("Invalid fallback selection; nothing was written.", "error"); return; }
-      const next = { ...config, roles: { ...config.roles }, panels: { ...config.panels }, workflows: Object.fromEntries(Object.entries(config.workflows ?? {}).map(([key, values]) => [key, { ...values }])), thinkingLevel, fallbackPolicy };
-      for (const [name, seats] of Object.entries(suggestedPanels(ctx))) next.panels[name] ??= seats;
-      if (!existsSync(modelConfigPath()) && available.length) {
-        const code = available.find(model => /(?:grok|composer)/i.test(model)) ?? available[0]!;
-        const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : '';
-        const judgment = available.find(model => /claude/i.test(model)) ?? (available.includes(parent) ? parent : available[0]!);
-        next.roles.worker = code;
-        for (const role of ['architect', 'reviewer', 'verifier', 'synthesizer', 'integrator', 'poteto-agent', 'comment-sicko']) next.roles[role] = judgment;
-        next.roles.scout = code;
-        next.workflows.reflect = { tooling: code, judgment, divergent: judgment, synthesizer: judgment };
-      }
-      const validateChoice = (role: string, value: string): boolean => {
-        if (thinkingLevel === "inherit-parent") return true;
-        let model: ExtensionContext["model"];
-        try { model = resolveModelSelector(ctx, role, value); }
-        catch (error) { ctx.ui.notify(error instanceof Error ? error.message : String(error), "error"); return false; }
-        if (!model) { ctx.ui.notify(`No parent model available for ${role}; select an available model or cancel and choose inherit-parent reasoning.`, "error"); return false; }
-        if (!supportsThinking(model, thinkingLevel)) {
-          const lower = fallbackPolicy === 'same-family' ? lowerSupportedThinking(model, thinkingLevel) : undefined;
-          if (lower) { ctx.ui.notify(`${value} will use ${lower} reasoning for ${role} because ${thinkingLevel} is unavailable.`, 'info'); return true; }
-          ctx.ui.notify(`${value} does not support ${thinkingLevel} reasoning for ${role}; choose another model or cancel and select another reasoning level.`, "error"); return false;
-        }
-        return true;
-      };
-      const taskRoles = [
-          { names: ["feature", "refactoring"], profile: "worker", description: "feature and refactoring" },
-          { names: ["bug-fix"], profile: "worker", description: "bug-fix" },
-          { names: ["perf-issue"], profile: "worker", description: "performance issue" },
-          { names: ["hillclimb"], profile: "worker", description: "hillclimb" },
-          { names: ["how"], profile: "scout", description: "how explorer" },
-          { names: ["how"], profile: "synthesizer", description: "how explainer" },
-          { names: ["why"], profile: "scout", description: "why investigator" },
-          { names: ["why"], profile: "synthesizer", description: "why synthesizer" },
-          { names: ["swarm"], profile: "worker", description: "swarm worker" },
-          { names: ["reflect"], profile: "tooling", description: "reflect tooling" },
-          { names: ["reflect"], profile: "judgment", description: "reflect judgment" },
-          { names: ["reflect"], profile: "divergent", description: "reflect divergent" },
-          { names: ["reflect"], profile: "synthesizer", description: "reflect synthesizer" },
-      ];
-      const panelRoles = [
-        { name: "arena", description: "arena runners", min: 2 },
-        { name: "arena-judges", description: "arena judge pool", min: 1 },
-        { name: "architect", description: "architect runners", min: 2 },
-        { name: "interrogate", description: "interrogate reviewers", min: 1 },
-      ];
-      for (;;) {
-        const summary = `Roles: ${Object.entries(next.roles).map(([key, value]) => `${key}=${value}`).join(', ')}\nTask overrides: ${JSON.stringify(next.workflows)}\nPanels: ${Object.entries(next.panels).map(([key, value]) => `${key}=[${value.join(', ')}]`).join('; ')}`;
-        const action = await ctx.ui.select(`Review pstack settings\n${summary}`, ["Save settings", "Edit a role", "Edit a task model", "Edit a panel"]);
-        if (action === undefined) { ctx.ui.notify("Setup cancelled; nothing was written.", "info"); return; }
-        if (action === 'Save settings') {
-          const all = [...Object.entries(next.roles).map(([key, value]) => [key, value] as const), ...Object.entries(next.workflows).flatMap(([name, values]) => Object.entries(values).map(([key, value]) => [`${name}/${key}`, value] as const)), ...Object.entries(next.panels).flatMap(([name, values]) => values.map(value => [name, value] as const))];
-          if (!all.every(([name, value]) => validateChoice(name, value))) { ctx.ui.notify('Adjust incompatible models or the reasoning budget before saving.', 'error'); return; }
-          saveModels(next);
-          const duplicate = Object.entries(next.panels).filter(([name, values]) => name !== 'arena-judges' && new Set(values).size < 2).map(([name]) => name);
-          ctx.ui.notify(`Saved pstack-native models and panels.${duplicate.length ? ` Repeated model seats do not add model diversity: ${duplicate.join(', ')}.` : ''} Optional: use /skill:create-verification-skill or /skill:create-formal-verification-skill to add project verification.`, "info");
-          return;
-        }
-        if (action === 'Edit a role') {
-          const keys = Object.entries(roles).map(([key, description]) => `${key} — ${description} (current: ${next.roles[key] ?? 'inherit-parent'})`);
-          const selected = await ctx.ui.select('Choose role to edit', keys);
-          if (selected === undefined) { ctx.ui.notify('Setup cancelled; nothing was written.', 'info'); return; }
-          const index = keys.indexOf(selected);
-          if (index < 0) { ctx.ui.notify('Invalid role selection; nothing was written.', 'error'); return; }
-          const key = Object.keys(roles)[index]!;
-          const picked = await ctx.ui.select(`Model for ${key}`, choices.map(choice => choice.label));
-          if (picked === undefined) { ctx.ui.notify('Setup cancelled; nothing was written.', 'info'); return; }
-          const value = choices.find(choice => choice.label === picked)?.value;
-          if (!value) { ctx.ui.notify('Invalid model selection; nothing was written.', 'error'); return; }
-          if (validateChoice(key, value)) next.roles[key] = value;
-          continue;
-        }
-        if (action === 'Edit a task model') {
-          const labels = taskRoles.map(role => `${role.description} (current: ${next.workflows[role.names[0]]?.[role.profile] ?? 'role default'})`);
-          const picked = await ctx.ui.select('Choose task model to edit', labels);
-          if (picked === undefined) { ctx.ui.notify('Setup cancelled; nothing was written.', 'info'); return; }
-          const taskRole = taskRoles[labels.indexOf(picked)];
-          if (!taskRole) { ctx.ui.notify('Invalid task selection; nothing was written.', 'error'); return; }
-          const inherit = 'Use role default';
-          const selected = await ctx.ui.select(`Model for ${taskRole.description}`, [inherit, ...choices.map(choice => choice.label)]);
-          if (selected === undefined) { ctx.ui.notify('Setup cancelled; nothing was written.', 'info'); return; }
-          const value = selected === inherit ? undefined : choices.find(choice => choice.label === selected)?.value;
-          if (selected !== inherit && !value) { ctx.ui.notify('Invalid model selection; nothing was written.', 'error'); return; }
-          if (value && !validateChoice(taskRole.description, value)) continue;
-          for (const name of taskRole.names) {
-            const mapped = { ...next.workflows[name] };
-            if (value) mapped[taskRole.profile] = value; else delete mapped[taskRole.profile];
-            if (Object.keys(mapped).length) next.workflows[name] = mapped; else delete next.workflows[name];
-          }
-          continue;
-        }
-        if (action !== 'Edit a panel') { ctx.ui.notify('Invalid setup action; nothing was written.', 'error'); return; }
-        const labels = panelRoles.map(panel => `${panel.description} (current: ${next.panels[panel.name]?.join(', ') || 'none'})`);
-        const picked = await ctx.ui.select('Choose panel to edit', labels);
-        if (picked === undefined) { ctx.ui.notify('Setup cancelled; nothing was written.', 'info'); return; }
-        const panel = panelRoles[labels.indexOf(picked)];
-        if (!panel) { ctx.ui.notify('Invalid panel selection; nothing was written.', 'error'); return; }
-        const seats: string[] = [];
-        for (;;) {
-          const done = "Finish panel";
-          const selected = await ctx.ui.select(`${panel.description}: seat ${seats.length + 1}; selected: ${seats.join(", ") || "none"}`, [done, ...choices.map((choice) => choice.label)]);
-          if (selected === undefined) { ctx.ui.notify("Setup cancelled; nothing was written.", "info"); return; }
-          if (selected === done) {
-            if (seats.length < panel.min) { ctx.ui.notify(`${panel.description} requires at least ${panel.min} seat${panel.min === 1 ? "" : "s"}.`, "error"); continue; }
-            break;
-          }
-          const value = choices.find((choice) => choice.label === selected)?.value;
-          if (!value) { ctx.ui.notify("Invalid model selection; nothing was written.", "error"); return; }
-          if (!validateChoice(panel.description, value)) continue;
-          seats.push(value);
-          if (seats.length >= 16) break;
-        }
-        next.panels[panel.name] = seats;
-      }
-    },
+    handler: async (_args, ctx) => runSetup(pi, ctx),
   });
 
   pi.registerCommand("pstack", {
