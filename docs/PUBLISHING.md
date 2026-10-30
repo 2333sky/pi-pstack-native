@@ -24,7 +24,7 @@ The release chain includes source and semantic checks, tests, typecheck, build, 
 
 ## Proposed 1.0.0 stable release
 
-The package manifest and lockfile may be prepared at `1.0.0` ahead of the actual release. **This is release preparation, not proof of production readiness or publication.** Do not tag, announce, or publish `1.0.0` until a maintainer reviews and accepts the remaining gaps.
+The package manifest and lockfile may be prepared at `1.0.0` ahead of the actual release. **This is release preparation, not proof of production readiness or publication.** Do not tag, announce, or publish `1.0.0` until the remaining items below are closed.
 
 ### Recorded evidence
 
@@ -34,15 +34,23 @@ The package manifest and lockfile may be prepared at `1.0.0` ahead of the actual
 | Live GitHub pull request create, read, close and merge | Passed on `5deb723` against a disposable private repository | [live GitHub receipt](evidence/live-github-5deb723.json) |
 | npm name and version availability | `pi-pstack-native` returned `404` from the public registry on 2026-10-30, so no version is published and `1.0.0` is unclaimed | `npm view pi-pstack-native versions` |
 | npm publishing credentials | Absent in the validation environment; `npm whoami` returns `ENEEDAUTH` | — |
+| Maintainer semantic review | `signed-off` by `2333sky` at 2026-10-30T16:33:31Z | `SEMANTICS.json.review`; covers the 11 core entrypoints and their declared deviations |
 
 The live GitHub receipt covers one create/read/close/merge cycle on an unprotected repository with a single operator account. It does not cover branch protection, required reviews, auto-merge, a merge queue or concurrent delivery against the same pull request.
 
 ### Open before 1.0.0
 
-- **Maintainer semantic sign-off.** `SEMANTICS.json.review` is `pending-maintainer-signoff`. Either record a sign-off with a named reviewer, an ISO timestamp and a concrete rationale, or explicitly document the reduced support guarantee. A green CI run is not a sign-off.
-- **Windows real-model scope.** The only Windows real-model workflow number is the user-reported 13/20 acceptance, plus a separate 20/20 per-case rerun at commit `4d75ea0b`. Neither is bound to a commit in this repository and neither was re-run here. Decide one: exclude Windows real-model workflow acceptance from the 1.0.0 guarantee and state that exclusion, or obtain a commit-bound Windows run before publishing. Do not present 13/20 and 20/20 as one result.
 - **Release-commit validation.** Validate the exact release commit with `npm ci`, `npm run check:release`, `npm pack --dry-run`, an inspected tarball, and successful CI; record any skipped acceptance as such.
 - **npm publication rights.** Ownership cannot be verified without credentials. Confirm at publication time that the publishing account holds the name.
+
+### Guarantee scope for 1.0.0
+
+`SEMANTICS.json.review` is `signed-off` by `2333sky` for the 11 core entrypoints and their declared deviations. The guarantee is deliberately narrower than full Cursor/Pi behavioural parity:
+
+- **Included.** Critical-rule mappings for the 11 core entrypoints, the declared Pi deviations, deterministic offline/fake-provider tests, the installed-package smoke, the three-model real-model probe, and live GitHub pull request create/read/close/merge on an unprotected repository.
+- **Excluded.** Windows real-model workflow acceptance. The only Windows real-model number is the user-reported 13/20 workflow acceptance plus a separate 20/20 per-case rerun at commit `4d75ea0b`. Neither is bound to a commit in this repository and neither was re-run for this candidate, so they are not part of the 1.0.0 guarantee. Do not present 13/20 and 20/20 as one result. The Windows evidence 1.0.0 does rest on is CI: atomic state persistence, the build check and five repetitions of the cross-process lock test on `windows-latest`.
+- **Excluded.** Branch protection, required reviews, auto-merge, merge queues and concurrent delivery against one pull request.
+- **Excluded.** Full behavioural parity with Cursor, review-swarm quality, and any live UI/CLI behaviour outside the recorded receipts.
 
 **Only after explicit maintainer approval**, a publisher with npm access and the applicable second-factor authorization may publish the reviewed commit with `npm publish --tag latest` (unscoped packages are public). Publishing a version without `--tag` also selects `latest`; spell it out to avoid ambiguity. Verify `npm view pi-pstack-native@1.0.0 version`, `npm dist-tag ls pi-pstack-native`, and an actual `pi install npm:pi-pstack-native` afterward. Create a Git tag/GitHub release only with release authorization.
 

@@ -716,11 +716,11 @@
   },
   "baselineAdvancement": "requires-explicit-semantic-signoff",
   "review": {
-    "status": "pending-maintainer-signoff",
-    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.32; maintainer approval and real-model evidence remain separate",
-    "reviewer": null,
-    "at": null,
-    "rationale": null
+    "status": "signed-off",
+    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.36 at c742dd61; the support guarantee covers the 11 core entrypoints and their declared deviations only",
+    "reviewer": "2333sky",
+    "at": "2026-10-30T16:33:31Z",
+    "rationale": "Reviewed the 11 core critical-rule mappings, the declared Pi deviations and the adapter boundaries at the 0.15.36 pin, and accepted the archived evidence: the deterministic offline fixtures, the three-model real-model receipt for 5deb723 and the live GitHub read/write/merge receipt for 5deb723. Full behavioral parity with Cursor is not claimed, and Windows real-model workflow acceptance is excluded from the 1.0.0 guarantee."
   },
   "workflows": [
     {

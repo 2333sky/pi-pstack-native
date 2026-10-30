@@ -14,7 +14,7 @@ Issue #16 separates behavior source, platform adaptation and exercised evidence.
 | User-reported Windows real-model runs | Reported: 13/20 workflow acceptance and 20/20 independent tests at `4d75ea0b` | Full original result files have not been attached to the repository; see the [Windows record](WINDOWS-MODEL-TEST.zh-CN.md) |
 | Limited real Pi + real-model probe | Passed on `5deb723` for `opencode-go/claude-haiku-5-5`, `custom/gpt-5.6-sol` and `opencode-go/gpt-5.6-luna` | [Receipt](evidence/semantic-smoke-5deb723.json); one read-only probe per model, no implementation or live surface |
 | Live GitHub delivery operations | Passed on `5deb723`: create, read, close and merge against a disposable private repository | [Receipt](evidence/live-github-5deb723.json); unprotected repository, single operator account, no review or auto-merge |
-| Maintainer semantic review record | `pending-maintainer-signoff` | The merge did not automatically update the review fields in `SEMANTICS.json` |
+| Maintainer semantic review record | `signed-off` by `2333sky` at 2026-10-30T16:33:31Z | Recorded in `SEMANTICS.json.review` with a concrete rationale; it covers the 11 core entrypoints and their declared deviations only |
 
 The latest-source upgrade retains the evidence tiers below and adds [statechart toolchain validation](STATECHART.md). The [upgrade audit](upstream-upgrade-0.15.36.md) records changed source files and mapping decisions. The merged PR/CI links above document the earlier foundation, not a test of every later source change.
 
@@ -128,7 +128,7 @@ The repository's commit-bound authenticated real-model receipt is [archived for 
 The remaining acceptance work is a review record. Evidence for the other item is archived, but a documentation update alone completes neither item.
 
 1. ~~Run the limited real-model probe successfully and archive the receipt, tested source commit and model.~~ Done for `5deb723`: see [the receipt](evidence/semantic-smoke-5deb723.json). `SEMANTICS.json.evidence.realModel` records `status: "passed"` with that receipt. A later source change to a reviewed file invalidates the binding and requires a new run.
-2. Have the maintainer review the critical mappings and intentional deviations. Record that conclusion in `SEMANTICS.json.review` with `status: "signed-off"`, the actual `reviewer`, an ISO timestamp in `at`, and a concrete `rationale`, retaining the existing scope. Reference the review or merge decision if it records that conclusion. Do not infer or invent semantic approval solely from the merge event.
+2. ~~Have the maintainer review the critical mappings and intentional deviations.~~ Done: `SEMANTICS.json.review` records `status: "signed-off"`, reviewer `2333sky`, the timestamp and a rationale, with the scope unchanged. The sign-off does not claim full Cursor behavioural parity and does not cover Windows real-model workflow acceptance.
 3. Submit the evidence and metadata update, run `npm run check:semantics` and `npm run test:semantics`, and require the normal CI checks on that revision. Review any intervening mapped source/runtime changes before reusing earlier evidence.
 4. Recheck [issue #16](https://github.com/2333sky/pi-pstack-native/issues/16)'s acceptance criteria and record what the evidence establishes before closing it as completed. If a criterion is intentionally deferred, track it in a linked follow-up and explicitly agree the revised scope rather than checking it off as passed.
 
