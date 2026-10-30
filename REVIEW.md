@@ -1,4 +1,4 @@
-# v0.6.0-preview.1 review & validation
+# v1.0.0 review & validation
 
 ## Verified by the default local check
 
