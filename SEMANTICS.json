@@ -2400,9 +2400,18 @@
     "offline": "npm run test:semantics; npm run check:e2e",
     "fakeProvider": "Real Pi SDK with scripted loopback provider; no external inference",
     "realModel": {
-      "status": "not-run",
-      "reason": "No configured model credentials in the managed environment",
-      "procedure": "docs/SEMANTIC-COMPATIBILITY.md"
+      "status": "passed",
+      "reason": "Three authenticated Pi models completed the read-only probe on the tested commit; one earlier model identifier was rejected by its provider and is recorded as a failed attempt",
+      "procedure": "docs/SEMANTIC-COMPATIBILITY.md",
+      "receipt": "docs/evidence/semantic-smoke-5deb723.json",
+      "sourceCommit": "5deb7233524a1db2b1139d8d574a1747fa57a49c",
+      "recordedAt": "2026-10-30T16:14:00Z",
+      "models": [
+        "opencode-go/claude-haiku-5-5",
+        "custom/gpt-5.6-sol",
+        "opencode-go/gpt-5.6-luna"
+      ],
+      "liveGithubReceipt": "docs/evidence/live-github-5deb723.json"
     }
   },
   "overrides": [

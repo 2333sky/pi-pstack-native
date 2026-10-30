@@ -24,13 +24,25 @@ The release chain includes source and semantic checks, tests, typecheck, build, 
 
 ## Proposed 1.0.0 stable release
 
-The package manifest and lockfile may be prepared at `1.0.0` ahead of the actual release. **This is release preparation, not proof of production readiness or publication.** Do not tag, announce, or publish `1.0.0` until a maintainer reviews and accepts the remaining evidence gaps:
+The package manifest and lockfile may be prepared at `1.0.0` ahead of the actual release. **This is release preparation, not proof of production readiness or publication.** Do not tag, announce, or publish `1.0.0` until a maintainer reviews and accepts the remaining gaps.
 
-- Complete and record maintainer semantic sign-off, or explicitly document the reduced support guarantee; `SEMANTICS.json.review` is currently `pending-maintainer-signoff`.
-- Obtain and archive a successful, commit-bound authenticated Pi/model test receipt. Historic Windows results report 13/20 workflow acceptance and a separate 20/20 independent rerun; do not conflate them.
-- Evaluate live GitHub PR create/merge/delivery operations in an authorized disposable repository, or clearly state that these paths remain experimental and out of the 1.0.0 stability guarantee.
-- Check npm package ownership/availability and confirm `pi-pstack-native@1.0.0` is not already published; released name/version pairs cannot be reused.
-- Validate the exact release commit with `npm ci`, `npm run check:release`, `npm pack --dry-run`, an inspected tarball, and successful CI; record any skipped acceptance as such.
+### Recorded evidence
+
+| Item | State | Record |
+| --- | --- | --- |
+| Authenticated real-model probe | Passed on `5deb723` for three models | [semantic smoke receipt](evidence/semantic-smoke-5deb723.json) |
+| Live GitHub pull request create, read, close and merge | Passed on `5deb723` against a disposable private repository | [live GitHub receipt](evidence/live-github-5deb723.json) |
+| npm name and version availability | `pi-pstack-native` returned `404` from the public registry on 2026-10-30, so no version is published and `1.0.0` is unclaimed | `npm view pi-pstack-native versions` |
+| npm publishing credentials | Absent in the validation environment; `npm whoami` returns `ENEEDAUTH` | — |
+
+The live GitHub receipt covers one create/read/close/merge cycle on an unprotected repository with a single operator account. It does not cover branch protection, required reviews, auto-merge, a merge queue or concurrent delivery against the same pull request.
+
+### Open before 1.0.0
+
+- **Maintainer semantic sign-off.** `SEMANTICS.json.review` is `pending-maintainer-signoff`. Either record a sign-off with a named reviewer, an ISO timestamp and a concrete rationale, or explicitly document the reduced support guarantee. A green CI run is not a sign-off.
+- **Windows real-model scope.** The only Windows real-model workflow number is the user-reported 13/20 acceptance, plus a separate 20/20 per-case rerun at commit `4d75ea0b`. Neither is bound to a commit in this repository and neither was re-run here. Decide one: exclude Windows real-model workflow acceptance from the 1.0.0 guarantee and state that exclusion, or obtain a commit-bound Windows run before publishing. Do not present 13/20 and 20/20 as one result.
+- **Release-commit validation.** Validate the exact release commit with `npm ci`, `npm run check:release`, `npm pack --dry-run`, an inspected tarball, and successful CI; record any skipped acceptance as such.
+- **npm publication rights.** Ownership cannot be verified without credentials. Confirm at publication time that the publishing account holds the name.
 
 **Only after explicit maintainer approval**, a publisher with npm access and the applicable second-factor authorization may publish the reviewed commit with `npm publish --tag latest` (unscoped packages are public). Publishing a version without `--tag` also selects `latest`; spell it out to avoid ambiguity. Verify `npm view pi-pstack-native@1.0.0 version`, `npm dist-tag ls pi-pstack-native`, and an actual `pi install npm:pi-pstack-native` afterward. Create a Git tag/GitHub release only with release authorization.
 

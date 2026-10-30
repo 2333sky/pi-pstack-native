@@ -1,0 +1,43 @@
+{
+  "tier": "live-github",
+  "harness": "test/live/github-live.test.ts",
+  "runner": "scripts/e2e-live.mjs",
+  "sourceCommit": "5deb7233524a1db2b1139d8d574a1747fa57a49c",
+  "recordedAt": "2026-10-30T16:17:00Z",
+  "environment": {
+    "pi": "1.4.0",
+    "node": "v26.0.0",
+    "platform": "darwin",
+    "gh": "authenticated operator account"
+  },
+  "target": {
+    "repository": "2333sky/pi-pstack-live-probe",
+    "kind": "disposable private repository created only for this run and deleted afterwards",
+    "base": "main",
+    "protection": "no branch protection, no required reviews, no merge queue"
+  },
+  "command": "npm run test:live -- --repo 2333sky/pi-pstack-live-probe --confirm 2333sky/pi-pstack-live-probe --clone /tmp/live-probe --merge",
+  "results": {
+    "read": "passed",
+    "write": "passed",
+    "merge": "passed"
+  },
+  "covered": [
+    "gh reads the named repository and the current head of its base branch",
+    "gh reads one pull request and returns head sha, base ref, CI state and review decision",
+    "the frontier refreshes and plans a dry run against live pull request state",
+    "an operator clone pushes a branch and opens a pull request",
+    "the opened pull request is read back and its head sha matches the pushed commit",
+    "the pull request is closed and its branch deleted",
+    "GitHubCLI.merge runs `gh pr merge --merge --match-head-commit` and the pull request reaches state MERGED",
+    "the merged commit is reachable from the base branch"
+  ],
+  "notCovered": [
+    "submitting a review or a change request",
+    "auto-merge and merge queue behaviour",
+    "branch protection rules, required checks and required reviews",
+    "repository permission levels other than the operator account",
+    "concurrent delivery runs against the same pull request"
+  ],
+  "boundary": "One live create/read/close/merge cycle against an unprotected disposable repository with a single operator account. It does not establish behaviour under branch protection, review requirements or concurrent contention."
+}

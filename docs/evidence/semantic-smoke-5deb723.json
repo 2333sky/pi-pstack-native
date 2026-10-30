@@ -1,0 +1,49 @@
+{
+  "tier": "real-pi-real-model",
+  "harness": "scripts/semantics/real-pi-smoke.mjs",
+  "procedure": "docs/SEMANTIC-COMPATIBILITY.md",
+  "sourceCommit": "5deb7233524a1db2b1139d8d574a1747fa57a49c",
+  "recordedAt": "2026-10-30T16:14:00Z",
+  "environment": {
+    "pi": "1.4.0",
+    "node": "v26.0.0",
+    "platform": "darwin"
+  },
+  "runs": [
+    {
+      "model": "opencode-go/claude-haiku-5-5",
+      "status": "passed",
+      "completeSourceRead": true,
+      "unsupportedRefused": true,
+      "statusRoutedToBabysit": true,
+      "inference": true
+    },
+    {
+      "model": "custom/gpt-5.6-sol",
+      "status": "passed",
+      "completeSourceRead": true,
+      "unsupportedRefused": true,
+      "statusRoutedToBabysit": true,
+      "inference": true
+    },
+    {
+      "model": "opencode-go/gpt-5.6-luna",
+      "status": "passed",
+      "completeSourceRead": true,
+      "unsupportedRefused": true,
+      "statusRoutedToBabysit": true,
+      "inference": true
+    }
+  ],
+  "failedAttempts": [
+    {
+      "model": "custom/gpt-5.5",
+      "status": "failed",
+      "inference": true,
+      "reason": "custom API error (400) model_not_found: unknown provider for model gpt-5.5",
+      "note": "The configured endpoint rejected the model identifier before any probe check ran. This attempt is recorded as failed, not as a passing or blocked probe."
+    }
+  ],
+  "boundary": "One read-only shipping/source/capability/routing probe per model. No implementation, live surface, review swarm, merge or full behavioral parity is covered. The harness persists no raw model output and no credentials.",
+  "notes": "The tested source commit is 5deb723; the commit that adds this file changes only evidence and documentation, and no file listed in SEMANTICS.json.reviewedFiles. Earlier runs that used a model identifier rejected by its provider are recorded above instead of being discarded."
+}

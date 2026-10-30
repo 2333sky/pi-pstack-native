@@ -41,6 +41,7 @@ Environment variables used by the tiers:
 | `PSTACK_E2E_LIVE_PR=12` | 3 | Optional existing pull request number for the read probe. |
 | `PSTACK_E2E_LIVE_WRITE=1` | 3 | Enables the pull request create and close probe. |
 | `PSTACK_E2E_LIVE_CLONE=/path` | 3 | A clone of the named repository, required by the write probe. |
+| `PSTACK_E2E_LIVE_MERGE=1` | 3 | Enables the merge probe. Requires `PSTACK_E2E_LIVE_WRITE=1` and `PSTACK_E2E_LIVE_CLONE`. Merging is irreversible, so it needs its own switch. |
 
 ## Tier 1 offline
 
@@ -48,7 +49,7 @@ Environment variables used by the tiers:
 node --experimental-strip-types --test test/e2e/offline.test.ts test/e2e/reported-defects.test.ts
 ```
 
-Covers: the live tier stays closed without an explicit operator target, and stays closed for a residual `PSTACK_E2E_LIVE_WRITE` or `PSTACK_E2E_LIVE_CLONE` left in the environment; every refused environment runs the live file to completion with both tests skipped and no external command; every test file in the live tier consults only the guard gate; the live file is skipped when it runs on its own; `GitHubCLI` validates repository and pull request input before it touches `gh`; the GitHub provider refuses a merge whose expected head has moved; a fixture repository carries no credential in captured output.
+Covers: the live tier stays closed without an explicit operator target, and stays closed for a residual `PSTACK_E2E_LIVE_WRITE` or `PSTACK_E2E_LIVE_CLONE` left in the environment; the merge probe stays closed until `PSTACK_E2E_LIVE_MERGE=1` is set as well; every refused environment runs the live file to completion with all three tests skipped and no external command; every test file in the live tier consults only the guard gate; the live file is skipped when it runs on its own; `GitHubCLI` validates repository and pull request input before it touches `gh`; the GitHub provider refuses a merge whose expected head has moved; a fixture repository carries no credential in captured output.
 
 Evidence, 2026-10-12:
 
@@ -103,33 +104,49 @@ Evidence, 2026-10-12:
 ℹ duration_ms 9218.304916
 ```
 
-## Tier 3 live, not executed
+## Tier 3 live
 
 ```bash
 node --experimental-strip-types scripts/e2e-live.mjs --repo <owner>/<name> --confirm <owner>/<name> [--base main] [--pr 12]
 node --experimental-strip-types scripts/e2e-live.mjs --repo <owner>/<name> --confirm <owner>/<name> --clone /path/to/clone --write
+node --experimental-strip-types scripts/e2e-live.mjs --repo <owner>/<name> --confirm <owner>/<name> --clone /path/to/clone --merge
 ```
 
-Default state, 2026-10-12:
+Default state, 2026-10-30:
 
 ```text
 ﹣ [live] reads the operator-named repository and its pull request state through gh # live tier closed: PSTACK_E2E_LIVE is not set to 1
 ﹣ [live] verifies a live pull request from an operator clone and closes it again # live tier closed: PSTACK_E2E_LIVE is not set to 1
-ℹ tests 2
+﹣ [live] merges a live pull request from an operator clone # live tier closed: PSTACK_E2E_LIVE is not set to 1
+ℹ tests 3
 ℹ pass 0
 ℹ fail 0
-ℹ skipped 2
+ℹ skipped 3
 ```
 
-**This tier was not executed.** No credentialed GitHub write and no external model call was made for this record. The operator script refuses to start unless `--repo` and `--confirm` carry the same repository name, `--write` has an explicit `--clone`, and `gh auth status` succeeds. The guard in `test/live/guard.ts` additionally refuses the repository of the current checkout and the protected `2333sky/pi-pstack-native`, and it is the only gate either live test consults.
+Executed once on 2026-10-30 at commit `5deb723`, against the disposable private repository `2333sky/pi-pstack-live-probe` with `--merge`:
 
-What it would need to run:
+```text
+live tier target 2333sky/pi-pstack-live-probe base main write true merge true
+✔ [live] reads the operator-named repository and its pull request state through gh (1532.021542ms)
+✔ [live] verifies a live pull request from an operator clone and closes it again (19308.269042ms)
+✔ [live] merges a live pull request from an operator clone (29248.059667ms)
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+```
+
+The receipt is [docs/evidence/live-github-5deb723.json](../docs/evidence/live-github-5deb723.json). It records what the run covers and what it does not: no branch protection, no required review, no auto-merge, no merge queue and no concurrent delivery against the same pull request.
+
+The operator script refuses to start unless `--repo` and `--confirm` carry the same repository name, `--write` or `--merge` has an explicit `--clone`, and `gh auth status` succeeds. The guard in `test/live/guard.ts` additionally refuses the repository of the current checkout and the protected `2333sky/pi-pstack-native`, and it is the only gate any live test consults.
+
+How to run it:
 
 - one disposable GitHub repository, write access for the authenticated account, and its exact `owner/name`;
 - an authenticated `gh` on the runner (`none` is available to the CI workflow today);
-- for the write probe, a local clone of that repository with `origin` pointing at it, a clean working tree, and permission to push a temporary branch.
+- for the write and merge probes, a local clone of that repository with `origin` pointing at it, a clean working tree, and permission to push a temporary branch.
 
-What the live tier would prove that tiers 1 and 2 cannot: `gh` argument handling against the real API, real check-rollup and review-decision parsing, and real branch protection behaviour.
+What the live tier proves that tiers 1 and 2 cannot: `gh` argument handling against the real API, real check-rollup and review-decision parsing, and real merge behaviour.
 
 ### The guard decision
 
@@ -138,10 +155,11 @@ What the live tier would prove that tiers 1 and 2 cannot: `gh` argument handling
 - A closed decision carries the reason and the `skip` string for `node:test`. It carries no repository, no clone, and no capability.
 - An open decision for `read` carries the repository, the base, and the optional pull request number.
 - An open decision for `write` carries the clone as a required string.
+- An open decision for `merge` carries the clone and additionally requires `PSTACK_E2E_LIVE_MERGE=1`, because a merge cannot be undone.
 
-Both live tests take their `skip` from the gate and re-check `gate.open` inside the body. The offline tier reads every `test/live/*.test.ts` file and fails if one reads a `PSTACK_E2E_LIVE_*` variable directly, consults the raw target instead of the gate, or declares a test whose skip does not come from a gate.
+All three live tests take their `skip` from the gate and re-check `gate.open` inside the body. The offline tier reads every `test/live/*.test.ts` file and fails if one reads a `PSTACK_E2E_LIVE_*` variable directly, consults the raw target instead of the gate, or declares a test whose skip does not come from a gate.
 
-The offline tier walks eleven refused environment combinations, including `PSTACK_E2E_LIVE_WRITE=1` plus `PSTACK_E2E_LIVE_CLONE` with `PSTACK_E2E_LIVE` unset. It runs `test/live/github-live.test.ts` in each combination under `test/live/command-probe-register.mjs`, a module hook that records every `child_process` call to `PSTACK_E2E_COMMAND_PROBE`. Each row must report `skipped 2` and `fail 0`, and the recorded command list must be empty. The row that names the repository of the current checkout records one read-only `git remote get-url origin`, and no `gh` call and no mutating git call.
+The offline tier walks eleven refused environment combinations, including `PSTACK_E2E_LIVE_WRITE=1` plus `PSTACK_E2E_LIVE_CLONE` with `PSTACK_E2E_LIVE` unset. It runs `test/live/github-live.test.ts` in each combination under `test/live/command-probe-register.mjs`, a module hook that records every `child_process` call to `PSTACK_E2E_COMMAND_PROBE`. Each row must report `skipped 3` and `fail 0`, and the recorded command list must be empty. The row that names the repository of the current checkout records one read-only `git remote get-url origin`, and no `gh` call and no mutating git call.
 
 Before this change the write test consulted `target.write && target.clone`, so a residual `PSTACK_E2E_LIVE_WRITE=1` plus `PSTACK_E2E_LIVE_CLONE` entered the write path while `PSTACK_E2E_LIVE` was unset. The guard probe also ran on every combination. The row below is from that run.
 

@@ -12,6 +12,7 @@ import { liveTier } from "./guard.ts";
 
 const read = liveTier("read");
 const write = liveTier("write");
+const merge = liveTier("merge");
 
 test(`${LIVE} reads the operator-named repository and its pull request state through gh`, { skip: read.skip, timeout: 300_000 }, async () => {
   if (!read.open) return;
@@ -66,5 +67,41 @@ test(`${LIVE} verifies a live pull request from an operator clone and closes it 
     try { run(["push", "-q", "origin", "--delete", branch]); } catch { /* the branch is removed with the pull request */ }
     run(["checkout", "-q", target.base]);
     rmSync(join(clone, "PSTACK-E2E-LIVE.md"), { force: true });
+  }
+});
+
+test(`${LIVE} merges a live pull request from an operator clone`, { skip: merge.skip, timeout: 600_000 }, async () => {
+  if (!merge.open) return;
+  const target = merge;
+  const provider = new GitHubCLI();
+  const clone = target.clone;
+  const branch = `pstack-e2e-merge-${Date.now()}`;
+  const bodyFile = join(mkdtempSync(join(tmpdir(), "pstack-e2e-live-")), "body.md");
+  writeFileSync(bodyFile, `Live merge gate probe for ${target.repo}.\n`);
+  let number: number | undefined;
+  const run = (args: string[]) => execFileSync("git", ["-C", clone, ...args], { encoding: "utf8" }).trim();
+  try {
+    run(["checkout", "-q", target.base]);
+    run(["checkout", "-q", "-b", branch]);
+    writeFileSync(join(clone, "PSTACK-E2E-MERGE.md"), `probe ${branch}\n`);
+    run(["add", "PSTACK-E2E-MERGE.md"]);
+    run(["commit", "-qm", "pstack e2e live merge probe"]);
+    const headSha = run(["rev-parse", "HEAD"]);
+    run(["push", "-q", "origin", `HEAD:refs/heads/${branch}`]);
+    const url = await provider.open(target.repo, target.base, branch, `pstack e2e live merge probe ${branch}`, bodyFile);
+    number = Number(url.match(/\/pull\/(\d+)$/)?.[1]);
+    assert.ok(Number.isSafeInteger(number), `expected a pull request number from ${url}`);
+    const pr = await provider.read(target.repo, number!);
+    assert.equal(pr.headSha, headSha);
+    await provider.merge(pr);
+    const merged = await provider.read(target.repo, number!);
+    assert.equal(merged.state, "MERGED");
+    run(["fetch", "-q", "origin"]);
+    assert.doesNotThrow(() => execFileSync("git", ["-C", clone, "merge-base", "--is-ancestor", headSha, `origin/${target.base}`], { stdio: "ignore" }), "the merged commit must be reachable from the base branch");
+  } finally {
+    if (number) { try { execFileSync("gh", ["pr", "close", String(number), "--repo", target.repo, "--delete-branch"], { encoding: "utf8", stdio: "ignore" }); } catch { /* a merged pull request cannot be closed again */ } }
+    try { run(["push", "-q", "origin", "--delete", branch]); } catch { /* the branch is already removed */ }
+    try { run(["checkout", "-q", target.base]); } catch { /* the clone may be behind the merge */ }
+    rmSync(join(clone, "PSTACK-E2E-MERGE.md"), { force: true });
   }
 });
