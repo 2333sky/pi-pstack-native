@@ -12,7 +12,7 @@
   },
   "target": {
     "repository": "2333sky/pi-pstack-live-probe",
-    "kind": "disposable private repository created only for this run and deleted afterwards",
+    "kind": "disposable private repository created only for this run; it holds no project data, no credentials and no branch protection",
     "base": "main",
     "protection": "no branch protection, no required reviews, no merge queue"
   },
@@ -39,5 +39,6 @@
     "repository permission levels other than the operator account",
     "concurrent delivery runs against the same pull request"
   ],
-  "boundary": "One live create/read/close/merge cycle against an unprotected disposable repository with a single operator account. It does not establish behaviour under branch protection, review requirements or concurrent contention."
+  "boundary": "One live create/read/close/merge cycle against an unprotected disposable repository with a single operator account. It does not establish behaviour under branch protection, review requirements or concurrent contention.",
+  "cleanup": "The probe branch and every probe pull request were closed or deleted during the run. The repository itself still exists: deleting it needs the `delete_repo` scope, which the operator token did not carry."
 }
