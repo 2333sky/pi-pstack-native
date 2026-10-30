@@ -68,6 +68,7 @@
     "SEMANTICS.json",
     "docs/PI-SEMANTIC-ADAPTER.md",
     "docs/SEMANTIC-COMPATIBILITY.md",
+    "docs/evidence/",
     "docs/upstream-provenance-0.15.32.json",
     "docs/upstream-provenance-0.15.36.json",
     "docs/upstream-sync-0.15.36.json",
