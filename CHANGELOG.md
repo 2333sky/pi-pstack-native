@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Archive a commit-bound authenticated real-model receipt: three models passed the read-only probe on `5deb723`, and `SEMANTICS.json.evidence.realModel` records `status: "passed"` with that receipt.
+- Validate live GitHub delivery against a disposable repository: create, read, close and merge now have a recorded run. Add an opt-in `--merge` gate to the live tier; it stays closed unless `PSTACK_E2E_LIVE_MERGE=1` is set with an explicit write target.
+- Record the npm registry state: `pi-pstack-native` is unpublished, so `1.0.0` is unclaimed; no npm credentials exist in the validation environment.
+- Record the maintainer semantic sign-off in `SEMANTICS.json.review` for the 11 core entrypoints and their declared deviations.
+- State the 1.0.0 guarantee scope explicitly in `docs/PUBLISHING.md`, including the exclusion of Windows real-model workflow acceptance and of branch-protection, review, auto-merge and merge-queue behaviour.
+
+- Prepare the `1.0.0` version in the package manifest and lockfile, while retaining explicit release approval and external validation gates; the version has **not** been published by this change.
+- Align the package identity check with the manifest/lockfile, and document stable-channel installation and outstanding release evidence.
+
 - Rename the repository and package to `pi-pstack-native` and document direct Pi Git installation.
 - Upgrade the pinned pstack source to 0.15.36 and retain the 0.15.32 snapshot; keep maintainer semantic approval and authenticated-model evidence separate.
 - Preserve panel and workflow configuration during setup and validate role-model reasoning selections.

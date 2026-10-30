@@ -29,14 +29,20 @@ test(`${OFFLINE} the credentialed live tier never runs without an explicit opera
   const residual = { PSTACK_E2E_LIVE_WRITE: "1", PSTACK_E2E_LIVE_CLONE: "/tmp/absent-clone" };
   assert.equal(liveTier("read", residual, PROTECTED).open, false);
   assert.equal(liveTier("write", residual, PROTECTED).open, false);
+  assert.equal(liveTier("merge", residual, PROTECTED).open, false);
+  const writable = { PSTACK_E2E_LIVE: "1", PSTACK_E2E_LIVE_REPO: "owner/name", PSTACK_E2E_LIVE_CONFIRM: "owner/name", PSTACK_E2E_LIVE_WRITE: "1", PSTACK_E2E_LIVE_CLONE: "/tmp/absent-clone" };
+  assert.equal(liveTier("write", writable, PROTECTED).open, true);
+  assert.equal(liveTier("merge", writable, PROTECTED).open, false);
+  assert.match(liveTier("merge", writable, PROTECTED).reason, /PSTACK_E2E_LIVE_MERGE is not set/);
+  assert.equal(liveTier("merge", { ...writable, PSTACK_E2E_LIVE_MERGE: "1" }, PROTECTED).open, true);
 });
 
 test(`${OFFLINE} the live tier is skipped by default when its own file runs`, { timeout: 120_000 }, () => {
   const file = join("test", "live", "github-live.test.ts");
-  const env = cleanEnv({ PSTACK_E2E_LIVE: "", PSTACK_E2E_LIVE_REPO: "", PSTACK_E2E_LIVE_CONFIRM: "", PSTACK_E2E_LIVE_WRITE: "" });
+  const env = cleanEnv({ PSTACK_E2E_LIVE: "", PSTACK_E2E_LIVE_REPO: "", PSTACK_E2E_LIVE_CONFIRM: "", PSTACK_E2E_LIVE_WRITE: "", PSTACK_E2E_LIVE_MERGE: "" });
   const run = spawnSync(process.execPath, ["--experimental-strip-types", "--test", "--test-reporter=tap", file], { cwd: process.cwd(), encoding: "utf8", env });
   assert.equal(run.status, 0, run.stdout + run.stderr);
-  assert.match(run.stdout, /^# skipped 2$/m);
+  assert.match(run.stdout, /^# skipped 3$/m);
   assert.match(run.stdout, /^# fail 0$/m);
 });
 
@@ -87,7 +93,7 @@ test(`${OFFLINE} every refused live-tier environment runs no external command an
           cwd: row.origin ? checkout : process.cwd(), encoding: "utf8", env: matrixEnv(row.env, preload, probe),
         });
         assert.equal(run.status, 0, `${row.label}\n${run.stdout}${run.stderr}`);
-        assert.match(run.stdout, /^# skipped 2$/m, row.label);
+        assert.match(run.stdout, /^# skipped 3$/m, row.label);
         assert.match(run.stdout, /^# fail 0$/m, row.label);
         assert.deepEqual(observedCommands(probe), row.expected, `${row.label} ran an unexpected external command`);
       });

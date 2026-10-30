@@ -201,3 +201,12 @@ test('no detected models permits parent aliases and does not start a model turn 
   assert.equal(loadModels().roles.worker, 'inherit-parent');
   assert.equal(result.messages.length, 0);
 }));
+
+test('pstack-runtime reports the manifest version instead of a hardcoded one', async () => {
+  const commands = new Map<string, any>(), notices: string[] = [];
+  extension({ registerCommand: (name: string, value: any) => commands.set(name, value), registerTool() {}, on() {}, sendUserMessage() {} } as any);
+  await commands.get('pstack-runtime').handler('', { ui: { notify: (message: string) => notices.push(message) } });
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.match(notices[0]!, new RegExp(`^pi-pstack-native ${manifest.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n`));
+  assert.doesNotMatch(notices[0]!, /npm: 2333/);
+});

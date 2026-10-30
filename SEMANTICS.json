@@ -716,11 +716,11 @@
   },
   "baselineAdvancement": "requires-explicit-semantic-signoff",
   "review": {
-    "status": "pending-maintainer-signoff",
-    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.32; maintainer approval and real-model evidence remain separate",
-    "reviewer": null,
-    "at": null,
-    "rationale": null
+    "status": "signed-off",
+    "scope": "Critical-rule source and Pi adapter audit for pstack 0.15.36 at c742dd61; the support guarantee covers the 11 core entrypoints and their declared deviations only",
+    "reviewer": "2333sky",
+    "at": "2026-10-30T16:33:31Z",
+    "rationale": "Reviewed the 11 core critical-rule mappings, the declared Pi deviations and the adapter boundaries at the 0.15.36 pin, and accepted the archived evidence: the deterministic offline fixtures, the three-model real-model receipt for 5deb723 and the live GitHub read/write/merge receipt for 5deb723. Full behavioral parity with Cursor is not claimed, and Windows real-model workflow acceptance is excluded from the 1.0.0 guarantee."
   },
   "workflows": [
     {
@@ -2345,7 +2345,7 @@
     "src/compatibility/source.ts": "b12cf67fa03b3043b2e80b849416ade2ccf9ef972b93f387e829b24ec9812a2e",
     "src/compatibility/tool.ts": "d1b83e38e08efa3e3d763b2a54b4da65729ab81cfd33aa59421a3e1de0566d9b",
     "src/agent/resources.ts": "840f5953c1c3d8e85ecced0eaba2dffdb8f843a3c02ae0dc41d9b16e3b992c7c",
-    "src/extension.ts": "0477523cc5e25ccf54a76f3f8083ef706e3e7f5af8fdd1456a93120eccbe587b",
+    "src/extension.ts": "4f3743957540d722956a4eb501c1b7b9600d246ea55c3cf1ec46f5db51ec494b",
     "src/agent/profiles.ts": "8c845fa35a3db95319202ba9be73162c21323525d106eebddd9a5d72a49596ae",
     "src/agent/host.ts": "bdc2b76f56c1c533ad2367da6e2016bf53d6b3739b424021735a84e25fbd8416",
     "src/models/router.ts": "45b5c042b063cd1e6c43c1f5db2404d72bad1a10086252ae9906553d7978344a",
@@ -2376,7 +2376,7 @@
     "test/latest-upstream.test.ts": "a66f9c6ec5e1991247570a7acb3394905fbe57b0a68c3ceb3a6abb0a9e69b370",
     "test/statechart.test.ts": "ef48f8de33f769e30b1091e92f0b23742b014fb844eceaf1221005ac6f9a5757",
     "test/model-router.test.ts": "e2117cc4ab2e8b917267a0c3c05914a252f11cd7b3c15f9db6f1a29c557cc97a",
-    "test/setup-command.test.ts": "5cd9d7d1789774a1f51a125078564a9cf99c8bddfcc9552a81b8e0f10e720691",
+    "test/setup-command.test.ts": "bda5f617a4058d7e08b4dd329ca4df8a2e040449078c3d11a3fb7b756ee1690d",
     "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e",
     "test/benchmark.test.ts": "c8b40b94ec8778dabfd73b9282932e0c5e575e4964bcc50576fbb7c854e964f0",
     "scripts/check-statechart.mjs": "3e6fbf7cc00b623298a2d2ad0728b9762eae950f1fd2435d14a4c3ac6d38b2f1",
@@ -2400,9 +2400,18 @@
     "offline": "npm run test:semantics; npm run check:e2e",
     "fakeProvider": "Real Pi SDK with scripted loopback provider; no external inference",
     "realModel": {
-      "status": "not-run",
-      "reason": "No configured model credentials in the managed environment",
-      "procedure": "docs/SEMANTIC-COMPATIBILITY.md"
+      "status": "passed",
+      "reason": "Three authenticated Pi models completed the read-only probe on the tested commit; one earlier model identifier was rejected by its provider and is recorded as a failed attempt",
+      "procedure": "docs/SEMANTIC-COMPATIBILITY.md",
+      "receipt": "docs/evidence/semantic-smoke-5deb723.json",
+      "sourceCommit": "5deb7233524a1db2b1139d8d574a1747fa57a49c",
+      "recordedAt": "2026-10-30T16:14:00Z",
+      "models": [
+        "opencode-go/claude-haiku-5-5",
+        "custom/gpt-5.6-sol",
+        "opencode-go/gpt-5.6-luna"
+      ],
+      "liveGithubReceipt": "docs/evidence/live-github-5deb723.json"
     }
   },
   "overrides": [

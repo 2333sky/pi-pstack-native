@@ -20,7 +20,8 @@ import { WorkflowEngine } from "./workflow/engine.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = join(ROOT, "skills");
-const VERSION = "0.6.0-preview.1";
+// Read from the manifest so a release bump cannot leave the reported status on an older version.
+const VERSION = readJsonFile<{ version?: string }>("package.json", {}).version ?? "unknown";
 const PSTACK_VERSION = upstreamVersion();
 const POTETO_RE = /(?<![a-z0-9._%+-])\$poteto-mode(?![a-z0-9_-]|\.[a-z0-9])/i;
 
@@ -161,7 +162,7 @@ export default function piPstackNative(pi: ExtensionAPI): void {
     handler: async (_args, ctx) => {
       const upstream = readJsonFile<{ version?: string; commit?: string }>("UPSTREAM.json", {});
       ctx.ui.notify([
-        `pi-pstack-native ${VERSION} (npm: 2333)`,
+        `pi-pstack-native ${VERSION}`,
         `upstream pstack ${upstream.version ?? PSTACK_VERSION}${upstream.commit ? ` @ ${upstream.commit.slice(0, 12)}` : ""}`,
         "agent runtime: native Pi AgentSession",
         "workflow runtime: native persistent DAG + Pi child sessions",
