@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Prepare the `1.0.0` version in the package manifest and lockfile, while retaining explicit release approval and external validation gates; the version has **not** been published by this change.
+- Align the package identity check with the manifest/lockfile, and document stable-channel installation and outstanding release evidence.
+
 - Rename the repository and package to `pi-pstack-native` and document direct Pi Git installation.
 - Upgrade the pinned pstack source to 0.15.36 and retain the 0.15.32 snapshot; keep maintainer semantic approval and authenticated-model evidence separate.
 - Preserve panel and workflow configuration during setup and validate role-model reasoning selections.
