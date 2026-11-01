@@ -79,9 +79,6 @@ export function selectJudgeFromPool(ctx: ExtensionContext, pool: string[]): { mo
     } catch (error) { notes.push(`Judge pool entry ${selector} unavailable: ${error instanceof Error ? error.message : String(error)}`); }
   };
   for (const selector of pool) resolve(selector);
-  if (!choices.some(eligible) && typeof ctx.modelRegistry.getAvailable === 'function') {
-    for (const selector of availableModelSelectors(ctx)) if (!pool.includes(selector)) resolve(selector);
-  }
   const selected = choices.find(eligible);
   if (!parentFamily) notes.push('The parent model family is unknown; judge family independence cannot be established.');
   if (!selected) notes.push('No eligible cross-judge is available; the coordinator must compare and select the base.');
@@ -134,9 +131,13 @@ export function availableModelSelectors(ctx: ExtensionContext): string[] {
 export function suggestedPanels(ctx: ExtensionContext): Record<string, string[]> {
   const available = availableModelSelectors(ctx);
   const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
-  const first = parent && available.includes(parent) ? parent : available[0] ?? 'inherit-parent';
+  // Upstream starts its panels with a judgment model and a code model.
+  // Use only models Pi exposes, and prefer the upstream families when present.
+  const first = available.find(item => modelFamily(item) === 'claude')
+    ?? (parent && available.includes(parent) ? parent : available[0]) ?? 'inherit-parent';
   const family = modelFamily(first);
-  const second = available.find(item => item !== first && family && modelFamily(item) && modelFamily(item) !== family)
+  const second = available.find(item => item !== first && modelFamily(item) === 'grok' && family !== 'grok')
+    ?? available.find(item => item !== first && family && modelFamily(item) && modelFamily(item) !== family)
     ?? available.find(item => item !== first) ?? first;
   const runners = [first, second];
   // A judge pool is ordered by preference, not a copy of the entire registry.

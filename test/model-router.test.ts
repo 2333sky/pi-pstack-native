@@ -112,12 +112,11 @@ test("judge pool prefers a recognized family different from the parent and repor
   assert(selected.notes.some(note => note.includes('not-registered') && note.includes('unavailable')));
 }));
 
-test('judge pool skips the known parent family and falls back to another available family', () => {
+test('judge pool skips the parent family and uses only configured entries', () => {
   const parent: any = { provider: 'p', id: 'claude-opus', reasoning: true };
   const other: any = { provider: 'p', id: 'grok-4', reasoning: true };
   const ctx: any = { model: parent, thinkingLevel: 'off', scopedModels: [], modelRegistry: { find: (provider: string, id: string) => [parent, other].find(m => m.provider === provider && m.id === id), getAvailable: () => [parent, other] } };
-  assert.equal(selectJudgeFromPool(ctx, ['inherit-parent', 'p/claude-opus']).model, 'p/grok-4');
-  ctx.modelRegistry.getAvailable = () => [parent];
+  assert.equal(selectJudgeFromPool(ctx, ['inherit-parent', 'p/claude-opus', 'p/grok-4']).model, 'p/grok-4');
   const skipped = selectJudgeFromPool(ctx, ['auto', 'p/claude-opus']);
   assert.equal(skipped.model, undefined);
   assert(skipped.notes.some(note => note.includes('coordinator')));

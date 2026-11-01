@@ -52,9 +52,13 @@ In Pi, choose role models and a child reasoning level:
 /poteto-mode Fix the login bug, run relevant tests, and report the evidence.
 ```
 
-Setup starts with a reasoning budget and previews role and task models and suggested panels from the models available to this Pi session. Page through the table, save it, or edit individual choices and panel seats. Existing settings are retained; cancelling before saving leaves the file unchanged. Unavailable models and unsupported reasoning are marked so they can be fixed in the same setup. `inherit-parent` and `auto` use the parent model. Repeated seats are separate sessions, not model diversity.
+Setup provides Chinese and English guidance. It starts with a reasoning budget, then previews roles, task models, and suggested panels using models available to this Pi session. Review the pages and save the settings, or edit individual choices and panel seats. Existing settings are retained; cancelling before saving leaves the file unchanged. Unavailable models and unsupported reasoning are marked so you can fix them before saving. `inherit-parent` and `auto` use the parent session's model.
 
-After saving, setup starts a model turn to inspect real-app and formal verification capabilities and offer to create missing project-local Skills. The agent is instructed to ask before creating a Skill; the follow-up depends on the selected model.
+The four upstream budget presets map to Pi thinking levels: `unlimited` to `max`, `large` to `xhigh`, `medium` to `high`, and `small` to `medium`. Pi also offers its own thinking levels and a fallback policy. Model support varies; setup shows when a choice is unsupported or uses a lower level under the selected fallback policy. Unlike Cursor pstack, Pi sets a thinking level instead of rewriting model slugs.
+
+A Pi role sets a general model for that kind of child agent. A task model overrides that role for a specific workflow and purpose; choosing the role default removes that override. Pi exposes these choices separately, so its list does not match the upstream rule line for line. A panel is an ordered list of model seats. Each runner or reviewer seat starts a separate child session; repeated models do not add model diversity. The Arena cross-judge pool is an ordered preference list for one judge. When the parent model's family is known, the judge must be from a different family. Parent aliases in that pool cannot act as judges.
+
+After saving, if a parent model is selected, setup starts a model turn to inspect real-app and formal verification capabilities and offer to create missing project-local Skills. The agent is instructed to ask before creating a Skill; the follow-up depends on the selected model.
 
 Arena and architect use a cross-judge with confined read-only access to verified candidates when an eligible different-family model is available. Otherwise they return candidates for the coordinator to inspect and select. Interrogate uses isolated adversaries and separate reproduction sessions; the coordinator must inspect actual command evidence. See [model setup and routing](docs/REFERENCE.md#model-setup-and-routing) for usage and limitations.
 

@@ -42,8 +42,10 @@ test('real Pi RPC runs setup and dispatches the optional verification follow-up'
           if (event.type === 'extension_ui_request' && event.method === 'select') {
             titles.push(event.title);
             const value = event.title.startsWith('Child reasoning') ? event.options.find((option: string) => option.startsWith('inherit-parent'))
-              : event.title.startsWith('Review pstack') ? 'Save settings' : undefined;
+              : event.title.startsWith('Review pstack') ? event.options.find((option: string) => option.startsWith('Save settings')) : undefined;
             if (!value) { clearTimeout(timer); reject(new Error(`Unexpected setup dialog: ${event.title}`)); return; }
+            assert.match(event.title, /[\u4e00-\u9fff]/, 'setup prompts should include Chinese in RPC mode');
+            assert(event.options.some((option: string) => /[\u4e00-\u9fff]/.test(option)), 'setup options should include Chinese in RPC mode');
             send({ type: 'extension_ui_response', id: event.id, value });
           }
           if (event.type === 'extension_ui_request' && event.method === 'notify' && event.message.startsWith('Saved pstack settings')) saved = true;
