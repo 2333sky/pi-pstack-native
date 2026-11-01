@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { availableModelSelectors, lowerSupportedThinking, modelFamily, supportsThinking, suggestedPanels } from "../models/router.js";
 import { loadModels, saveModels } from "../runtime/config.js";
 import { modelConfigPath } from "../runtime/home.js";
@@ -39,15 +40,15 @@ const BUDGETS = [
     { value: "minimal", label: "minimal — least reasoning effort" },
     { value: "low", label: "low — lower reasoning effort" },
 ];
-// Keep the English text stable for integrations while showing Chinese beside it.
+// Keep stable internal option keys while presenting concise Chinese labels.
 const ZH_OPTIONS = {
     "Next page →": "下一页 →", "← Previous page": "← 上一页",
     "Cancel setup": "取消配置", "Back to review": "返回检查", "Back": "返回",
-    "Save settings": "保存设置", "Edit a role": "编辑通用角色", "Edit a task model": "编辑任务模型",
+    "Save settings": "保存设置", "Advanced settings": "高级设置", "Edit a role": "编辑通用角色", "Edit a task model": "编辑任务模型",
     "Edit a panel": "编辑模型面板", "Change budget": "修改推理预算", "Change fallback": "修改回退策略",
     "Done editing panel": "完成面板编辑", "Add a seat": "添加席位", "Change model": "更换模型",
     "Remove seat": "删除席位", "Move up": "上移", "Move down": "下移", "Back to panel": "返回面板",
-    "Use role default": "使用角色默认模型",
+    "Use role default": "按任务角色默认值",
     "inherit-parent — parent model": "inherit-parent — 使用父会话模型", "auto — parent model": "auto — 使用父会话模型",
     "unlimited — max reasoning": "不限 — max 推理", "large — xhigh reasoning": "大 — xhigh 推理",
     "medium — high reasoning": "中 — high 推理", "small — medium reasoning": "小 — medium 推理",
@@ -61,6 +62,7 @@ const ZH_NAMES = {
     worker: "执行开发", architect: "设计和开发", reviewer: "只读审查", scout: "只读探索",
     verifier: "只读验证", synthesizer: "汇总结果", integrator: "合并工作",
     "poteto-agent": "执行 Poteto 委派任务", "comment-sicko": "审查注释和变通方案",
+    "judgment and prose": "判断和写作", "hardest tasks": "高难度任务", judgment: "判断和写作", hardest: "高难度任务",
     feature: "功能开发", refactoring: "代码重构", "bug-fix": "修复错误", "performance issue": "性能问题",
     hillclimb: "迭代改进", "how explorer": "探索实现方式", "how explainer": "解释实现方式",
     "why investigators": "调查原因", "why synthesizer": "汇总原因", "swarm workers": "并行执行任务",
@@ -69,7 +71,7 @@ const ZH_NAMES = {
     "architect runners": "architect 方案执行", "interrogate reviewers": "interrogate 审查",
 };
 function chineseName(name) {
-    return ZH_NAMES[name] ? `${name}（${ZH_NAMES[name]}）` : name;
+    return ZH_NAMES[name] ? `${ZH_NAMES[name]}（${name}）` : name;
 }
 function optionChinese(option) {
     if (ZH_OPTIONS[option])
@@ -82,30 +84,32 @@ function optionChinese(option) {
         return `${chineseName(count[1])} — ${count[2]} 个席位`;
     const role = /^(.+) — (.+)$/.exec(option);
     if (role)
-        return `${chineseName(role[1])} — 当前模型：${role[2] === "role default" ? "角色默认模型" : role[2]}`;
+        return `${chineseName(role[1])} — ${role[2].replace("role default", "按任务角色默认值").replace("[needs choice: not available; choose a model]", "[模型不可用，请修改]").replace(/\[needs choice: does not support (\S+) reasoning\]/, "[不支持 $1 推理]").replace("[needs choice]", "[需要修改]").replace(/\[needs (\d+–16)\]/, "[需要 $1 个席位]").replace(/\[uses (\S+) reasoning \(fallback\)\]/, "[回退到 $1 推理]").replace(/\[Pi maps (\S+) to (\S+)\]/, "[Pi: $1 → $2]").replace("[parent model not selected yet]", "[尚未选择父模型]")}`;
     return undefined;
 }
 function titleChinese(title) {
     if (title.startsWith("Child reasoning budget"))
         return "子代理推理预算。large 对应原版默认值；current 表示当前值。";
     if (title.startsWith("Review pstack settings"))
-        return "检查 pstack 设置。need attention 表示需要处理。通用角色提供默认模型；任务模型覆盖对应任务的默认模型。";
+        return "选择角色可修改模型。检查所有页面后保存。";
+    if (title.startsWith("Advanced settings"))
+        return "高级设置";
     if (title.startsWith("Choose role"))
         return "选择要编辑的通用角色。任务模型没有单独设置时，使用对应角色的模型。";
     if (title.startsWith("Choose task model"))
         return "选择要编辑的任务模型。任务设置会覆盖对应角色的默认模型。";
     if (title.startsWith("Choose panel"))
-        return "选择要编辑的模型面板。执行和审查面板的每个席位运行一个子代理。arena 评委池只选一名评委。父模型家族已知时，评委必须来自不同家族；父模型别名不担任评委。";
+        return "选择面板。每个执行或审查席位运行一个子代理。评委池只选一名评委。";
     if (title.startsWith("Model fallback policy"))
         return "模型回退策略";
     if (title.startsWith("Add seat to "))
-        return "为面板添加席位。评委池按顺序选择一名评委。其他面板的每个席位运行一个子代理。";
+        return "为面板添加席位。";
     if (title.startsWith("Model for "))
         return `选择模型：${chineseName(title.slice("Model for ".length))}`;
     if (title.startsWith("Seat "))
         return "编辑席位";
     if (/\(\d+ seats; \d+–16 allowed\)/.test(title))
-        return `编辑面板：${chineseName(title.slice(0, title.indexOf(" (")))}。评委池按顺序选择一名评委。其他面板的每个席位运行一个子代理。席位数量必须在显示的范围内。`;
+        return `编辑面板：${chineseName(title.slice(0, title.indexOf(" (")))}。评委池按顺序选择一名评委。`;
     return undefined;
 }
 async function selectBilingual(ctx, title, options) {
@@ -116,10 +120,7 @@ async function selectBilingual(ctx, title, options) {
         const translation = reviewRowChinese(line);
         return translation ? `${line} / ${translation}` : line;
     });
-    const labels = options.map(option => {
-        const translation = optionChinese(option);
-        return translation ? `${option} / ${translation}` : option;
-    });
+    const labels = options.map(option => optionChinese(option) ?? option);
     const selected = await ctx.ui.select(chinese ? `${lines.join("\n")}\n${chinese}` : lines.join("\n"), labels);
     const index = labels.indexOf(selected ?? "");
     // Accept the English value as well for existing UI integrations.
@@ -175,7 +176,7 @@ function notifyBilingual(ctx, message, type) {
     else if (message.startsWith("Cannot save yet")) {
         const count = /Cannot save yet: (.+) needs (\d+–16) seats/.exec(message);
         const details = count ? `${chineseName(count[1])} 需要 ${count[2]} 个席位` : reviewRowChinese(message);
-        chinese = `暂时无法保存。${details ?? "请修改相关选项或推理预算"}。`;
+        chinese = `暂时无法保存。${details ?? "请修改相关选项或推理预算"}。自定义角色和面板可在高级设置中修改。`;
     }
     else if (message.startsWith("models.json changed"))
         chinese = "models.json 在配置期间发生变化。未写入文件，请重新运行配置。";
@@ -189,14 +190,47 @@ function notifyBilingual(ctx, message, type) {
         chinese = "无法安全编辑配置文件。请先修复无效的模型配置。";
     ctx.ui.notify(chinese ? `${message}\n${chinese}` : message, type);
 }
+// The standard Pi selector does not scroll. Account for wrapped labels as well
+// as the number of rows; RPC has no terminal size and keeps fixed-size pages.
+function paginate(items, label, title, limit, controlRows) {
+    if (!process.stdout.isTTY || !process.stdout.columns || !process.stdout.rows) {
+        const pages = [];
+        for (let i = 0; i < items.length; i += limit)
+            pages.push(items.slice(i, i + limit));
+        return pages.length ? pages : [[]];
+    }
+    const width = Math.max(1, process.stdout.columns - 2);
+    const translatedTitle = titleChinese(title);
+    const titleLines = wrapTextWithAnsi(`${title} (99/99)${translatedTitle ? `\n${translatedTitle}` : ""}`, width).length;
+    // Seven rows are borders, spacers and keyboard hints. Reserve one extra row
+    // for a wrapped title on resize, plus the largest set of navigation controls.
+    const room = Math.max(1, process.stdout.rows - 8 - titleLines - controlRows);
+    const pages = [];
+    let page = [], used = 0;
+    for (const item of items) {
+        const text = label(item);
+        const lines = wrapTextWithAnsi(`→ ${optionChinese(text) ?? text}`, width).length;
+        if (page.length && (page.length >= limit || used + lines > room)) {
+            pages.push(page);
+            page = [];
+            used = 0;
+        }
+        page.push(item);
+        used += lines;
+    }
+    if (page.length || !pages.length)
+        pages.push(page);
+    return pages;
+}
 // Pi's standard selector renders every option, without scrolling. Page long lists
 // so they remain usable for users with a large model registry and in RPC mode.
 async function pick(ctx, title, items, backLabel) {
-    const size = 5;
     let page = 0;
     for (;;) {
-        const pages = Math.max(1, Math.ceil(items.length / size));
-        const visible = items.slice(page * size, (page + 1) * size);
+        const groups = paginate(items, item => item.label, title, 5, 3);
+        const pages = groups.length;
+        page = Math.min(page, pages - 1);
+        const visible = groups[page];
         const options = visible.map(item => item.label);
         if (page + 1 < pages)
             options.push("Next page →");
@@ -319,8 +353,17 @@ function reviewRows(ctx, available, config) {
     }
     return rows;
 }
-async function chooseBudget(ctx, current, fresh, initial = false) {
-    const ordered = [...BUDGETS].sort((a, b) => Number(b.value === current) - Number(a.value === current));
+async function chooseBudget(ctx, current, fresh, initial = false, all = false) {
+    // The upstream wizard offers four budgets. Preserve existing Pi-specific levels
+    // explicitly so opening setup never silently changes an older configuration.
+    const ordered = all ? [...BUDGETS] : BUDGETS.slice(0, 4);
+    if (!ordered.some(item => item.value === current)) {
+        const existing = BUDGETS.find(item => item.value === current);
+        if (existing)
+            ordered.unshift(existing);
+    }
+    else
+        ordered.sort((a, b) => Number(b.value === current) - Number(a.value === current));
     return pick(ctx, `Child reasoning budget (${fresh ? "large matches upstream defaults" : `current: ${current}`})`, ordered, initial ? "Cancel setup" : "Back to review");
 }
 async function chooseModel(ctx, available, title, current, roleDefault = false) {
@@ -389,7 +432,7 @@ const VERIFICATION_FOLLOWUP = [
     "If neither exists, offer once to create a project-local verification skill using /skill:create-verification-skill; ask and wait for the user's answer before creating anything.",
     "Separately check for a project-local skill that runs a model checker, proof, or other formal verifier against the code. If none exists, offer once to create one using /skill:create-formal-verification-skill; ask and wait for the user's answer.",
     "Do not count the bundled create-* instructions as existing project verification. Respect a no or cancellation, and do not claim a skill ran unless it was actually invoked. If a requested skill is unavailable, say so.",
-    "When speaking to the user, provide both Chinese and English.",
+    "When speaking to the user, use concise Chinese.",
 ].join(" ");
 export async function runSetup(pi, ctx) {
     if (!ctx.hasUI) {
@@ -420,6 +463,8 @@ export async function runSetup(pi, ctx) {
         const code = available.find(model => modelFamily(model) === "grok") ?? available[0];
         const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : "";
         const judgment = available.find(model => modelFamily(model) === "claude") ?? (available.includes(parent) ? parent : available[0]);
+        next.roles.judgment = judgment;
+        next.roles.hardest = judgment;
         next.roles.worker = code;
         for (const role of ["architect", "reviewer", "verifier", "synthesizer", "integrator", "poteto-agent", "comment-sicko"])
             next.roles[role] = judgment;
@@ -433,19 +478,109 @@ export async function runSetup(pi, ctx) {
     }
     next.thinkingLevel = first.value;
     let page = 0;
+    let advanced = false;
     for (;;) {
         available = availableModelSelectors(ctx);
-        const rows = reviewRows(ctx, new Set(available), next);
-        const size = 4, pages = Math.max(1, Math.ceil(rows.length / size));
-        page = Math.min(page, pages - 1);
+        const availableSet = new Set(available);
+        const rows = reviewRows(ctx, availableSet, next);
         const invalid = rows.filter(row => row.error);
-        const title = `Review pstack settings (${page + 1}/${pages})${invalid.length ? ` — ${invalid.length} need attention` : ""}\n${rows.slice(page * size, (page + 1) * size).map(row => row.text).join("\n")}`;
-        const actions = ["Save settings", "Edit a role", "Edit a task model", "Edit a panel", "Change budget", "Change fallback"];
-        if (page + 1 < pages)
-            actions.push("Next page →");
-        if (page > 0)
-            actions.push("← Previous page");
-        const action = await selectBilingual(ctx, title, actions);
+        const taskEntries = TASK_ROLES.map((task) => {
+            const configured = next.workflows[task.name]?.[task.role];
+            const effective = configured
+                ?? (task.name === "reflect" && task.role === "judgment" ? next.roles.judgment : undefined)
+                ?? (task.defaultRole ? next.roles[task.defaultRole] ?? "inherit-parent" : undefined);
+            const status = effective ? modelStatus(ctx, availableSet, next, effective) : {};
+            return { kind: "task", key: task, label: `${task.label} — ${effective ?? "role default"}${status.error ? ` [needs choice: ${status.error}]` : status.note ? ` [${status.note}]` : ""}` };
+        });
+        const globalEntries = [
+            { kind: "global", key: "judgment", label: "judgment and prose" },
+            { kind: "global", key: "hardest", label: "hardest tasks" },
+        ].map(entry => {
+            const value = next.roles[entry.key];
+            const status = value ? modelStatus(ctx, availableSet, next, value) : {};
+            return { ...entry, kind: "global", label: `${entry.label} — ${value ?? "role default"}${status.error ? ` [needs choice: ${status.error}]` : status.note ? ` [${status.note}]` : ""}` };
+        });
+        taskEntries.splice(5, 0, ...globalEntries);
+        const panelEntries = Object.entries(PANEL_INFO).map(([key, info]) => {
+            const seats = next.panels[key] ?? [];
+            const statuses = seats.map(value => modelStatus(ctx, availableSet, next, value));
+            const problems = seats.length < info.min || seats.length > 16 ? ` [needs ${info.min}–16]` : statuses.some(status => status.error) ? " [needs choice]" : "";
+            // Keep large panels readable in a terminal; the panel editor shows every seat.
+            const shown = seats.slice(0, 2).join(", ") || "—";
+            const remaining = seats.length > 2 ? ` (+${seats.length - 2})` : "";
+            return { kind: "panel", key, label: `${info.label} — ${shown}${remaining}${problems}` };
+        });
+        // Match the upstream ordering: swarm before architect and interrogate.
+        taskEntries.splice(taskEntries.findIndex(entry => entry.key.label === "swarm workers"), 0, ...panelEntries.slice(0, 2));
+        const entries = [...taskEntries, ...panelEntries.slice(2)];
+        const groups = paginate(entries, entry => entry.label, "Review pstack settings", 8, 4);
+        const pages = groups.length;
+        page = Math.min(page, pages - 1);
+        let action;
+        if (advanced) {
+            action = await selectBilingual(ctx, "Advanced settings", ["Edit a role", "Edit a task model", "Edit a panel", "Change budget", "Change fallback", "Back to review"]);
+            if (action === "Back to review") {
+                advanced = false;
+                continue;
+            }
+        }
+        else {
+            const visible = groups[page];
+            const actions = ["Save settings", ...visible.map(entry => entry.label)];
+            if (page + 1 < pages)
+                actions.push("Next page →");
+            if (page > 0)
+                actions.push("← Previous page");
+            actions.push("Advanced settings");
+            action = await selectBilingual(ctx, `Review pstack settings (${page + 1}/${pages})${invalid.length ? ` — ${invalid.length} 项需处理` : ""}`, actions);
+            if (action === "Advanced settings") {
+                advanced = true;
+                continue;
+            }
+            const entry = visible.find(item => item.label === action);
+            if (entry) {
+                if (entry.kind === "panel") {
+                    if (!await editPanel(ctx, next, entry.key, available)) {
+                        notifyBilingual(ctx, "Setup cancelled; nothing was written.", "info");
+                        return;
+                    }
+                }
+                else if (entry.kind === "global") {
+                    const key = entry.key;
+                    const model = await chooseModel(ctx, available, `Model for ${key}`, next.roles[key], true);
+                    if (model.kind === "cancel") {
+                        notifyBilingual(ctx, "Setup cancelled; nothing was written.", "info");
+                        return;
+                    }
+                    if (model.kind === "choice") {
+                        if (model.value)
+                            next.roles[key] = model.value;
+                        else
+                            delete next.roles[key];
+                    }
+                }
+                else {
+                    const task = entry.key;
+                    const model = await chooseModel(ctx, available, `Model for ${task.label}`, next.workflows[task.name]?.[task.role], true);
+                    if (model.kind === "cancel") {
+                        notifyBilingual(ctx, "Setup cancelled; nothing was written.", "info");
+                        return;
+                    }
+                    if (model.kind === "choice") {
+                        const values = { ...next.workflows[task.name] };
+                        if (model.value)
+                            values[task.role] = model.value;
+                        else
+                            delete values[task.role];
+                        if (Object.keys(values).length)
+                            next.workflows[task.name] = values;
+                        else
+                            delete next.workflows[task.name];
+                    }
+                }
+                continue;
+            }
+        }
         if (action === undefined) {
             notifyBilingual(ctx, "Setup cancelled; nothing was written.", "info");
             return;
@@ -459,7 +594,7 @@ export async function runSetup(pi, ctx) {
             continue;
         }
         if (action === "Change budget") {
-            const selected = await chooseBudget(ctx, next.thinkingLevel, false);
+            const selected = await chooseBudget(ctx, next.thinkingLevel, false, false, true);
             if (selected.kind === "cancel") {
                 notifyBilingual(ctx, "Setup cancelled; nothing was written.", "info");
                 return;
@@ -547,8 +682,9 @@ export async function runSetup(pi, ctx) {
         const finalRows = reviewRows(ctx, new Set(availableModelSelectors(ctx)), next);
         const finalInvalid = finalRows.filter(row => row.error);
         if (finalInvalid.length) {
-            page = Math.floor(finalRows.findIndex(row => row.error) / size);
-            notifyBilingual(ctx, `Cannot save yet: ${finalInvalid[0].error}. Edit the affected choice or change the budget.`, "error");
+            // The invalid value may belong to an advanced role. Keep the user on the
+            // current page and report the exact field so it can be repaired.
+            notifyBilingual(ctx, `Cannot save yet: ${finalInvalid[0].error}. Edit the affected choice or use Advanced settings.`, "error");
             continue;
         }
         try {

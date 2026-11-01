@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2 — 2026-11-01
+
+- Rework `/setup-pstack` into the upstream flow: choose one of the four upstream budgets, then edit one row per upstream role and panel. Pi-specific roles, task models, panels, budget and fallback move to Advanced settings.
+- Add the global `judgment` and `hardest` task roles so the coordinator can route prose, judgment and the hardest tasks with `modelRole`. One resolver picks the explicit model first, then the playbook role, then the global role, then the profile.
+- Page long lists by the real terminal size and account for wrapped labels, using `@earendil-works/pi-tui`; headless and RPC runs keep fixed pages.
+- Show Chinese-first setup labels while the internal English option keys stay stable for integrations.
+- Ask the optional verification follow-up to reply in concise Chinese.
+
 ## 1.0.1 — 2026-11-01
 
 - Show Chinese beside the English text in `/setup-pstack` prompts, options, review rows and notices, in both the direct UI and RPC mode. English option values stay stable, so existing UI integrations keep working.

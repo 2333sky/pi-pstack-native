@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { startModelServer, writeModelConfig } from './e2e/harness.ts';
@@ -13,6 +13,10 @@ test('real Pi RPC runs setup and dispatches the optional verification follow-up'
   mkdirSync(project);
   const server = await startModelServer(() => ({ text: 'Verification follow-up received.' }));
   writeModelConfig(agentDir, server.port);
+  const modelPath = join(agentDir, 'models.json');
+  const modelConfig = JSON.parse(readFileSync(modelPath, 'utf8'));
+  modelConfig.providers.loopback.models[0].reasoning = true;
+  writeFileSync(modelPath, JSON.stringify(modelConfig));
   const cli = resolve(root, 'node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js');
   const child = spawn(process.execPath, [cli, '--mode', 'rpc', '--no-session', '--extension', resolve(root, 'src/extension.ts'), '--provider', 'loopback', '--model', 'loopback-model'], {
     cwd: project,
@@ -41,8 +45,8 @@ test('real Pi RPC runs setup and dispatches the optional verification follow-up'
           try { event = JSON.parse(line); } catch { clearTimeout(timer); reject(new Error(`Invalid Pi RPC record: ${line.slice(0, 200)}`)); return; }
           if (event.type === 'extension_ui_request' && event.method === 'select') {
             titles.push(event.title);
-            const value = event.title.startsWith('Child reasoning') ? event.options.find((option: string) => option.startsWith('inherit-parent'))
-              : event.title.startsWith('Review pstack') ? event.options.find((option: string) => option.startsWith('Save settings')) : undefined;
+            const value = event.title.startsWith('Child reasoning') ? event.options.find((option: string) => option.startsWith('小 — medium 推理'))
+              : event.title.startsWith('Review pstack') ? event.options.find((option: string) => option === '保存设置') : undefined;
             if (!value) { clearTimeout(timer); reject(new Error(`Unexpected setup dialog: ${event.title}`)); return; }
             assert.match(event.title, /[\u4e00-\u9fff]/, 'setup prompts should include Chinese in RPC mode');
             assert(event.options.some((option: string) => /[\u4e00-\u9fff]/.test(option)), 'setup options should include Chinese in RPC mode');
@@ -57,7 +61,7 @@ test('real Pi RPC runs setup and dispatches the optional verification follow-up'
     });
     assert(titles.some(title => title.startsWith('Review pstack settings')));
     const config = JSON.parse(readFileSync(join(home, 'models.json'), 'utf8'));
-    assert.equal(config.thinkingLevel, 'inherit-parent');
+    assert.equal(config.thinkingLevel, 'medium');
     assert.deepEqual(config.panels.arena, ['loopback/loopback-model', 'loopback/loopback-model']);
     assert.equal(server.calls.length, 1);
     assert(server.calls[0]!.messages.some(message => JSON.stringify(message.content).includes('Complete the optional verification part')));

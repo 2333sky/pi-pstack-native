@@ -1,5 +1,12 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
-import type { ThinkingLevelName } from "../runtime/types.js";
+import type { ModelConfig, ThinkingLevelName } from "../runtime/types.js";
+/** Select a configured model without confusing task roles with permission profiles. */
+export declare function selectTaskModel(config: ModelConfig, options: {
+    model?: string;
+    modelRole?: string;
+    playbook?: string;
+    profile: string;
+}): string | undefined;
 export type ResolvedModel = {
     requestedSelector: string;
     selector: string;

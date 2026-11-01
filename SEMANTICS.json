@@ -2345,17 +2345,17 @@
     "src/compatibility/source.ts": "b12cf67fa03b3043b2e80b849416ade2ccf9ef972b93f387e829b24ec9812a2e",
     "src/compatibility/tool.ts": "d1b83e38e08efa3e3d763b2a54b4da65729ab81cfd33aa59421a3e1de0566d9b",
     "src/agent/resources.ts": "840f5953c1c3d8e85ecced0eaba2dffdb8f843a3c02ae0dc41d9b16e3b992c7c",
-    "src/extension.ts": "4f3743957540d722956a4eb501c1b7b9600d246ea55c3cf1ec46f5db51ec494b",
+    "src/extension.ts": "ff0c3538eff3c31c205492a4d49131f32c4fe3bf031a847d7b00333e2a72eed9",
     "src/agent/profiles.ts": "8c845fa35a3db95319202ba9be73162c21323525d106eebddd9a5d72a49596ae",
     "src/agent/host.ts": "bdc2b76f56c1c533ad2367da6e2016bf53d6b3739b424021735a84e25fbd8416",
-    "src/models/router.ts": "1e8913355c2400741deaeecc3389c8fabd2b82a79a688fd358bcae87b201083e",
+    "src/models/router.ts": "3684fd83abd0f8af90b97948542505e8eccd083c23619a769e7e54725db4fc1a",
     "src/runtime/config.ts": "fd9178d910169de0bef7eb91f5fc80000fb3b96ecd7d65cd022b33780aed89b8",
     "src/runtime/lock.ts": "f7b68acb71d1e46d208f1720716143102ac2373beaee05c4ed8e2899c9e5af83",
     "src/contracts/brief.ts": "56241c23f75109eee0d9ad74f7d4f9743e0ce0dab7c1dcdf38345ba7c880a759",
     "src/contracts/types.ts": "846f5e68693ad3645999fdff71d580a9df704e6365abb9c46c7a44d9f8e32adc",
     "src/runtime/types.ts": "64f0be85e152e898daedfcda17674886c2d079dc26f96cbdc122961c4e2dc2e1",
     "src/templates/build.ts": "b870d506dbc99f9588b08e0ef2100f17ee72c157e414727a87343702f3a6c4a4",
-    "src/workflow/engine.ts": "a258b7d456d386443f578877d9c754e995de5d89855978bf52f57526d5b39903",
+    "src/workflow/engine.ts": "e5b214b74c91b9111d9c70b9b5d5edd42ef68075951065b90690dbed28ca215c",
     "src/workflow/artifacts.ts": "e470c58383982f6cd7cab25d381497e132bca13fcb7edc7524ac584423a0dbd9",
     "src/verification/runner.ts": "392e5eac32fd42fbfff678b5023ead59b5dd0be177dc7fd1eb6af1669d9fd3a6",
     "src/delivery/frontier.ts": "3eb79a830b1433d5bf2ba5dfd9e459430cce41df99c666f12005ece4f1f88dde",
@@ -2364,7 +2364,7 @@
     "scripts/check-semantics.mjs": "2421b5b657b771bff6310739be7b2ccefd0ab36eaa8780ab54665b682e3a9de6",
     "scripts/benchmark.mjs": "cc1fec3114bff79192629f241608e4a77af5fe2a9a46334826cfe22157558fb8",
     "scripts/check-benchmark.mjs": "dc03b3db1aa8172ec45ff49727d0cd2af9688a466e7653bffa5be2291617ad57",
-    "scripts/semantics/core.mjs": "212370981020e453546b8a7b1681720b9cee3826dbd93fe1a738c1b0b6f19ebf",
+    "scripts/semantics/core.mjs": "be437cd01469b1fd7af232f0d8ab248bafa4f1368a2f4a1414cdaa7c24373ae6",
     "scripts/semantics/generate.mjs": "3cf9ac858c2c4314786d316029a4cf1214777cc83c31dafcd7436b734618b140",
     "test/semantic-compatibility.test.ts": "243c8396681026ef7cd5cae2be5da97edbef9a08472e59f14800212501d68543",
     "test/fixtures/semantics/scenarios.json": "5bd0ff0687df2f50d52d590643ead60d341080a27e1cdb3564b66ff127b69fc7",
@@ -2376,12 +2376,12 @@
     "test/latest-upstream.test.ts": "a66f9c6ec5e1991247570a7acb3394905fbe57b0a68c3ceb3a6abb0a9e69b370",
     "test/statechart.test.ts": "ef48f8de33f769e30b1091e92f0b23742b014fb844eceaf1221005ac6f9a5757",
     "test/model-router.test.ts": "24234556f342d16274aa376f4f866950eedd1bc4f388c70ced98467945f0014c",
-    "test/setup-command.test.ts": "6a85ab091e9871b696c6bd9e7d895d4f82e5edb22bdf42a7cfbab2e78dd398f4",
+    "test/setup-command.test.ts": "2f1a4a41b8a6eafe813626c850ccc384838f8fcd5bec178a102c8dd22b396448",
     "test/transaction.test.ts": "8d6b429ab0418f21237c99aa701fd3b8bd55c93c10adb3bd766787c33182693e",
     "test/benchmark.test.ts": "c8b40b94ec8778dabfd73b9282932e0c5e575e4964bcc50576fbb7c854e964f0",
     "scripts/check-statechart.mjs": "3e6fbf7cc00b623298a2d2ad0728b9762eae950f1fd2435d14a4c3ac6d38b2f1",
-    "src/tools/agents.ts": "46df8764f1a2c77367909c42d99f5d10a878f0d3750d14e57fe956a1269769a2",
-    "src/tools/workflow.ts": "942da3e7229938716660efd013b21218fd127305de38e030cc46325a1b8ac191",
+    "src/tools/agents.ts": "b22963360e9c099e1d4e7fc9091a91e4643f9c170ff60f4126abf4ef7638054b",
+    "src/tools/workflow.ts": "c387c196532b60e67b4d057f44837c93ade5bf9229673b0afc7f323aeded72bd",
     "src/agent/candidates.ts": "c8f3ef5f83fe44203894d8c370e5dea0f520c24e1c20dbf9d8add2ac682bb1ce",
     "src/worktree/snapshot.ts": "3e2691076b095b143a42bddf6bc38cd9a89ac3dcc91dbc90dadc820ba8acd799",
     "test/model-panels.test.ts": "c7ba8dc9820935eb2eeabac43d203599b85d403899c39c3442dfb094994cce4d",
@@ -2392,8 +2392,9 @@
     "scripts/check-e2e.mjs": "f8a3332d01fe09fd18215a54da569f37e7955c39c5e4fbacb606c64df30e7c95",
     "scripts/build.mjs": "4c1ef7c3a43cdb0cf76be0440d06885770b1d38bd7f77a056cd6439de6bc15ac",
     "scripts/build-statechart.mjs": "4c30f6b1cb106d0c7d4031412331ad5473d947846cc4868bbac1fe6f14807c16",
-    "src/setup/command.ts": "d2adc2c097c43758da6a3b780ede0bfa4c356da4e45c3cb9b23ef59d169e4e90",
-    "test/setup-rpc.test.ts": "799722896e8102d7ba685b92b6b150beaf40abdd9ba66f370c4ea3ab2c6ff27d"
+    "src/setup/command.ts": "76a389ddacbc14362cda6c72cc9260cee985b9c10bacbd09c8e25cb4f765025f",
+    "test/setup-rpc.test.ts": "b49a4fbb441db4f07223109cae3dc201deacdf928a841de46e7ccdca20584c6e",
+    "test/global-model-roles.test.ts": "1223efd0cd304dcb9f169cabefc035f3192c3e3b10a79434daeaf91ed19ffe59"
   },
   "driftReviews": [],
   "evidence": {
@@ -2640,6 +2641,10 @@
         {
           "file": "test/e2e/workflow.test.ts",
           "name": "panel model fallback is visible in the durable workflow"
+        },
+        {
+          "file": "test/global-model-roles.test.ts",
+          "name": "global task roles route explicit selections without changing existing playbook precedence"
         }
       ]
     },

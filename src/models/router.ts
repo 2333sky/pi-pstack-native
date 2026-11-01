@@ -1,6 +1,13 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { loadModels } from "../runtime/config.ts";
-import type { ThinkingLevelName } from "../runtime/types.ts";
+import type { ModelConfig, ThinkingLevelName } from "../runtime/types.ts";
+
+/** Select a configured model without confusing task roles with permission profiles. */
+export function selectTaskModel(config: ModelConfig, options: { model?: string; modelRole?: string; playbook?: string; profile: string }): string | undefined {
+  const routes = options.playbook ? config.workflows?.[options.playbook] : undefined;
+  const globalRole = options.modelRole === 'judgment' || options.modelRole === 'hardest' ? config.roles[options.modelRole] : undefined;
+  return options.model ?? (options.modelRole ? routes?.[options.modelRole] : undefined) ?? globalRole ?? routes?.[options.profile];
+}
 
 export type ResolvedModel = {
   requestedSelector: string;
