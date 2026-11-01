@@ -18,7 +18,14 @@ async function setup(choose: Choose, models: any[] = [claude, grok], parent: any
   const ctx = {
     hasUI: true, model: parent, scopedModels, isIdle: () => true,
     modelRegistry: { getAvailable: () => models, find: (provider: string, id: string) => registryModels.find(m => m.provider === provider && m.id === id) },
-    ui: { select: (title: string, options: string[]) => { titles.push(title); optionLists.push(options); assert(titles.length < 100, 'wizard must make progress'); return choose(title, options, titles.length); }, notify: (message: string) => notices.push(message) },
+    ui: { select: (title: string, options: string[]) => {
+      titles.push(title); optionLists.push(options); assert(titles.length < 100, 'wizard must make progress');
+      // Drive the real displayed option while keeping the existing English-based scenarios readable.
+      const english = options.map(option => option.replace(/ \/ [\u4e00-\u9fff].*$/, ''));
+      const selected = choose(title, english, titles.length);
+      const index = english.indexOf(selected ?? '');
+      return index < 0 ? selected : options[index];
+    }, notify: (message: string) => notices.push(message) },
   };
   await commands.get('setup-pstack').handler('', ctx);
   return { notices, titles, optionLists, messages };
@@ -39,6 +46,9 @@ test('fresh setup defaults to the upstream large budget, previews all mappings i
   for (const text of ['Role worker: xai/grok-4', 'feature: role default (xai/grok-4)', 'how explainer:', 'swarm workers:', 'arena runners 1:', 'arena cross-judge pool 1:', 'architect runners 2:', 'interrogate reviewers 2:']) assert(all.includes(text), text);
   assert(all.includes('Pi maps xhigh to high'));
   assert(optionLists.every(options => options.length <= 8));
+  assert(titles.some(title => /[\u4e00-\u9fff]/.test(title)), 'setup should show Chinese in its prompts');
+  assert(optionLists.flat().some(option => option.includes('Save settings') && option.includes('保存设置')));
+  assert(optionLists.flat().some(option => option.includes('Cancel setup') && option.includes('取消配置')));
   const config = loadModels();
   assert.equal(config.thinkingLevel, 'xhigh');
   assert.equal(config.roles.worker, grokId);
@@ -49,6 +59,7 @@ test('fresh setup defaults to the upstream large budget, previews all mappings i
   assert.match(messages[0]!.text, /existing harness.*not merely unit tests/);
   assert.match(messages[0]!.text, /ask and wait for the user's answer/);
   assert.match(messages[0]!.text, /create-formal-verification-skill/);
+  assert.match(messages[0]!.text, /provide both Chinese and English/);
   assert.equal(messages[0]!.options.expandPromptTemplates, true);
 }));
 
@@ -106,7 +117,7 @@ test('unsupported reasoning can be corrected without discarding model choices', 
 test('edit one panel seat and preserve the rest and the feature/refactoring overrides', async () => withHome(async () => {
   saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, workflows: { feature: { worker: claudeId }, refactoring: { worker: grokId } }, panels: { arena: [claudeId, grokId], extra: [grokId] } });
   let step = 0;
-  await setup((title, options) => {
+  const result = await setup((title, options) => {
     if (title.startsWith('Child reasoning')) return options[0];
     if (title.startsWith('Review pstack')) return step++ === 0 ? 'Edit a panel' : 'Save settings';
     if (title.startsWith('Choose panel')) return options.find(x => x.startsWith('arena runners'));
@@ -120,6 +131,33 @@ test('edit one panel seat and preserve the rest and the feature/refactoring over
   assert.deepEqual(config.panels?.extra, [grokId]);
   assert.equal(config.workflows?.feature.worker, claudeId);
   assert.equal(config.workflows?.refactoring.worker, grokId);
+  assert(result.optionLists.flat().some(option => option.includes('Change model') && /[\u4e00-\u9fff]/.test(option)));
+}));
+
+test('a panel below its minimum cannot be saved and can be repaired without restarting setup', async () => withHome(async () => {
+  saveModels({ version: 1, thinkingLevel: 'inherit-parent', roles: {}, panels: { arena: [claudeId, grokId] } });
+  let review = 0, panelEdit = 0;
+  const result = await setup((title, options) => {
+    if (title.startsWith('Child reasoning')) return options[0];
+    if (title.startsWith('Review pstack')) {
+      review++;
+      return review === 2 ? 'Save settings' : review === 4 ? 'Save settings' : 'Edit a panel';
+    }
+    if (title.startsWith('Choose panel')) return options.find(option => option.startsWith('arena runners'));
+    if (title.startsWith('arena runners')) {
+      if (panelEdit === 0) { panelEdit++; return options.find(option => option.startsWith('Seat 2:')); }
+      if (panelEdit === 1) { panelEdit++; return 'Done editing panel'; }
+      if (panelEdit === 2) { panelEdit++; return 'Add a seat'; }
+      return 'Done editing panel';
+    }
+    if (title.startsWith('Seat 2:')) return 'Remove seat';
+    if (title.startsWith('Add seat to arena runners')) return options.find(option => option === grokId);
+    return undefined;
+  });
+  assert(result.notices.some(notice => /Cannot save yet.*arena runners needs 2–16 seats/.test(notice)));
+  assert(result.notices.some(notice => /arena 方案执行.*需要 2–16 个席位/.test(notice)));
+  assert.deepEqual(loadModels().panels?.arena, [claudeId, grokId]);
+  assert.equal(result.messages.length, 1);
 }));
 
 test('long model registries are paginated and the suggested judge pool is bounded', async () => withHome(async () => {

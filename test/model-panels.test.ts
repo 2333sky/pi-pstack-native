@@ -13,9 +13,35 @@ import { buildTemplate } from '../src/templates/build.ts';
 import { planArtifacts } from '../src/workflow/artifacts.ts';
 import { registerWorkflowTool } from '../src/tools/workflow.ts';
 import { registerAgentTool } from '../src/tools/agents.ts';
+import { selectJudgeFromPool, suggestedPanels } from '../src/models/router.ts';
 import { WorkflowEngine } from '../src/workflow/engine.ts';
 import { verify } from '../src/verification/runner.ts';
 import type { TaskBrief } from '../src/contracts/types.ts';
+
+test('suggested panels prefer upstream model families over an unrelated parent', () => {
+  const models = [
+    { provider: 'openai', id: 'gpt-5' },
+    { provider: 'anthropic', id: 'claude-opus-4' },
+    { provider: 'xai', id: 'grok-4' },
+  ];
+  const ctx: any = { model: models[0], scopedModels: [], modelRegistry: { getAvailable: () => models } };
+  const panels = suggestedPanels(ctx);
+  assert.deepEqual(panels.arena, ['anthropic/claude-opus-4', 'xai/grok-4']);
+  assert.deepEqual(panels['arena-judges'], panels.arena);
+  assert.deepEqual(panels.architect, panels.arena);
+  assert.deepEqual(panels.interrogate, panels.arena);
+});
+
+test('judge selection respects the configured pool even when other families are available', () => {
+  const parent = { provider: 'p', id: 'claude-opus', reasoning: true };
+  const other = { provider: 'p', id: 'grok-4', reasoning: true };
+  const ctx: any = { model: parent, scopedModels: [], modelRegistry: {
+    getAvailable: () => [parent, other], find: (_provider: string, id: string) => [parent, other].find(model => model.id === id),
+  } };
+  const result = selectJudgeFromPool(ctx, ['inherit-parent', 'p/claude-opus']);
+  assert.equal(result.model, undefined);
+  assert(result.notes.some(note => note.includes('coordinator must compare')));
+});
 
 test('configured review panels resolve models, plan, and dispatch one reviewer per seat', async () => {
   const root = mkdtempSync(join(tmpdir(), 'pstack-panels-'));
