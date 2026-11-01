@@ -1,6 +1,7 @@
 import { getProfile } from "../agent/profiles.js";
 import { assertSessionOwner } from "../runtime/ownership.js";
 import { loadModels } from "../runtime/config.js";
+import { selectTaskModel } from "../models/router.js";
 import { array, enums, object, string } from "./schema.js";
 const PARAMETERS = object({
     action: enums(["run", "start", "status", "list", "send", "stop"], "Operation."),
@@ -11,7 +12,7 @@ const PARAMETERS = object({
     id: string("Agent id for status/send/stop."),
     profile: string("Agent profile, e.g. worker, reviewer, verifier, architect."),
     playbook: string("Optional task or playbook name for configured role-model overrides, e.g. feature or bug-fix."),
-    modelRole: string("Optional named model role within the playbook, e.g. reflect tooling or judgment."),
+    modelRole: string("Optional named model role. Use judgment or hardest for the global roles, or a role within the playbook such as reflect tooling."),
     task: string("Assigned task for run/start; message for send when message is omitted."),
     message: string("Message for send."),
     model: string("Optional provider/model selector or inherit-parent."),
@@ -24,7 +25,7 @@ export function registerAgentTool(pi, agents) {
     pi.registerTool({
         name: "pstack_agents",
         label: "Pstack Agents",
-        description: "Run and control Pi-native child AgentSessions. Pass playbook and optional modelRole to apply task-specific model overrides configured by /setup-pstack; an explicit model takes precedence. Background writable starts default to a worktree. Prefer pstack_workflow for parallel writers, integration, and dependency graphs.",
+        description: "Run and control Pi-native child AgentSessions. Pass playbook and optional modelRole to apply configured model overrides. Select modelRole judgment for prose and judgment, or hardest for the hardest tasks. An explicit model takes precedence. Background writable starts default to a worktree. Prefer pstack_workflow for parallel writers, integration, and dependency graphs.",
         promptSnippet: "Launch or inspect Pi-native pstack child agents",
         parameters: PARAMETERS,
         executionMode: "sequential",
@@ -35,8 +36,7 @@ export function registerAgentTool(pi, agents) {
                 case "run": {
                     if (!params.profile || !params.task)
                         throw new Error("run requires profile and task");
-                    const routes = params.playbook ? loadModels().workflows?.[params.playbook] : undefined;
-                    const model = params.model ?? (params.modelRole ? routes?.[params.modelRole] : undefined) ?? routes?.[params.profile];
+                    const model = selectTaskModel(loadModels(), params);
                     return reply(await agents.run({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation: params.isolation, model, evidencePackets: params.evidencePackets, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
                 }
                 case "start": {
@@ -44,8 +44,7 @@ export function registerAgentTool(pi, agents) {
                         throw new Error("start requires profile and task");
                     const profile = getProfile(params.profile);
                     const isolation = params.isolation ?? (profile.writable ? "worktree" : profile.defaultIsolation);
-                    const routes = params.playbook ? loadModels().workflows?.[params.playbook] : undefined;
-                    const model = params.model ?? (params.modelRole ? routes?.[params.modelRole] : undefined) ?? routes?.[params.profile];
+                    const model = selectTaskModel(loadModels(), params);
                     return reply(agents.start({ profile: params.profile, task: params.task, cwd: params.cwd || ctx.cwd, isolation, model, evidencePackets: params.evidencePackets, brief: params.brief, budget: params.budget, thinkingLevel: params.thinkingLevel }, ctx));
                 }
                 case "status": {

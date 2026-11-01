@@ -1,4 +1,10 @@
 import { loadModels } from "../runtime/config.js";
+/** Select a configured model without confusing task roles with permission profiles. */
+export function selectTaskModel(config, options) {
+    const routes = options.playbook ? config.workflows?.[options.playbook] : undefined;
+    const globalRole = options.modelRole === 'judgment' || options.modelRole === 'hardest' ? config.roles[options.modelRole] : undefined;
+    return options.model ?? (options.modelRole ? routes?.[options.modelRole] : undefined) ?? globalRole ?? routes?.[options.profile];
+}
 function parseSelector(selector) {
     const slash = selector.indexOf("/");
     if (slash <= 0 || slash === selector.length - 1)

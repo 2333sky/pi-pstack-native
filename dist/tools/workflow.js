@@ -5,6 +5,7 @@ import { validateGraph, dependencyEdges } from "../workflow/graph.js";
 import { planArtifacts } from "../workflow/artifacts.js";
 import { chainNodes } from "../workflow/graph.js";
 import { loadModels } from "../runtime/config.js";
+import { selectTaskModel } from "../models/router.js";
 import { assertSessionOwner } from "../runtime/ownership.js";
 import { array, enums, number, object, string } from "./schema.js";
 const NODE = object({
@@ -17,7 +18,7 @@ const NODE = object({
     task: string("Task for this node."),
     dependsOn: array(string(), "Keys that must complete first."),
     model: string("Optional model selector."),
-    modelRole: string("Optional named model role within the playbook."),
+    modelRole: string("Optional named model role: judgment or hardest globally, or a role within the playbook."),
     isolation: enums(["shared", "readonly", "worktree"]),
 }, ["key", "task"]);
 const PARAMETERS = object({
@@ -47,7 +48,7 @@ export function registerWorkflowTool(pi, workflows) {
     pi.registerTool({
         name: "pstack_workflow",
         label: "Pstack Workflow",
-        description: "Run durable Pi-native dependency graphs. Pass playbook and optional node modelRole for task-specific routing. Arena, architect and interrogate load configured or suggested panels. With no eligible cross-judge, arena/architect return candidates for the coordinator to compare, integrate and verify. Interrogate uses isolated adversaries and separate repro sessions; inspect actual evidence. Swarm races support first-pass and rank-all selection. Each template needs a strict brief; arena/architect also need a rubric. Plan first to inspect models, nodes and fallback notes.",
+        description: "Run durable Pi-native dependency graphs. Pass playbook and optional node modelRole for task-specific routing. Use judgment for prose and judgment, or hardest for the hardest tasks; an explicit model takes precedence. Arena, architect and interrogate load configured or suggested panels. With no eligible cross-judge, arena/architect return candidates for the coordinator to compare, integrate and verify. Interrogate uses isolated adversaries and separate repro sessions; inspect actual evidence. Swarm races support first-pass and rank-all selection. Each template needs a strict brief; arena/architect also need a rubric. Plan first to inspect models, nodes and fallback notes.",
         promptSnippet: "Run durable pstack multi-agent workflows",
         parameters: PARAMETERS,
         executionMode: "sequential",
@@ -69,8 +70,8 @@ export function registerWorkflowTool(pi, workflows) {
                         throw new Error("SPECIALIZED_MODE_REQUIRES_TEMPLATE");
                     if (!Array.isArray(params.nodes) || !params.nodes.length)
                         throw new Error(`${params.action} requires nodes`);
-                    const overrides = loadModels().workflows?.[params.playbook ?? params.mode ?? "graph"];
-                    const nodes = normalizedNodes(params.mode, params.nodes).map(node => ({ ...node, model: node.model ?? (node.modelRole ? overrides?.[node.modelRole] : undefined) ?? overrides?.[node.profile ?? "worker"] }));
+                    const config = loadModels();
+                    const nodes = normalizedNodes(params.mode, params.nodes).map(node => ({ ...node, model: selectTaskModel(config, { ...node, profile: node.profile ?? "worker", playbook: params.playbook ?? params.mode ?? "graph" }) }));
                     validateGraph(nodes);
                     planArtifacts(nodes);
                     for (const n of nodes) {

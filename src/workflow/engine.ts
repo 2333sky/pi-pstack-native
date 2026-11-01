@@ -1,6 +1,7 @@
 import { upstreamVersion } from "../runtime/upstream.ts";
 import { validateEvidencePackets, type EvidencePacket } from "../agent/resources.ts";
 import { loadModels } from "../runtime/config.ts";
+import { selectTaskModel } from "../models/router.ts";
 import { validateBrief, saveBrief, briefPrompt, validateBudget, reportSatisfies, hasBlockingReportNotes, findingsBackedByVerifiers } from "../contracts/brief.ts";
 import { verify, ledgerCurrent } from "../verification/runner.ts";
 import { fingerprint, ownerOf } from "../artifacts/fingerprint.ts";
@@ -70,9 +71,9 @@ export class WorkflowEngine {
     planArtifacts(spec.nodes);
     const createdAt = now();
     const calls: Record<string, WorkflowCall> = {};
+    const modelConfig = loadModels();
     for (const node of spec.nodes) {
-      const routes = loadModels().workflows?.[spec.playbook ?? spec.type ?? 'graph'];
-      const model = node.model ?? (node.modelRole ? routes?.[node.modelRole] : undefined) ?? routes?.[node.profile ?? 'worker'];
+      const model = selectTaskModel(modelConfig, { ...node, profile: node.profile ?? 'worker', playbook: spec.playbook ?? spec.type ?? 'graph' });
       calls[node.key] = {
         evidencePackets: validateEvidencePackets(node.evidencePackets), brief: node.brief, thinkingLevel: node.thinkingLevel, budget: node.budget,
         key: node.key, profile: node.profile ?? "worker", task: node.task.trim(),
