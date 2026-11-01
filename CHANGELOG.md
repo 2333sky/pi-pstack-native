@@ -1,10 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.0.1 — 2026-11-01
 
+- Show Chinese beside the English text in `/setup-pstack` prompts, options, review rows and notices, in both the direct UI and RPC mode. English option values stay stable, so existing UI integrations keep working.
+- Suggest the first panel seat from the upstream Claude family and the second from the Grok family when Pi exposes them, instead of reusing the parent model.
+- Keep cross-judge selection inside the configured panel pool. When no eligible entry exists, report it and return candidates for the coordinator to compare instead of widening the pool to any available model.
+- Ask the optional verification follow-up to answer in Chinese and English.
+
+## 1.0.0 — 2026-10-30
+
+- Publish `pi-pstack-native@1.0.0` on npm and verify the public `latest` dist-tag.
 - Archive a commit-bound authenticated real-model receipt: three models passed the read-only probe on `5deb723`, and `SEMANTICS.json.evidence.realModel` records `status: "passed"` with that receipt.
 - Validate live GitHub delivery against a disposable repository: create, read, close and merge now have a recorded run. Add an opt-in `--merge` gate to the live tier; it stays closed unless `PSTACK_E2E_LIVE_MERGE=1` is set with an explicit write target.
-- Record the npm registry state: `pi-pstack-native` is unpublished, so `1.0.0` is unclaimed; no npm credentials exist in the validation environment.
+- Record the npm registry state before publication: `pi-pstack-native` was unpublished, so `1.0.0` was unclaimed; no npm credentials existed in the validation environment.
 - Record the maintainer semantic sign-off in `SEMANTICS.json.review` for the 11 core entrypoints and their declared deviations.
 - State the 1.0.0 guarantee scope explicitly in `docs/PUBLISHING.md`, including the exclusion of Windows real-model workflow acceptance and of branch-protection, review, auto-merge and merge-queue behaviour.
 
