@@ -206,8 +206,9 @@ are retained. Content-addressed reports and historical
 
 The daily workflow scans with read-only permissions, needs no npm install and
 uploads reports when content changes. Issue writes occur in a separate trusted
-job and are **opt-in**: set repository variable `UPSTREAM_SYNC_NOTIFY=true` for
-scheduled notifications or select `notify` on manual dispatch. Issues are keyed
+job and are **on by default** for scheduled scans: set repository variable
+`UPSTREAM_SYNC_NOTIFY=false` to silence them, or select `notify` on manual
+dispatch. Issues are keyed
 by `sync_id`, including closed Issues. No-change scans create no remote resource.
 Network/API failures fail the job; the next run retries from the unchanged
 baseline. Notifications choose tracking Issues rather than report PRs.
