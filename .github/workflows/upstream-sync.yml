@@ -54,8 +54,9 @@ jobs:
             docs/upstream-sync/semantic/
   notify:
     needs: scan
-    # Daily writes require explicit repository configuration; manual writes require checkbox.
-    if: needs.scan.outputs.status != 'no_change' && (inputs.notify == true || (github.event_name == 'schedule' && vars.UPSTREAM_SYNC_NOTIFY == 'true'))
+    # Daily writes are on by default; set the repository variable
+    # UPSTREAM_SYNC_NOTIFY=false to silence scheduled notifications.
+    if: needs.scan.outputs.status != 'no_change' && (inputs.notify == true || (github.event_name == 'schedule' && vars.UPSTREAM_SYNC_NOTIFY != 'false'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
